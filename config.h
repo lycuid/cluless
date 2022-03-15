@@ -24,6 +24,19 @@ static const char *const workspaces[] = {
 
 static const Layout layouts[] = {{"[]=", tall}, {"<><", NULL}};
 
+typedef struct {
+  char *class_name;
+  CustomHandler func;
+  Arg arg;
+} Hook;
+
+static const Hook hooks[] = {{"LibreWolf", move_client_to_ws, {.i = 2}},
+                             {"Brave-browser", move_client_to_ws, {.i = 2}},
+                             {"Geany", move_client_to_ws, {.i = 1}},
+                             {"mpv", float_client, {0}},
+                             {"vlc", float_client, {0}},
+                             {"xterm", float_client, {0}}};
+
 static const char *const LogFormat[TotalFmtOptions] = {
     // String -> String.
     [FmtWsCurrent] = Underlined("%s"),

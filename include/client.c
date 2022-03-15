@@ -17,8 +17,7 @@ Client *cl_create(Window w)
 Client *cl_nexttiled(Client *c)
 {
   if (c)
-    for (c = c->next; c && IsSet(c->state, ClFloating | ClFullscreen);
-         c = c->next)
+    for (c = c->next; c && IsSet(c->state, CL_UNTILED_STATE); c = c->next)
       ;
   return c;
 }

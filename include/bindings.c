@@ -15,9 +15,10 @@ void quit(Monitor *mon, const Arg *arg)
 void swap_master(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  Client *c = ws_getactive(mon->selws);
-  if (!c || !(c = ws_detachclient(mon->selws, c->window)))
+  Client *c = ws_find(mon->selws, ClActive);
+  if (!c)
     return;
+  ws_detachclient(mon->selws, c);
   ws_attachclient(mon->selws, c);
   mon_restack(mon);
   mon_arrange(mon);
@@ -27,7 +28,7 @@ void kill_client(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   Client *c;
-  if (!(c = ws_getactive(mon->selws)))
+  if (!(c = ws_find(mon->selws, ClActive)))
     return;
   if (!send_event(c->window, mon->ctx->wmatoms[WMDeleteWindow]))
     XKillClient(mon->ctx->dpy, c->window);
@@ -37,14 +38,14 @@ void shift_client(Monitor *mon, const Arg *arg)
 {
   int offset = arg->i;
   Client *c;
-  if (!(c = ws_getactive(mon->selws)))
+  if (!(c = ws_find(mon->selws, ClActive)))
     return;
   if (offset > 0)
     while (offset--)
-      ws_client_movedown(mon->selws, c);
+      ws_clmovedown(mon->selws, c);
   else
     while (-offset++)
-      ws_client_moveup(mon->selws, c);
+      ws_clmoveup(mon->selws, c);
   mon_restack(mon);
   mon_arrange(mon);
 }
@@ -53,11 +54,9 @@ void shift_focus(Monitor *mon, const Arg *arg)
 {
   int offset = arg->i;
   Client *c;
-  if (!(c = ws_getactive(mon->selws))) {
-    if (mon->selws->cl_head) {
-      mon_focusclient(mon, mon->selws->cl_head);
-      mon_arrange(mon);
-    }
+  if (!(c = ws_find(mon->selws, ClActive))) {
+    mon_focusclient(mon, mon->selws->cl_head);
+    mon_arrange(mon);
     return;
   }
   if (offset > 0)
@@ -73,16 +72,22 @@ void shift_focus(Monitor *mon, const Arg *arg)
 void move_client_to_ws(Monitor *mon, const Arg *arg)
 {
   Workspace *from = mon->selws, *to = mon_workspaceat(mon, arg->i);
-  if (!from || !to || from == to)
+  Client *c = ws_find(from, ClActive);
+  if (!from || !to || from == to || !c)
     return;
-  Client *c = ws_getactive(from);
-  if ((c = ws_detachclient(from, c->window))) {
-    mon_focusclient(mon, cl_neighbour(c));
+  // if this function is called by a Hook, then the active client is not going
+  // to be the focused client.
+  Client *neighbour = cl_neighbour(c),
+         *focused   = ws_getclient(mon->selws, input_focused_window());
+  mon_focusclient(mon, focused && focused != c ? focused
+                       : neighbour             ? neighbour
+                                               : from->cl_head);
+  // to avoid attaching same client multiple times.
+  ws_detachclient(from, c);
+  if (!ws_getclient(to, c->window))
     ws_attachclient(to, c);
-    LockRootEvents();
-    XUnmapWindow(mon->ctx->dpy, c->window);
-    UnlockRootEvents();
-  }
+  // as the client is detached from the 'selws', it wont be destroyed on unmap.
+  XUnmapWindow(mon->ctx->dpy, c->window);
   mon_arrange(mon);
 }
 
@@ -92,26 +97,38 @@ void select_ws(Monitor *mon, const Arg *arg)
   if (!to || !from || to == from)
     return;
   mon->selws = to;
-
-  LockRootEvents();
+  // 'selws' has already been changed, the client won't be found in 'selws', on
+  // unmap notify event, and hence wont be destroyed.
   Client *c = from->cl_head;
   for (; c; c = c->next)
     XUnmapWindow(mon->ctx->dpy, c->window);
-  UnlockRootEvents();
-
-  // map windows in the 'cl_head' order.
+  // map windows in proper order.
   for (c = cl_last(to->cl_head); c; c = c->prev)
-    XMapRaised(mon->ctx->dpy, c->window);
+    XMapWindow(mon->ctx->dpy, c->window);
+  if (!(c = ws_find(to, ClActive)))
+    c = to->cl_head;
+  mon_focusclient(mon, c);
   mon_arrange(mon);
 }
 
 void tile_client(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  Client *c = ws_getactive(mon->selws);
+  Client *c = ws_find(mon->selws, ClActive);
   if (!c)
     return;
-  UnSet(c->state, ClFloating);
+  UnSet(c->state, CL_UNTILED_STATE);
+  mon_restack(mon);
+  mon_arrange(mon);
+}
+
+void float_client(Monitor *mon, const Arg *arg)
+{
+  (void)arg;
+  Client *c = ws_find(mon->selws, ClActive);
+  if (!c)
+    return;
+  Set(c->state, ClFloating);
   mon_restack(mon);
   mon_arrange(mon);
 }
@@ -146,10 +163,10 @@ void move_resize(Monitor *mon, const Arg *arg)
   XSetWindowAttributes attrs = {
       .cursor = mon->ctx->cursors[state == Move ? CurMove : CurResize]};
   XChangeWindowAttributes(mon->ctx->dpy, c->window, CWCursor, &attrs);
-  uint32_t mask = state == Move ? ClMoving : ClResizing;
+  State new_state = state == Move ? ClMoving : ClResizing;
   if (ws_getlayout(mon->selws)->arrange)
-    mask |= ClFloating;
-  Set(c->state, mask);
+    new_state |= ClFloating;
+  Set(c->state, new_state);
   mon_focusclient(mon, c);
   mon_restack(mon);
   mon_arrange(mon);
@@ -177,10 +194,4 @@ void toggle_border(Monitor *mon, const Arg *arg)
   for (Client *c = mon->selws->cl_head; c; c = c->next)
     XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
   mon_arrange(mon);
-}
-
-void float_client(Monitor *mon, const Arg *arg)
-{
-  (void)mon;
-  (void)arg;
 }

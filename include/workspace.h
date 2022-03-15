@@ -13,13 +13,14 @@ typedef struct {
 } Workspace;
 
 void ws_init(Workspace *, const char *);
-Client *ws_getclient(Workspace *, Window);      // O(n)
-Client *ws_getactive(Workspace *);              // O(n)
-void ws_attachclient(Workspace *, Client *);    // O(1)
-Client *ws_detachclient(Workspace *, Window);   // O(n)
-void ws_client_moveup(Workspace *, Client *);   // O(1)
-void ws_client_movedown(Workspace *, Client *); // O(1)
-const Layout *ws_getlayout(Workspace *);
+Client *ws_getclient(Workspace *, Window);   // O(n)
+Client *ws_find(Workspace *, State);         // O(n)
+void ws_attachclient(Workspace *, Client *); // O(1)
+void ws_detachclient(Workspace *, Client *); // O(1)
+void ws_clmoveup(Workspace *, Client *);     // O(1)
+void ws_clmovedown(Workspace *, Client *);   // O(1)
+
+#define ws_getlayout(ws) (&layouts[(ws)->layoutidx % Length(layouts)])
 
 void ws_dump(Workspace *);
 

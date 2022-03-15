@@ -33,9 +33,6 @@ static EventHandler event_handlers[LASTEvent] = {
     [ButtonRelease]    = onButtonRelease,
     [DestroyNotify]    = onDestroyNotify};
 
-// This event is only generated on window whose 'override_redirect' attribute is
-// set to false
-// (https://tronche.com/gui/x/xlib/events/structure-control/map.html).
 void onMapRequest(Monitor *mon, const XEvent *xevent)
 {
   const XMapRequestEvent *e = &xevent->xmaprequest;
@@ -46,7 +43,23 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
     ws_attachclient(mon->selws, c);
     mon_setactive(mon, c);
     XSelectInput(mon->ctx->dpy, c->window, PropertyChangeMask);
+
+    XClassHint *class = XAllocClassHint();
+    for (size_t i = 0; i < Length(hooks); ++i) {
+      const Hook *h = &hooks[i];
+      if (XGetClassHint(mon->ctx->dpy, e->window, class))
+        if (strstr(class->res_class, h->class_name) ||
+            strstr(class->res_name, h->class_name)) {
+          h->func(mon, &h->arg);
+          break;
+        }
+    }
+    XFree(class);
   }
+  // client might be moved to another workspace by a Hook, so we only map the
+  // window if the client is found in selws.
+  if (!ws_getclient(mon->selws, c->window))
+    return;
   XMapWindow(mon->ctx->dpy, c->window);
 }
 
@@ -57,12 +70,12 @@ void onMapNotify(Monitor *mon, const XEvent *xevent)
   Client *c;
   if (e->override_redirect || !(c = ws_getclient(mon->selws, e->window)))
     return;
-  XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
-  if (IsSet(c->state, ClActive))
-    mon_focusclient(mon, c);
   Window w;
   if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
     Set(c->state, ClTransient);
+  XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
+  if (IsSet(c->state, ClActive))
+    mon_focusclient(mon, c);
   mon_arrange(mon);
 }
 
@@ -71,13 +84,14 @@ void onUnmapNotify(Monitor *mon, const XEvent *xevent)
   const XUnmapEvent *e = &xevent->xunmap;
   EVENT("UnmapNotify on window: %lu.\n", e->window);
   Client *c;
-  if ((c = ws_detachclient(mon->selws, e->window)))
-    mon_removeclient(mon, c);
+  if ((c = ws_getclient(mon->selws, e->window))) {
+    ws_detachclient(mon->selws, c);
+    mon_destroyclient(mon, c);
+  }
 }
 
 void onConfigureRequest(Monitor *mon, const XEvent *xevent)
 {
-  (void)mon;
   const XConfigureRequestEvent *e = &xevent->xconfigurerequest;
   EVENT("ConfigureRequest on window: %lu.\n", e->window);
   XWindowChanges changes = {
@@ -100,10 +114,8 @@ void onPropertyNotify(Monitor *mon, const XEvent *xevent)
   EVENT("PropertyNotify on window: %lu.\n", e->window);
   if (e->state == PropertyNewValue &&
       (e->atom == mon->ctx->netatoms[NetWMName] ||
-       e->atom == mon->ctx->wmatoms[WMName])) {
-    INFO("Title updated for window: %lu.\n", e->window);
+       e->atom == mon->ctx->wmatoms[WMName]))
     mon_statuslog(mon);
-  }
 }
 
 void onKeyPress(Monitor *mon, const XEvent *xevent)
@@ -184,9 +196,10 @@ void onDestroyNotify(Monitor *mon, const XEvent *xevent)
   Client *c;
   for (size_t i = 0; i < Length(workspaces); ++i) {
     Workspace *from = mon_workspaceat(mon, i);
-    if ((c = ws_detachclient(from, e->window))) {
+    if ((c = ws_getclient(from, e->window))) {
       ACTION("Destroying window: %lu.\n", e->window);
-      mon_removeclient(mon, c);
+      ws_detachclient(from, c);
+      mon_destroyclient(mon, c);
       break;
     }
   }
@@ -194,21 +207,13 @@ void onDestroyNotify(Monitor *mon, const XEvent *xevent)
 
 int xerror_handler(Display *dpy, XErrorEvent *e)
 {
-  (void)dpy;
-  // int type;
-  // Display *display;	/* Display the event was read from */
-  // XID resourceid;		/* resource id */
-  // unsigned long serial;	/* serial number of failed request */
-  // unsigned char error_code;	/* error code of failed request */
-  // unsigned char request_code;	/* Major op-code of failed request */
-  // unsigned char minor_code;	/* Minor op-code of failed request */
   char error_code[1024];
   XGetErrorText(dpy, e->error_code, error_code, 1024);
-  LOG("[Error] resourceId: %lu.\n", e->resourceid);
-  LOG("[Error] serial: %lu.\n", e->serial);
-  LOG("[Error] error_code: %s.\n", error_code);
-  LOG("[Error] request_code: %s.\n", RequestCodes[e->request_code]);
-  LOG("[Error] minor_code: %u.\n", e->minor_code);
+  LOG("[ERROR] resourceId: %lu.\n", e->resourceid);
+  LOG("[ERROR] serial: %lu.\n", e->serial);
+  LOG("[ERROR] error_code: %s.\n", error_code);
+  LOG("[ERROR] request_code: %s.\n", RequestCodes[e->request_code]);
+  LOG("[ERROR] minor_code: %u.\n", e->minor_code);
   return 1;
 }
 
@@ -220,7 +225,7 @@ int main()
 
   XEvent e;
   while (mon.ctx->running && !XNextEvent(mon.ctx->dpy, &e)) {
-    if (EventRepr[e.type])
+    if (EventRepr[e.type] && e.type != MotionNotify)
       EVENT("%s on window: %lu.\n", EventRepr[e.type], e.xany.window);
     ws_dump(mon.selws);
     if (event_handlers[e.type])

@@ -31,7 +31,7 @@ typedef struct {
 
 #define mon_workspaceat(mon, at) (&mon->wss[at % Length(workspaces)])
 
-#define mon_removeclient(mon, c)                                               \
+#define mon_destroyclient(mon, c)                                              \
   {                                                                            \
     mon_focusclient(mon, cl_neighbour(c));                                     \
     mon_arrange(mon);                                                          \

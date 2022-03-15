@@ -75,7 +75,5 @@ Window input_focused_window(void);
 Geometry get_screen_rect(void);
 bool send_event(Window, Atom);
 int get_window_property(Window, Atom, int, uint8_t **);
-void LockRootEvents();
-void UnlockRootEvents();
 
 #endif

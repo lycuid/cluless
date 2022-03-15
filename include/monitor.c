@@ -53,14 +53,20 @@ void mon_focusclient(Monitor *mon, Client *c)
 void mon_restack(Monitor *mon)
 {
   Client *c;
-  int i, fl;
-  for (c = mon->selws->cl_head, i = fl = 0; c; c = c->next, i++)
+  int i, fs, fl;
+  for (c = mon->selws->cl_head, i = fs = fl = 0; c; c = c->next, i++) {
     if (IsSet(c->state, ClFloating | ClTransient))
       fl++;
+    if (IsSet(c->state, ClFullscreen))
+      fs++;
+  }
+  fs += fl;
   Window wid[i];
   for (c = mon->selws->cl_head, i = 0; c; c = c->next)
-    wid[IsSet(c->state, ClFloating | ClTransient) ? i++ : fl++] = c->window;
-  XRestackWindows(mon->ctx->dpy, wid, fl);
+    wid[IsSet(c->state, ClFloating | ClTransient) ? i++
+        : IsSet(c->state, ClFullscreen)           ? fl++
+                                                  : fs++] = c->window;
+  XRestackWindows(mon->ctx->dpy, wid, fs);
 }
 
 void mon_statuslog(Monitor *mon)
@@ -115,7 +121,7 @@ void mon_statuslog(Monitor *mon)
 
   // window title.
   {
-    Client *active = ws_getactive(mon->selws);
+    Client *active = ws_find(mon->selws, ClActive);
     if (active) {
       XTextProperty wm_name;
       int found = XGetTextProperty(mon->ctx->dpy, active->window, &wm_name,

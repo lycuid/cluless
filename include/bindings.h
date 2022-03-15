@@ -27,11 +27,11 @@ void shift_focus(Monitor *, const Arg *);
 void move_client_to_ws(Monitor *, const Arg *);
 void select_ws(Monitor *, const Arg *);
 void tile_client(Monitor *, const Arg *);
+void float_client(Monitor *, const Arg *);
 void cycle_layout(Monitor *, const Arg *);
 void reset_layout(Monitor *, const Arg *);
 void toggle_gap(Monitor *, const Arg *);
 void toggle_border(Monitor *, const Arg *);
-void float_client(Monitor *, const Arg *);
 
 // button bindings.
 void move_resize(Monitor *, const Arg *);

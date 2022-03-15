@@ -11,10 +11,13 @@
 #define ClResizing   (1 << 4)
 #define ClTransient  (1 << 5)
 
+#define CL_UNTILED_STATE ClFloating | ClTransient | ClFullscreen
+
 #define cl_neighbour(c) (c ? c->prev ? c->prev : c->next : NULL)
 
+typedef uint32_t State;
 typedef struct _Client {
-  uint32_t state;
+  State state;
   Window window;
   struct _Client *prev, *next;
 } Client;

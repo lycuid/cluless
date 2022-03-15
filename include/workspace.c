@@ -17,6 +17,8 @@ void ws_init(Workspace *ws, const char *id)
 // O(n)
 Client *ws_getclient(Workspace *ws, Window w)
 {
+  if (!ws)
+    return NULL;
   Client *c = ws->cl_head;
   for (; c && c->window != w; c = c->next)
     ;
@@ -24,10 +26,12 @@ Client *ws_getclient(Workspace *ws, Window w)
 }
 
 // O(n)
-Client *ws_getactive(Workspace *ws)
+Client *ws_find(Workspace *ws, State flags)
 {
+  if (!ws)
+    return NULL;
   Client *c = ws->cl_head;
-  for (; c && !IsSet(c->state, ClActive); c = c->next)
+  for (; c && !IsSet(c->state, flags); c = c->next)
     ;
   return c;
 }
@@ -35,7 +39,7 @@ Client *ws_getactive(Workspace *ws)
 // O(1)
 void ws_attachclient(Workspace *ws, Client *c)
 {
-  if (!c)
+  if (!c || !ws)
     return;
   c->next = ws->cl_head;
   c->prev = NULL;
@@ -45,12 +49,10 @@ void ws_attachclient(Workspace *ws, Client *c)
 }
 
 // O(1)
-// detached client still keeps pointers to its neighbour clients (necessary).
-Client *ws_detachclient(Workspace *ws, Window w)
+void ws_detachclient(Workspace *ws, Client *c)
 {
-  Client *c = ws_getclient(ws, w);
-  if (!c)
-    return NULL;
+  if (!c || !ws)
+    return;
   if (c->next)
     c->next->prev = c->prev;
   // if 'prev' pointer is null, then the client is on top of the list.
@@ -58,13 +60,12 @@ Client *ws_detachclient(Workspace *ws, Window w)
     c->prev->next = c->next;
   else
     ws->cl_head = c->next;
-  return c;
 }
 
 // O(1)
-void ws_client_moveup(Workspace *ws, Client *c)
+void ws_clmoveup(Workspace *ws, Client *c)
 {
-  if (!c || !c->prev)
+  if (!c || !c->prev || !ws)
     return;
   // [p2] <-> [p1] <-> [c] <-> [n]
   Client *p1 = c->prev, *p2 = p1->prev, *n = c->next;
@@ -81,9 +82,9 @@ void ws_client_moveup(Workspace *ws, Client *c)
 }
 
 // O(1)
-void ws_client_movedown(Workspace *ws, Client *c)
+void ws_clmovedown(Workspace *ws, Client *c)
 {
-  if (!c || !c->next)
+  if (!c || !c->next || !ws)
     return;
   // [p] <-> [c] <-> [n1] <-> [n2]
   Client *p = c->prev, *n1 = c->next, *n2 = n1->next;
@@ -103,15 +104,11 @@ void ws_dump(Workspace *ws)
 {
   Client *c = ws->cl_head;
   if (c) {
+    LOG("%s: ", ws->id);
     LOG("%lu%s", c->window, IsSet(c->state, ClActive) ? "*" : "");
     for (; c->next; c = c->next)
       LOG(" -> [%lu] %lu%s", c->window, c->next->window,
           IsSet(c->next->state, ClActive) ? "*" : "");
     LOG(".\n");
   }
-}
-
-const Layout *ws_getlayout(Workspace *ws)
-{
-  return &layouts[ws->layoutidx % Length(layouts)];
 }

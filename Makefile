@@ -29,3 +29,7 @@ install: $(BIN)
 .PHONY: uninstall
 uninstall:
 	$(RM) $(BINPREFIX)/$(NAME)
+
+.PHONY: loc
+loc:
+	@echo "lines of code: `git ls-files | egrep '\.[ch]$$' | xargs cat | wc -l`"

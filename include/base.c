@@ -92,16 +92,3 @@ int get_window_property(Window window, Atom key, int size, uint8_t **value)
   return XGetWindowProperty(ctx.dpy, window, key, 0l, size, False, type, &type,
                             (int *)&n, &n, &n, value);
 }
-
-void LockRootEvents()
-{
-  XChangeWindowAttributes(
-      ctx.dpy, ctx.root, CWEventMask,
-      &(XSetWindowAttributes){.event_mask = RootWindowEventMasks});
-}
-void UnlockRootEvents()
-{
-  XChangeWindowAttributes(
-      ctx.dpy, ctx.root, CWEventMask,
-      &(XSetWindowAttributes){.event_mask = RootWindowEventMasks});
-}
