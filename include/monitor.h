@@ -31,18 +31,13 @@ typedef struct {
 
 #define mon_workspaceat(mon, at) (&mon->wss[at % Length(workspaces)])
 
-#define mon_destroyclient(mon, c)                                              \
-  {                                                                            \
-    mon_focusclient(mon, cl_neighbour(c));                                     \
-    mon_arrange(mon);                                                          \
-    free(c);                                                                   \
-  }
-
 void mon_init(Monitor *);
-void mon_setactive(Monitor *, Client *);
+void mon_addclient(Monitor *, Client *);
+void mon_removeclient(Monitor *, Client *);
 void mon_focusclient(Monitor *, Client *);
+void mon_setactive(Monitor *, Client *);
 void mon_restack(Monitor *);
-void mon_statuslog(Monitor *);
 void mon_arrange(Monitor *);
+void mon_statuslog(Monitor *);
 
 #endif

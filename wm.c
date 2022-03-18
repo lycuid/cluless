@@ -5,8 +5,6 @@
 #include "include/monitor.h"
 #include "include/workspace.h"
 #include <X11/Xlib.h>
-#include <X11/cursorfont.h>
-#include <stdlib.h>
 #include <string.h>
 
 void onMapRequest(Monitor *, const XEvent *);
@@ -40,9 +38,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   Client *c;
   if (!(c = ws_getclient(mon->selws, e->window))) {
     c = cl_create(e->window);
-    ws_attachclient(mon->selws, c);
-    mon_setactive(mon, c);
-    XSelectInput(mon->ctx->dpy, c->window, PropertyChangeMask);
+    mon_addclient(mon, c);
 
     XClassHint *class = XAllocClassHint();
     for (size_t i = 0; i < Length(hooks); ++i) {
@@ -60,6 +56,11 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   // window if the client is found in selws.
   if (!ws_getclient(mon->selws, c->window))
     return;
+  Window w;
+  if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
+    Set(c->state, ClTransient);
+  XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
+  mon_arrange(mon);
   XMapWindow(mon->ctx->dpy, c->window);
 }
 
@@ -67,16 +68,11 @@ void onMapNotify(Monitor *mon, const XEvent *xevent)
 {
   const XMapEvent *e = &xevent->xmap;
   EVENT("MapNotify on window: %lu.\n", e->window);
-  Client *c;
-  if (e->override_redirect || !(c = ws_getclient(mon->selws, e->window)))
+  if (e->override_redirect)
     return;
-  Window w;
-  if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
-    Set(c->state, ClTransient);
-  XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
-  if (IsSet(c->state, ClActive))
+  Client *c;
+  if ((c = ws_getclient(mon->selws, e->window)) && IsSet(c->state, ClActive))
     mon_focusclient(mon, c);
-  mon_arrange(mon);
 }
 
 void onUnmapNotify(Monitor *mon, const XEvent *xevent)
@@ -84,10 +80,8 @@ void onUnmapNotify(Monitor *mon, const XEvent *xevent)
   const XUnmapEvent *e = &xevent->xunmap;
   EVENT("UnmapNotify on window: %lu.\n", e->window);
   Client *c;
-  if ((c = ws_getclient(mon->selws, e->window))) {
-    ws_detachclient(mon->selws, c);
-    mon_destroyclient(mon, c);
-  }
+  if ((c = ws_getclient(mon->selws, e->window)))
+    mon_removeclient(mon, c);
 }
 
 void onConfigureRequest(Monitor *mon, const XEvent *xevent)
@@ -194,15 +188,11 @@ void onDestroyNotify(Monitor *mon, const XEvent *xevent)
   const XDestroyWindowEvent *e = &xevent->xdestroywindow;
   EVENT("DestroyNotify on window: %lu.\n", e->window);
   Client *c;
-  for (size_t i = 0; i < Length(workspaces); ++i) {
-    Workspace *from = mon_workspaceat(mon, i);
-    if ((c = ws_getclient(from, e->window))) {
-      ACTION("Destroying window: %lu.\n", e->window);
-      ws_detachclient(from, c);
-      mon_destroyclient(mon, c);
+  for (size_t i = 0; i < Length(workspaces); ++i)
+    if ((c = ws_getclient(mon_workspaceat(mon, i), e->window))) {
+      mon_removeclient(mon, c);
       break;
     }
-  }
 }
 
 int xerror_handler(Display *dpy, XErrorEvent *e)

@@ -60,6 +60,7 @@ void ws_detachclient(Workspace *ws, Client *c)
     c->prev->next = c->next;
   else
     ws->cl_head = c->next;
+  c->next = c->prev = NULL;
 }
 
 // O(1)

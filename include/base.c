@@ -36,7 +36,9 @@ Context *create_context()
       XInternAtom(ctx.dpy, "_NET_WM_STRUT_PARTIAL", False);
   ctx.netatoms[NetActiveWindow] =
       XInternAtom(ctx.dpy, "_NET_ACTIVE_WINDOW", False);
+  ctx.netatoms[NetClientList] = XInternAtom(ctx.dpy, "_NET_CLIENT_LIST", False);
 
+  XDeleteProperty(ctx.dpy, ctx.root, ctx.netatoms[NetClientList]);
   XSetWindowAttributes attrs = {.cursor     = ctx.cursors[CurNormal],
                                 .event_mask = RootWindowEventMasks};
   XChangeWindowAttributes(ctx.dpy, ctx.root, CWCursor | CWEventMask, &attrs);

@@ -16,21 +16,36 @@ void mon_init(Monitor *mon)
   mon->grabbed = (PointerGrab){NULL, 0, 0, 0, 0, 0, 0, 0, 0};
 }
 
-// @FIXME: need to remove this (doesn't really have useful use case).
-void mon_setactive(Monitor *mon, Client *c)
+void mon_addclient(Monitor *mon, Client *c)
 {
-  if (!c)
-    return;
-  Set(c->state, ClActive);
-  XSetWindowBorder(mon->ctx->dpy, c->window, mon->selws->border_active);
-  for (Client *p = c->prev; p; p = p->prev) {
-    UnSet(p->state, ClActive);
-    XSetWindowBorder(mon->ctx->dpy, p->window, mon->selws->border_inactive);
-  }
-  for (Client *n = c->next; n; n = n->next) {
-    UnSet(n->state, ClActive);
-    XSetWindowBorder(mon->ctx->dpy, n->window, mon->selws->border_inactive);
-  }
+  ws_attachclient(mon->selws, c);
+  // just set the client active, without focusing it, as the client isn't mapped
+  // yet, and we never know, it might get moved to another workspace via some
+  // startup hook. Focusing the client on 'MapNotify' event is much more safe.
+  mon_setactive(mon, c);
+  XChangeProperty(mon->ctx->dpy, mon->ctx->root,
+                  mon->ctx->netatoms[NetClientList], XA_WINDOW, 32,
+                  PropModeAppend, (uint8_t *)&c->window, 1);
+  XSelectInput(mon->ctx->dpy, c->window, PropertyChangeMask);
+}
+
+void mon_removeclient(Monitor *mon, Client *c)
+{
+  // first focus client's neighbour and **then** detach the client, as no
+  // neighbours will be present after client gets detached.
+  mon_focusclient(mon, cl_neighbour(c));
+  ws_detachclient(mon->selws, c);
+  mon_arrange(mon);
+  free(c);
+  // update client list.
+  size_t n = 0;
+  Window wids[64];
+  for (size_t i = 0; i < Length(workspaces); ++i)
+    for (Client *c = mon->wss[i].cl_head; c; c = c->next)
+      wids[n++] = c->window;
+  XChangeProperty(mon->ctx->dpy, mon->ctx->root,
+                  mon->ctx->netatoms[NetClientList], XA_WINDOW, 32,
+                  PropModeReplace, (uint8_t *)wids, n);
 }
 
 void mon_focusclient(Monitor *mon, Client *c)
@@ -46,8 +61,24 @@ void mon_focusclient(Monitor *mon, Client *c)
   XSetInputFocus(mon->ctx->dpy, c->window, RevertToParent, CurrentTime);
   XChangeProperty(mon->ctx->dpy, mon->ctx->root,
                   mon->ctx->netatoms[NetActiveWindow], XA_WINDOW, 32,
-                  PropModeReplace, (uint8_t *)&c->window, sizeof(Window));
+                  PropModeReplace, (uint8_t *)&c->window, 1);
   mon_statuslog(mon);
+}
+
+void mon_setactive(Monitor *mon, Client *c)
+{
+  if (!c)
+    return;
+  Set(c->state, ClActive);
+  XSetWindowBorder(mon->ctx->dpy, c->window, mon->selws->border_active);
+  for (Client *p = c->prev; p; p = p->prev) {
+    UnSet(p->state, ClActive);
+    XSetWindowBorder(mon->ctx->dpy, p->window, mon->selws->border_inactive);
+  }
+  for (Client *n = c->next; n; n = n->next) {
+    UnSet(n->state, ClActive);
+    XSetWindowBorder(mon->ctx->dpy, n->window, mon->selws->border_inactive);
+  }
 }
 
 void mon_restack(Monitor *mon)
@@ -67,6 +98,14 @@ void mon_restack(Monitor *mon)
         : IsSet(c->state, ClFullscreen)           ? fl++
                                                   : fs++] = c->window;
   XRestackWindows(mon->ctx->dpy, wid, fs);
+}
+
+void mon_arrange(Monitor *mon)
+{
+  const Layout *layout = ws_getlayout(mon->selws);
+  if (layout->arrange)
+    layout->arrange(mon);
+  mon_statuslog(mon);
 }
 
 void mon_statuslog(Monitor *mon)
@@ -145,12 +184,4 @@ void mon_statuslog(Monitor *mon)
 
   fprintf(mon->ctx->pipefile, "\n");
   fflush(mon->ctx->pipefile);
-}
-
-void mon_arrange(Monitor *mon)
-{
-  const Layout *layout = ws_getlayout(mon->selws);
-  if (layout->arrange)
-    layout->arrange(mon);
-  mon_statuslog(mon);
 }

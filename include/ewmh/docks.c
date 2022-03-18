@@ -97,7 +97,7 @@ void manage_dock(Monitor *mon, Window window)
   XFree(dock_window);
 
   // getting strut values for the dock type window.
-  int nstrut     = 12;
+  int nstrut     = StrutEnd;
   int64_t *strut = NULL;
   get_window_property(window, mon->ctx->netatoms[NetWMStrutPartial],
                       sizeof(int64_t) * nstrut, (uint8_t **)&strut);

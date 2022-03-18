@@ -1,7 +1,6 @@
 #ifndef __WORKSPACE_H__
 #define __WORKSPACE_H__
 
-#include "base.h"
 #include "client.h"
 
 typedef struct {
