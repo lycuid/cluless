@@ -20,6 +20,10 @@ typedef struct {
   PointerGrab grabbed;
 } Monitor;
 
+enum { ClientAdd, ClientRemove, NullHook };
+typedef void (*Hook)(Monitor *, Client *);
+typedef void (*EventHandler)(Monitor *, const XEvent *);
+
 #define mon_drawregion(mon, ws)                                                \
   (Geometry)                                                                   \
   {                                                                            \

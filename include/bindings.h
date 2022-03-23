@@ -14,9 +14,15 @@ typedef void (*CustomHandler)(Monitor *, const Arg *);
 
 typedef struct {
   uint64_t mask, sym;
-  CustomHandler handler;
+  CustomHandler func;
   Arg arg;
 } Binding;
+
+typedef struct {
+  char *class_name;
+  CustomHandler func;
+  Arg arg;
+} WindowRule;
 
 // key bindings.
 void quit(Monitor *, const Arg *);

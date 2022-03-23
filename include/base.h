@@ -36,7 +36,7 @@ typedef enum {
   FmtLayout,        // Workspace layout (String -> String).
   FmtSeperator,     // Seperator (String).
   FmtWindowTitle,   // focused window title (String -> String).
-  TotalFmtOptions
+  FmtOptionsCount
 } Logging;
 
 typedef struct {

@@ -2,9 +2,11 @@
 #include "include/base.h"
 #include "include/client.h"
 #include "include/ewmh/docks.h"
+#include "include/ewmh/misc.h"
 #include "include/monitor.h"
 #include "include/workspace.h"
 #include <X11/Xlib.h>
+#include <stdlib.h>
 #include <string.h>
 
 void onMapRequest(Monitor *, const XEvent *);
@@ -18,8 +20,10 @@ void onMotionNotify(Monitor *, const XEvent *);
 void onButtonRelease(Monitor *, const XEvent *);
 void onDestroyNotify(Monitor *, const XEvent *);
 
-typedef void (*EventHandler)(Monitor *, const XEvent *);
-static EventHandler event_handlers[LASTEvent] = {
+static const Hook default_hooks[NullHook] = {
+    [ClientAdd] = mon_addclient, [ClientRemove] = mon_removeclient};
+
+static const EventHandler default_event_handlers[LASTEvent] = {
     [MapRequest]       = onMapRequest,
     [MapNotify]        = onMapNotify,
     [UnmapNotify]      = onUnmapNotify,
@@ -31,6 +35,16 @@ static EventHandler event_handlers[LASTEvent] = {
     [ButtonRelease]    = onButtonRelease,
     [DestroyNotify]    = onDestroyNotify};
 
+#define ManageHooks(hook_type, mon, c)                                         \
+  {                                                                            \
+    if (default_hooks[hook_type])                                              \
+      default_hooks[hook_type](mon, c);                                        \
+    if (ewmh_hooks[hook_type])                                                 \
+      ewmh_hooks[hook_type](mon, c);                                           \
+    if (hook_type == ClientRemove && c)                                        \
+      free(c);                                                                 \
+  }
+
 void onMapRequest(Monitor *mon, const XEvent *xevent)
 {
   const XMapRequestEvent *e = &xevent->xmaprequest;
@@ -38,21 +52,22 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   Client *c;
   if (!(c = ws_getclient(mon->selws, e->window))) {
     c = cl_create(e->window);
-    mon_addclient(mon, c);
+    ManageHooks(ClientAdd, mon, c);
 
+    // apply window rules.
     XClassHint *class = XAllocClassHint();
-    for (size_t i = 0; i < Length(hooks); ++i) {
-      const Hook *h = &hooks[i];
+    for (size_t i = 0; i < Length(window_rules); ++i) {
+      const WindowRule *rule = &window_rules[i];
       if (XGetClassHint(mon->ctx->dpy, e->window, class))
-        if (strstr(class->res_class, h->class_name) ||
-            strstr(class->res_name, h->class_name)) {
-          h->func(mon, &h->arg);
+        if (strstr(class->res_class, rule->class_name) ||
+            strstr(class->res_name, rule->class_name)) {
+          rule->func(mon, &rule->arg);
           break;
         }
     }
     XFree(class);
   }
-  // client might be moved to another workspace by a Hook, so we only map the
+  // client might be moved to another workspace by a Rule, so we only map the
   // window if the client is found in selws.
   if (!ws_getclient(mon->selws, c->window))
     return;
@@ -68,8 +83,6 @@ void onMapNotify(Monitor *mon, const XEvent *xevent)
 {
   const XMapEvent *e = &xevent->xmap;
   EVENT("MapNotify on window: %lu.\n", e->window);
-  if (e->override_redirect)
-    return;
   Client *c;
   if ((c = ws_getclient(mon->selws, e->window)) && IsSet(c->state, ClActive))
     mon_focusclient(mon, c);
@@ -81,22 +94,20 @@ void onUnmapNotify(Monitor *mon, const XEvent *xevent)
   EVENT("UnmapNotify on window: %lu.\n", e->window);
   Client *c;
   if ((c = ws_getclient(mon->selws, e->window)))
-    mon_removeclient(mon, c);
+    ManageHooks(ClientRemove, mon, c);
 }
 
 void onConfigureRequest(Monitor *mon, const XEvent *xevent)
 {
   const XConfigureRequestEvent *e = &xevent->xconfigurerequest;
   EVENT("ConfigureRequest on window: %lu.\n", e->window);
-  XWindowChanges changes = {
-      .x            = e->x,
-      .y            = e->y,
-      .width        = e->width,
-      .height       = e->height,
-      .border_width = e->border_width,
-      .sibling      = e->above,
-      .stack_mode   = e->detail,
-  };
+  XWindowChanges changes = {.x            = e->x,
+                            .y            = e->y,
+                            .width        = e->width,
+                            .height       = e->height,
+                            .border_width = e->border_width,
+                            .sibling      = e->above,
+                            .stack_mode   = e->detail};
   XConfigureWindow(mon->ctx->dpy, e->window, e->value_mask, &changes);
   XSync(mon->ctx->dpy, False);
   mon_arrange(mon);
@@ -118,7 +129,7 @@ void onKeyPress(Monitor *mon, const XEvent *xevent)
   for (size_t i = 0; i < Length(keys); ++i)
     if (e->keycode == XKeysymToKeycode(mon->ctx->dpy, keys[i].sym) &&
         e->state == keys[i].mask)
-      keys[i].handler(mon, &keys[i].arg);
+      keys[i].func(mon, &keys[i].arg);
 }
 
 void onButtonPress(Monitor *mon, const XEvent *xevent)
@@ -151,7 +162,7 @@ void onButtonPress(Monitor *mon, const XEvent *xevent)
   }
   for (size_t i = 0; i < Length(buttons); ++i)
     if (e->button == buttons[i].sym && e->state == buttons[i].mask)
-      buttons[i].handler(mon, &buttons[i].arg);
+      buttons[i].func(mon, &buttons[i].arg);
 }
 
 void onMotionNotify(Monitor *mon, const XEvent *xevent)
@@ -187,12 +198,12 @@ void onDestroyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XDestroyWindowEvent *e = &xevent->xdestroywindow;
   EVENT("DestroyNotify on window: %lu.\n", e->window);
-  Client *c;
-  for (size_t i = 0; i < Length(workspaces); ++i)
-    if ((c = ws_getclient(mon_workspaceat(mon, i), e->window))) {
-      mon_removeclient(mon, c);
+  Client *c = NULL;
+  for (size_t i = 0; i < Length(workspaces); ++i) {
+    if ((c = ws_getclient(mon_workspaceat(mon, i), e->window)))
       break;
-    }
+  }
+  ManageHooks(ClientRemove, mon, c);
 }
 
 int xerror_handler(Display *dpy, XErrorEvent *e)
@@ -211,17 +222,18 @@ int main()
 {
   Monitor mon;
   mon_init(&mon);
-  XSetErrorHandler(xerror_handler);
+  /* XSetErrorHandler(xerror_handler); */
 
   XEvent e;
   while (mon.ctx->running && !XNextEvent(mon.ctx->dpy, &e)) {
     if (EventRepr[e.type] && e.type != MotionNotify)
       EVENT("%s on window: %lu.\n", EventRepr[e.type], e.xany.window);
-    ws_dump(mon.selws);
-    if (event_handlers[e.type])
-      event_handlers[e.type](&mon, &e);
+    if (default_event_handlers[e.type])
+      default_event_handlers[e.type](&mon, &e);
     if (dock_event_handlers[e.type])
       dock_event_handlers[e.type](&mon, &e);
+    if (ewmh_event_handlers[e.type])
+      ewmh_event_handlers[e.type](&mon, &e);
   }
 
   XCloseDisplay(mon.ctx->dpy);

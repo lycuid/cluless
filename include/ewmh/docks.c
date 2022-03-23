@@ -1,9 +1,5 @@
 #include "docks.h"
-#include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <config.h>
-#include <include/workspace.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -116,7 +112,7 @@ void manage_dock(Monitor *mon, Window window)
 void dock_mapnotify(Monitor *mon, const XEvent *xevent)
 {
   const XMapEvent *e = &xevent->xmap;
-  if (ws_getclient(mon->selws, e->window))
+  if (!e->override_redirect || ws_getclient(mon->selws, e->window))
     return;
   manage_dock(mon, e->window);
 }

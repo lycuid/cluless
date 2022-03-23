@@ -75,8 +75,8 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
   Client *c = ws_find(from, ClActive);
   if (!from || !to || from == to || !c)
     return;
-  // if this function is called by a Hook, then the active client is not going
-  // to be the focused client.
+  // if this function is called by a Rule, then the active client might not be
+  // focused.
   Client *neighbour = cl_neighbour(c),
          *focused   = ws_getclient(mon->selws, input_focused_window());
   mon_focusclient(mon, focused && focused != c ? focused

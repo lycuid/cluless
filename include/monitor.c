@@ -10,7 +10,7 @@ void mon_init(Monitor *mon)
   mon->ctx = create_context();
   mon->wss = malloc(Length(workspaces) * sizeof(Workspace));
   for (size_t i = 0; i < Length(workspaces); ++i)
-    ws_init(&mon->wss[i], workspaces[i]);
+    ws_init(mon_workspaceat(mon, i), workspaces[i]);
   mon->selws   = &mon->wss[0];
   mon->screen  = get_screen_rect();
   mon->grabbed = (PointerGrab){NULL, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -18,50 +18,39 @@ void mon_init(Monitor *mon)
 
 void mon_addclient(Monitor *mon, Client *c)
 {
+  if (!c)
+    return;
   ws_attachclient(mon->selws, c);
   // just set the client active, without focusing it, as the client isn't mapped
   // yet, and we never know, it might get moved to another workspace via some
   // startup hook. Focusing the client on 'MapNotify' event is much more safe.
   mon_setactive(mon, c);
-  XChangeProperty(mon->ctx->dpy, mon->ctx->root,
-                  mon->ctx->netatoms[NetClientList], XA_WINDOW, 32,
-                  PropModeAppend, (uint8_t *)&c->window, 1);
   XSelectInput(mon->ctx->dpy, c->window, PropertyChangeMask);
 }
 
+// This assumes that the client is present in 'selws'.
+// make sure the client is present in 'selws' before calling this function, or
+// might have unknown behaviour.
 void mon_removeclient(Monitor *mon, Client *c)
 {
-  // first focus client's neighbour and **then** detach the client, as no
-  // neighbours will be present after client gets detached.
-  mon_focusclient(mon, cl_neighbour(c));
+  if (!c)
+    return;
+  Client *neighbour = cl_neighbour(c);
+  // detaching the client before doing anything else, as the corresponding
+  // window has already been destroyed (don't want any excitement).
   ws_detachclient(mon->selws, c);
+  mon_focusclient(mon, neighbour);
   mon_arrange(mon);
-  free(c);
-  // update client list.
-  size_t n = 0;
-  Window wids[64];
-  for (size_t i = 0; i < Length(workspaces); ++i)
-    for (Client *c = mon->wss[i].cl_head; c; c = c->next)
-      wids[n++] = c->window;
-  XChangeProperty(mon->ctx->dpy, mon->ctx->root,
-                  mon->ctx->netatoms[NetClientList], XA_WINDOW, 32,
-                  PropModeReplace, (uint8_t *)wids, n);
 }
 
 void mon_focusclient(Monitor *mon, Client *c)
 {
-  if (!c) {
-    XDeleteProperty(mon->ctx->dpy, mon->ctx->root,
-                    mon->ctx->netatoms[NetActiveWindow]);
+  if (!c)
     return;
-  }
   mon_setactive(mon, c);
   if (IsSet(c->state, ClFloating))
     XRaiseWindow(mon->ctx->dpy, c->window);
   XSetInputFocus(mon->ctx->dpy, c->window, RevertToParent, CurrentTime);
-  XChangeProperty(mon->ctx->dpy, mon->ctx->root,
-                  mon->ctx->netatoms[NetActiveWindow], XA_WINDOW, 32,
-                  PropModeReplace, (uint8_t *)&c->window, 1);
   mon_statuslog(mon);
 }
 
