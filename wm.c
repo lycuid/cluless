@@ -4,6 +4,7 @@
 #include "include/ewmh/docks.h"
 #include "include/ewmh/misc.h"
 #include "include/monitor.h"
+#include "include/scratchpad.h"
 #include "include/workspace.h"
 #include <X11/Xlib.h>
 #include <stdlib.h>
@@ -39,10 +40,20 @@ static const EventHandler default_event_handlers[LASTEvent] = {
   {                                                                            \
     if (default_hooks[hook_type])                                              \
       default_hooks[hook_type](mon, c);                                        \
+    if (sch_hooks[hook_type])                                                  \
+      sch_hooks[hook_type](mon, c);                                            \
     if (ewmh_hooks[hook_type])                                                 \
       ewmh_hooks[hook_type](mon, c);                                           \
     if (hook_type == ClientRemove && c)                                        \
       free(c);                                                                 \
+  }
+
+#define TryApplyWindowRule(mon, rule, val)                                     \
+  {                                                                            \
+    if (strcmp(val, rule->value) == 0) {                                       \
+      rule->func(mon, &rule->arg);                                             \
+      break;                                                                   \
+    }                                                                          \
   }
 
 void onMapRequest(Monitor *mon, const XEvent *xevent)
@@ -56,25 +67,30 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
 
     // apply window rules.
     XClassHint *class = XAllocClassHint();
+    XTextProperty wm_name;
     for (size_t i = 0; i < Length(window_rules); ++i) {
       const WindowRule *rule = &window_rules[i];
+      if (rule->res_type == ResTitle) {
+        if (get_window_title(e->window, &wm_name) && wm_name.nitems)
+          TryApplyWindowRule(mon, rule, (char *)wm_name.value);
+        continue;
+      }
       if (XGetClassHint(mon->ctx->dpy, e->window, class))
-        if (strstr(class->res_class, rule->class_name) ||
-            strstr(class->res_name, rule->class_name)) {
-          rule->func(mon, &rule->arg);
-          break;
-        }
+        TryApplyWindowRule(mon, rule,
+                           rule->res_type == ResClass ? class->res_class
+                                                      : class->res_name);
     }
     XFree(class);
   }
-  // client might be moved to another workspace by a Rule, so we only map the
-  // window if the client is found in selws.
+  // client might be moved to another workspace by a WindowRule, so we only map
+  // the window if the client is found in selws.
   if (!ws_getclient(mon->selws, c->window))
     return;
   Window w;
   if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
     Set(c->state, ClTransient);
   XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
+  mon_restack(mon);
   mon_arrange(mon);
   XMapWindow(mon->ctx->dpy, c->window);
 }
@@ -200,10 +216,11 @@ void onDestroyNotify(Monitor *mon, const XEvent *xevent)
   EVENT("DestroyNotify on window: %lu.\n", e->window);
   Client *c = NULL;
   for (size_t i = 0; i < Length(workspaces); ++i) {
-    if ((c = ws_getclient(mon_workspaceat(mon, i), e->window)))
-      break;
+    if ((c = ws_getclient(mon_workspaceat(mon, i), e->window))) {
+      ManageHooks(ClientRemove, mon, c);
+      return;
+    }
   }
-  ManageHooks(ClientRemove, mon, c);
 }
 
 int xerror_handler(Display *dpy, XErrorEvent *e)

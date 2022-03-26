@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "workspace.h"
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -63,7 +64,7 @@ enum {
 };
 
 typedef struct {
-  bool running;
+  bool running : 1;
   Display *dpy;
   Window root;
   Cursor cursors[CurNull];
@@ -77,5 +78,6 @@ Window input_focused_window(void);
 Geometry get_screen_rect(void);
 bool send_event(Window, Atom);
 int get_window_property(Window, Atom, int, uint8_t **);
+int get_window_title(Window, XTextProperty *);
 
 #endif

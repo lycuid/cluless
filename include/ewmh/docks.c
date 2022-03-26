@@ -135,6 +135,9 @@ void dock_destroynotify(Monitor *mon, const XEvent *xevent)
   free(cache);
   update_screen_geometry(mon);
   // @TODO: remove this, added only to avoid crashes.
+  // currently no way to know if the file has been closed or not (of which the
+  // pointer that we are holding in 'pipefile'), so we just make it null as soon
+  // as any of the dock windows gets freed.
   mon->ctx->pipefile = NULL;
   mon_arrange(mon);
 }

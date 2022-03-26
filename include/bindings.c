@@ -4,12 +4,25 @@
 #include "workspace.h"
 #include <config.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 void quit(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   mon->ctx->running = false;
+}
+
+void spawn(Monitor *mon, const Arg *arg)
+{
+  (void)mon;
+  if (fork())
+    return;
+  if (mon->ctx->dpy)
+    close(ConnectionNumber(mon->ctx->dpy));
+  setsid();
+  execvp(arg->cmd[0], (char **)arg->cmd);
+  exit(EXIT_SUCCESS);
 }
 
 void swap_master(Monitor *mon, const Arg *arg)

@@ -18,14 +18,19 @@ typedef struct {
   Arg arg;
 } Binding;
 
+// WM_CLASS(STRING) = ResInstance, ResClass
+// WM_NAME(STRING)  = ResTitle
+typedef enum { ResInstance, ResClass, ResTitle } ResourceType;
 typedef struct {
-  char *class_name;
+  ResourceType res_type;
+  char *value;
   CustomHandler func;
   Arg arg;
 } WindowRule;
 
 // key bindings.
 void quit(Monitor *, const Arg *);
+void spawn(Monitor *, const Arg *);
 void swap_master(Monitor *, const Arg *);
 void kill_client(Monitor *, const Arg *);
 void shift_client(Monitor *, const Arg *);

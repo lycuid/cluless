@@ -2,5 +2,3 @@
 -Wextra
 -pedantic
 -I.
--DNAME="wm"
--DVERSION="0.1.0"

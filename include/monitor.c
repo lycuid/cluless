@@ -45,13 +45,14 @@ void mon_removeclient(Monitor *mon, Client *c)
 
 void mon_focusclient(Monitor *mon, Client *c)
 {
-  if (!c)
+  if (!c) {
+    mon_statuslog(mon);
     return;
+  }
   mon_setactive(mon, c);
   if (IsSet(c->state, ClFloating))
     XRaiseWindow(mon->ctx->dpy, c->window);
   XSetInputFocus(mon->ctx->dpy, c->window, RevertToParent, CurrentTime);
-  mon_statuslog(mon);
 }
 
 void mon_setactive(Monitor *mon, Client *c)
@@ -68,6 +69,7 @@ void mon_setactive(Monitor *mon, Client *c)
     UnSet(n->state, ClActive);
     XSetWindowBorder(mon->ctx->dpy, n->window, mon->selws->border_inactive);
   }
+  mon_statuslog(mon);
 }
 
 void mon_restack(Monitor *mon)
@@ -152,14 +154,7 @@ void mon_statuslog(Monitor *mon)
     Client *active = ws_find(mon->selws, ClActive);
     if (active) {
       XTextProperty wm_name;
-      int found = XGetTextProperty(mon->ctx->dpy, active->window, &wm_name,
-                                   mon->ctx->netatoms[NetWMName]) &&
-                  wm_name.nitems;
-      if (!found)
-        found = XGetTextProperty(mon->ctx->dpy, active->window, &wm_name,
-                                 mon->ctx->wmatoms[WMName]) &&
-                wm_name.nitems;
-      if (found) {
+      if (get_window_title(active->window, &wm_name) && wm_name.nitems) {
         size_t trim = 30;
         char title[trim + 1];
         memset(title, '.', sizeof(title));

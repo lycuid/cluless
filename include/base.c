@@ -94,3 +94,13 @@ int get_window_property(Window window, Atom key, int size, uint8_t **value)
   return XGetWindowProperty(ctx.dpy, window, key, 0l, size, False, type, &type,
                             (int *)&n, &n, &n, value);
 }
+
+int get_window_title(Window window, XTextProperty *wm_name)
+{
+  int found =
+      XGetTextProperty(ctx.dpy, window, wm_name, ctx.netatoms[NetWMName]) &&
+      wm_name->nitems;
+  return found
+             ? found
+             : XGetTextProperty(ctx.dpy, window, wm_name, ctx.wmatoms[WMName]);
+}
