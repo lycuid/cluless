@@ -4,6 +4,12 @@
 #include <X11/Xproto.h>
 #include <stdio.h>
 
+#define ERROR(fmt, ...)                                                        \
+  {                                                                            \
+    fprintf(stderr, "[ERROR] " #fmt, __VA_ARGS__);                             \
+    fflush(stderr);                                                            \
+  }
+
 #define LOG(...)                                                               \
   {                                                                            \
     fprintf(stdout, __VA_ARGS__);                                              \

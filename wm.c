@@ -62,11 +62,11 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   EVENT("MapRequest on window: %lu.\n", e->window);
   Client *c;
   if (!(c = ws_getclient(mon->selws, e->window))) {
-    c = cl_create(e->window);
+    c = cl_create(mon->ctx, e->window);
     ManageHooks(ClientAdd, mon, c);
 
     // apply window rules.
-    XClassHint *class = XAllocClassHint();
+    XClassHint class;
     XTextProperty wm_name;
     for (size_t i = 0; i < Length(window_rules); ++i) {
       const WindowRule *rule = &window_rules[i];
@@ -75,12 +75,11 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
           TryApplyWindowRule(mon, rule, (char *)wm_name.value);
         continue;
       }
-      if (XGetClassHint(mon->ctx->dpy, e->window, class))
+      if (XGetClassHint(mon->ctx->dpy, e->window, &class))
         TryApplyWindowRule(mon, rule,
-                           rule->res_type == ResClass ? class->res_class
-                                                      : class->res_name);
+                           rule->res_type == ResClass ? class.res_class
+                                                      : class.res_name);
     }
-    XFree(class);
   }
   // client might be moved to another workspace by a WindowRule, so we only map
   // the window if the client is found in selws.
@@ -193,7 +192,8 @@ void onMotionNotify(Monitor *mon, const XEvent *xevent)
   if (IsSet(c->state, ClMoving))
     XMoveWindow(mon->ctx->dpy, c->window, grabbed->cx + dx, grabbed->cy + dy);
   else if (IsSet(c->state, ClResizing))
-    XResizeWindow(mon->ctx->dpy, c->window, grabbed->cw + dx, grabbed->ch + dy);
+    XResizeWindow(mon->ctx->dpy, c->window, Max(grabbed->cw + dx, c->minw),
+                  Max(grabbed->ch + dy, c->minh));
   grabbed->at = e->time;
 }
 
@@ -227,11 +227,12 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
 {
   char error_code[1024];
   XGetErrorText(dpy, e->error_code, error_code, 1024);
-  LOG("[ERROR] resourceId: %lu.\n", e->resourceid);
-  LOG("[ERROR] serial: %lu.\n", e->serial);
-  LOG("[ERROR] error_code: %s.\n", error_code);
-  LOG("[ERROR] request_code: %s.\n", RequestCodes[e->request_code]);
-  LOG("[ERROR] minor_code: %u.\n", e->minor_code);
+  LOG("[ERROR] Error occurred during event no: %lu.\n", e->serial);
+  ERROR("resourceId: %lu.\n", e->resourceid);
+  ERROR("serial: %lu.\n", e->serial);
+  ERROR("error_code: %s.\n", error_code);
+  ERROR("request_code: %s.\n", RequestCodes[e->request_code]);
+  ERROR("minor_code: %u.\n", e->minor_code);
   return 1;
 }
 
@@ -239,7 +240,7 @@ int main()
 {
   Monitor mon;
   mon_init(&mon);
-  /* XSetErrorHandler(xerror_handler); */
+  XSetErrorHandler(xerror_handler);
 
   XEvent e;
   while (mon.ctx->running && !XNextEvent(mon.ctx->dpy, &e)) {

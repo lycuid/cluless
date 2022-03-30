@@ -1,6 +1,7 @@
 #ifndef __CLIENT_H__
 #define __CLIENT_H__
 
+#include "base.h"
 #include <X11/Xlib.h>
 #include <stdint.h>
 
@@ -19,10 +20,11 @@ typedef uint32_t State;
 typedef struct _Client {
   State state;
   Window window;
+  int minw, minh;
   struct _Client *prev, *next;
 } Client;
 
-Client *cl_create(Window);
+Client *cl_create(Context *, Window);
 Client *cl_nexttiled(Client *); // O(n)
 Client *cl_last(Client *);      // O(n)
 

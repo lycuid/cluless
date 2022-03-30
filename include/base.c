@@ -1,5 +1,4 @@
 #include "base.h"
-#include "workspace.h"
 #include <X11/cursorfont.h>
 #include <config.h>
 #include <stdbool.h>

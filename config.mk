@@ -1,5 +1,5 @@
 NAME=wm
-VERSION=0.2.0
+VERSION=0.2.1
 BUILDDIR=.cache
 BIN=$(BUILDDIR)/$(NAME)
 PREFIX=/usr/local

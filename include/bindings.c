@@ -15,7 +15,6 @@ void quit(Monitor *mon, const Arg *arg)
 
 void spawn(Monitor *mon, const Arg *arg)
 {
-  (void)mon;
   if (fork())
     return;
   if (mon->ctx->dpy)
@@ -68,9 +67,8 @@ void shift_focus(Monitor *mon, const Arg *arg)
   int offset = arg->i;
   Client *c;
   if (!(c = ws_find(mon->selws, ClActive))) {
-    mon_focusclient(mon, mon->selws->cl_head);
-    mon_arrange(mon);
-    return;
+    c = mon->selws->cl_head;
+    goto layout_and_exit;
   }
   if (offset > 0)
     while (offset--)
@@ -78,6 +76,7 @@ void shift_focus(Monitor *mon, const Arg *arg)
   else
     while (-offset++)
       c = c->prev ? c->prev : cl_last(c);
+layout_and_exit:
   mon_focusclient(mon, c);
   mon_arrange(mon);
 }

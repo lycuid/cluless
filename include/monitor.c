@@ -45,14 +45,14 @@ void mon_removeclient(Monitor *mon, Client *c)
 
 void mon_focusclient(Monitor *mon, Client *c)
 {
-  if (!c) {
-    mon_statuslog(mon);
-    return;
-  }
+  if (!c)
+    goto log_and_exit;
   mon_setactive(mon, c);
   if (IsSet(c->state, ClFloating))
     XRaiseWindow(mon->ctx->dpy, c->window);
   XSetInputFocus(mon->ctx->dpy, c->window, RevertToParent, CurrentTime);
+log_and_exit:
+  mon_statuslog(mon);
 }
 
 void mon_setactive(Monitor *mon, Client *c)
