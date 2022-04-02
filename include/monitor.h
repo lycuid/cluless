@@ -39,9 +39,9 @@ void mon_init(Monitor *);
 void mon_addclient(Monitor *, Client *);
 void mon_removeclient(Monitor *, Client *);
 void mon_focusclient(Monitor *, Client *);
-void mon_setactive(Monitor *, Client *);
 void mon_restack(Monitor *);
 void mon_arrange(Monitor *);
+Workspace *mon_get_client_ws(Monitor *, Client *);
 void mon_statuslog(Monitor *);
 
 #endif

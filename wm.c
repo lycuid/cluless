@@ -38,14 +38,14 @@ static const EventHandler default_event_handlers[LASTEvent] = {
 
 #define ManageHooks(hook_type, mon, c)                                         \
   {                                                                            \
-    if (default_hooks[hook_type])                                              \
+    if (hook_type != ClientRemove && default_hooks[hook_type])                 \
       default_hooks[hook_type](mon, c);                                        \
     if (sch_hooks[hook_type])                                                  \
       sch_hooks[hook_type](mon, c);                                            \
     if (ewmh_hooks[hook_type])                                                 \
       ewmh_hooks[hook_type](mon, c);                                           \
-    if (hook_type == ClientRemove && c)                                        \
-      free(c);                                                                 \
+    if (hook_type == ClientRemove && default_hooks[hook_type])                 \
+      default_hooks[hook_type](mon, c);                                        \
   }
 
 #define TryApplyWindowRule(mon, rule, val)                                     \
@@ -214,8 +214,8 @@ void onDestroyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XDestroyWindowEvent *e = &xevent->xdestroywindow;
   EVENT("DestroyNotify on window: %lu.\n", e->window);
-  Client *c = NULL;
   for (size_t i = 0; i < Length(workspaces); ++i) {
+    Client *c = NULL;
     if ((c = ws_getclient(mon_workspaceat(mon, i), e->window))) {
       ManageHooks(ClientRemove, mon, c);
       return;
@@ -227,7 +227,7 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
 {
   char error_code[1024];
   XGetErrorText(dpy, e->error_code, error_code, 1024);
-  LOG("[ERROR] Error occurred during event no: %lu.\n", e->serial);
+  DBGLN("[ERROR] Error occurred during event no: %lu.", e->serial);
   ERROR("resourceId: %lu.\n", e->resourceid);
   ERROR("serial: %lu.\n", e->serial);
   ERROR("error_code: %s.\n", error_code);

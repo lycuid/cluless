@@ -1,6 +1,5 @@
 #include "monitor.h"
 #include "workspace.h"
-#include <X11/Xatom.h>
 #include <config.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,41 +23,28 @@ void mon_addclient(Monitor *mon, Client *c)
   // just set the client active, without focusing it, as the client isn't mapped
   // yet, and we never know, it might get moved to another workspace via some
   // startup hook. Focusing the client on 'MapNotify' event is much more safe.
-  mon_setactive(mon, c);
+  Set(c->state, ClActive);
   XSelectInput(mon->ctx->dpy, c->window, PropertyChangeMask);
 }
 
-// This assumes that the client is present in 'selws'.
-// make sure the client is present in 'selws' before calling this function, or
-// might have unknown behaviour.
 void mon_removeclient(Monitor *mon, Client *c)
 {
-  if (!c)
+  Workspace *ws = mon_get_client_ws(mon, c);
+  if (!ws)
     return;
   Client *neighbour = cl_neighbour(c);
   // detaching the client before doing anything else, as the corresponding
   // window has already been destroyed (don't want any excitement).
-  ws_detachclient(mon->selws, c);
+  ws_detachclient(ws, c);
   mon_focusclient(mon, neighbour);
   mon_arrange(mon);
+  free(c);
 }
 
 void mon_focusclient(Monitor *mon, Client *c)
 {
   if (!c)
     goto log_and_exit;
-  mon_setactive(mon, c);
-  if (IsSet(c->state, ClFloating))
-    XRaiseWindow(mon->ctx->dpy, c->window);
-  XSetInputFocus(mon->ctx->dpy, c->window, RevertToParent, CurrentTime);
-log_and_exit:
-  mon_statuslog(mon);
-}
-
-void mon_setactive(Monitor *mon, Client *c)
-{
-  if (!c)
-    return;
   Set(c->state, ClActive);
   XSetWindowBorder(mon->ctx->dpy, c->window, mon->selws->border_active);
   for (Client *p = c->prev; p; p = p->prev) {
@@ -69,6 +55,10 @@ void mon_setactive(Monitor *mon, Client *c)
     UnSet(n->state, ClActive);
     XSetWindowBorder(mon->ctx->dpy, n->window, mon->selws->border_inactive);
   }
+  if (IsSet(c->state, ClFloating))
+    XRaiseWindow(mon->ctx->dpy, c->window);
+  XSetInputFocus(mon->ctx->dpy, c->window, RevertToParent, CurrentTime);
+log_and_exit:
   mon_statuslog(mon);
 }
 
@@ -97,6 +87,18 @@ void mon_arrange(Monitor *mon)
   if (layout->arrange)
     layout->arrange(mon);
   mon_statuslog(mon);
+}
+
+Workspace *mon_get_client_ws(Monitor *mon, Client *c)
+{
+  if (c) {
+    for (uint32_t i = 0; i < Length(workspaces); ++i) {
+      Workspace *ws = mon_workspaceat(mon, i);
+      if (ws_getclient(ws, c->window))
+        return ws;
+    }
+  }
+  return NULL;
 }
 
 void mon_statuslog(Monitor *mon)

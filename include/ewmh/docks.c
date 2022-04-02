@@ -43,11 +43,9 @@ void update_screen_geometry(Monitor *mon)
   mon->screen.y += top;
   mon->screen.w -= (left + right);
   mon->screen.h -= (top + bottom);
-  INFO("Computed Struts: %d %d %d %d\n", mon->screen.x, mon->screen.y,
-       mon->screen.w, mon->screen.h);
 }
 
-void dcache_insert(Window wid, int64_t *strut, int nstrut)
+void dcache_put(Window wid, int64_t *strut, int nstrut)
 {
   DockCache *cache = malloc(sizeof(DockCache));
   cache->windowid  = wid;
@@ -102,7 +100,7 @@ void manage_dock(Monitor *mon, Window window)
                         sizeof(int64_t) * (nstrut = 4), (uint8_t **)&strut);
   if (!strut)
     return;
-  dcache_insert(window, strut, nstrut);
+  dcache_put(window, strut, nstrut);
   XFree(strut);
 
   update_screen_geometry(mon);

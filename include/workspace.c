@@ -100,16 +100,3 @@ void ws_clmovedown(Workspace *ws, Client *c)
   else
     ws->cl_head = n1; // (Stack [n1]) <-> [c] <-> [n2]
 }
-
-void ws_dump(Workspace *ws)
-{
-  Client *c = ws->cl_head;
-  if (c) {
-    LOG("%s: ", ws->id);
-    LOG("%lu%s", c->window, IsSet(c->state, ClActive) ? "*" : "");
-    for (; c->next; c = c->next)
-      LOG(" -> [%lu] %lu%s", c->window, c->next->window,
-          IsSet(c->next->state, ClActive) ? "*" : "");
-    LOG(".\n");
-  }
-}

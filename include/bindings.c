@@ -109,17 +109,19 @@ void select_ws(Monitor *mon, const Arg *arg)
   if (!to || !from || to == from)
     return;
   mon->selws = to;
-  // 'selws' has already been changed, the client won't be found in 'selws', on
-  // unmap notify event, and hence wont be destroyed.
+  // we can unmap safely as 'selws' has already been changed (unmapped client
+  // wont be destroyed).
   Client *c = from->cl_head;
   for (; c; c = c->next)
     XUnmapWindow(mon->ctx->dpy, c->window);
   // map windows in proper order.
-  for (c = cl_last(to->cl_head); c; c = c->prev)
+  Client *to_focus = to->cl_head;
+  for (c = cl_last(to->cl_head); c; c = c->prev) {
+    if (IsSet(c->state, ClActive))
+      to_focus = c;
     XMapWindow(mon->ctx->dpy, c->window);
-  if (!(c = ws_find(to, ClActive)))
-    c = to->cl_head;
-  mon_focusclient(mon, c);
+  }
+  mon_focusclient(mon, to_focus);
   mon_arrange(mon);
 }
 

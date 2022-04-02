@@ -4,33 +4,19 @@
 #include <X11/Xproto.h>
 #include <stdio.h>
 
-#define ERROR(fmt, ...)                                                        \
+#define __log__(sink, ...)                                                     \
   {                                                                            \
-    fprintf(stderr, "[ERROR] " #fmt, __VA_ARGS__);                             \
-    fflush(stderr);                                                            \
+    fprintf(sink, __VA_ARGS__);                                                \
+    fflush(sink);                                                              \
   }
 
-#define LOG(...)                                                               \
-  {                                                                            \
-    fprintf(stdout, __VA_ARGS__);                                              \
-    fflush(stdout);                                                            \
-  }
+#define ERROR(fmt, ...) __log__(stderr, "[ERROR] " fmt, ##__VA_ARGS__)
 
-#define EVENT(...)                                                             \
-  {                                                                            \
-    LOG("[EVENT] ");                                                           \
-    LOG(__VA_ARGS__);                                                          \
-  }
-#define INFO(...)                                                              \
-  {                                                                            \
-    LOG("[INFO] ");                                                            \
-    LOG(__VA_ARGS__);                                                          \
-  }
-#define ACTION(...)                                                            \
-  {                                                                            \
-    LOG("[ACTION] ");                                                          \
-    LOG(__VA_ARGS__);                                                          \
-  }
+#define DBG(...)         __log__(stdout, __VA_ARGS__)
+#define DBGLN(fmt, ...)  DBG(fmt "\n", ##__VA_ARGS__)
+#define EVENT(fmt, ...)  DBG("[EVENT] " fmt, ##__VA_ARGS__);
+#define INFO(fmt, ...)   DBG("[INFO] " fmt, ##__VA_ARGS__);
+#define ACTION(fmt, ...) DBG("[ACTION] " fmt, ##__VA_ARGS__);
 
 static const char *const EventRepr[LASTEvent] = {
     [KeyPress]         = "KeyPress",

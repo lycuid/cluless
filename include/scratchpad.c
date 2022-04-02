@@ -48,8 +48,8 @@ void sch_toggle(Monitor *mon, const Arg *arg)
   }
   revert_focus_to = ws_find(mon->selws, ClActive);
   ws_attachclient(mon->selws, sch_client);
-  mon_setactive(mon, sch_client);
   XMapWindow(mon->ctx->dpy, sch_client->window);
+  mon_focusclient(mon, sch_client);
 }
 
 void sch_clientremove(Monitor *mon, Client *c)
