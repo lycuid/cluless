@@ -9,7 +9,11 @@ void ewmh_clientadd(Monitor *mon, Client *c)
 {
   if (!c)
     return;
-  XSelectInput(mon->ctx->dpy, c->window, FocusChangeMask);
+  XWindowAttributes attrs;
+  XGetWindowAttributes(mon->ctx->dpy, c->window, &attrs);
+  XSelectInput(mon->ctx->dpy, c->window,
+               attrs.your_event_mask | FocusChangeMask);
+
   XChangeProperty(mon->ctx->dpy, mon->ctx->root,
                   mon->ctx->netatoms[NetClientList], XA_WINDOW, 32,
                   PropModeAppend, (uint8_t *)&c->window, 1);
