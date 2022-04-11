@@ -32,4 +32,4 @@ uninstall:
 
 .PHONY: loc
 loc:
-	@echo "lines of code: `git ls-files | egrep '\.[ch]$$' | xargs cat | wc -l`"
+	@git ls-files | egrep '\.[ch]$$' | xargs wc -l

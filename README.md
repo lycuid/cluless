@@ -1,11 +1,24 @@
-# window manager (unnamed).
+# Dynamic tiling window manager (unnamed).
 
-#### Single window tiled.
-![single](screenshots/single.png)
-#### Multiple windows tiled.
-![multi](screenshots/multi.png)
+#### Requirements:
+  - libx11
+  - gnu make (optional)
+
+#### Build and Install
+```sh
+make && sudo make install
+```
+
+#### Layout: Tall (master/stack).
+| Single window tiled.              |  Multiple windows tiled.        |
+|-----------------------------------|---------------------------------|
+| ![single](screenshots/single.png) | ![multi](screenshots/multi.png) |
+
 #### Fancy floating.
 ![fancy](screenshots/fancy.png)
+- Statusbar: xdbar &lt;[https://github.com/lycuid/xdbar](https://github.com/lycuid/xdbar)&gt;
+- Terminal: Simple Terminal &lt;[https://st.suckless.org/](https://st.suckless.org/)&gt;
+- Browser: Brave &lt;[https://brave.com/](https://brave.com/)&gt;
 
 Currently supports:
 -------------------
@@ -19,22 +32,29 @@ Currently supports:
 
 todo:
 -----
+  - [ ] **find a good name for the project**.
   - [ ] proper `focus` change for multiple scenarios (on window destroyed, ws
         switched, move client to ws etc).
   - [X] Properly kill client on keypress.
   - [X] proper logging for statusbar.
-  - [ ] rules for managing windows (docks, dialogs, statusbar etc).
-  - [ ] Client init hooks (switch ws, floating etc).
+  - [X] rules for managing windows (docks, dialogs, statusbar etc).
+  - [X] Client init hooks (switch ws, floating etc).
   - [X] process starts but cannot write to pipe.
-  - [ ] simple click to focus.
-  - [ ] windows change size after mapping.
+  - [ ] simple left click to focus.
+  - [X] windows change size after mapping.
 
 less important todos:
 ---------------
-  - [ ] `ws_getclient` in constant time.
+  - [ ] a parent (frame) window for the clients, to possibly support titlebar, close button, window move etc.
+  - [ ] workspace related apis (e.g. `ws_getclient`) in constant time.
+  - [ ] Other layouts (Fullscreen etc).
 
 bugs:
 -----
   - [ ] The statusbar's file stream pointer need to be nullified if the statusbar
         is terminated.
   - [X] negative resize causes crash.
+
+License:
+--------
+[GPLv3](https://gnu.org/licenses/gpl.html)
