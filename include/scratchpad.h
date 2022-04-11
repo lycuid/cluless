@@ -4,8 +4,13 @@
 #include "bindings.h"
 #include "monitor.h"
 
-void sch_create(Monitor *, const Arg *);
+// used to create a togglable scratchpad out of a 'Client'.
+// uses a unique char id (provided in 'Arg') as a reference for toggling.
+void sch_fromclient(Monitor *, const Arg *);
+// toggles scratchpad (with unique char id) on/off the screen, independent of
+// the workspace.
 void sch_toggle(Monitor *, const Arg *);
+// to avoid memory segfaults and stuff (cleanup function).
 void sch_clientremove(Monitor *, Client *);
 
 static const Hook sch_hooks[LASTEvent] = {[ClientRemove] = sch_clientremove};
