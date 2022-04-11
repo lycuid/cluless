@@ -21,9 +21,6 @@ void onMotionNotify(Monitor *, const XEvent *);
 void onButtonRelease(Monitor *, const XEvent *);
 void onDestroyNotify(Monitor *, const XEvent *);
 
-static const Hook default_hooks[NullHook] = {
-    [ClientAdd] = mon_addclient, [ClientRemove] = mon_removeclient};
-
 static const EventHandler default_event_handlers[LASTEvent] = {
     [MapRequest]       = onMapRequest,
     [MapNotify]        = onMapNotify,
@@ -36,17 +33,20 @@ static const EventHandler default_event_handlers[LASTEvent] = {
     [ButtonRelease]    = onButtonRelease,
     [DestroyNotify]    = onDestroyNotify};
 
-#define ManageHooks(hook_type, mon, c)                                         \
-  {                                                                            \
-    if (hook_type != ClientRemove && default_hooks[hook_type])                 \
-      default_hooks[hook_type](mon, c);                                        \
-    if (sch_hooks[hook_type])                                                  \
-      sch_hooks[hook_type](mon, c);                                            \
-    if (ewmh_hooks[hook_type])                                                 \
-      ewmh_hooks[hook_type](mon, c);                                           \
-    if (hook_type == ClientRemove && default_hooks[hook_type])                 \
-      default_hooks[hook_type](mon, c);                                        \
-  }
+static const Hook default_hooks[NullHook] = {
+    [ClientAdd] = mon_addclient, [ClientRemove] = mon_removeclient};
+
+static inline void ManageHooks(hook_t type, Monitor *mon, Client *c)
+{
+  if (type != ClientRemove && default_hooks[type])
+    default_hooks[type](mon, c);
+  if (sch_hooks[type])
+    sch_hooks[type](mon, c);
+  if (ewmh_hooks[type])
+    ewmh_hooks[type](mon, c);
+  if (type == ClientRemove && default_hooks[type])
+    default_hooks[type](mon, c);
+}
 
 #define TryApplyWindowRule(mon, rule, val)                                     \
   {                                                                            \
@@ -88,7 +88,6 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   Window w;
   if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
     Set(c->state, ClTransient);
-  XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
   mon_restack(mon);
   mon_arrange(mon);
   XMapWindow(mon->ctx->dpy, c->window);
@@ -238,11 +237,11 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
 
 int main()
 {
+  XEvent e;
   Monitor mon;
   mon_init(&mon);
   XSetErrorHandler(xerror_handler);
 
-  XEvent e;
   while (mon.ctx->running && !XNextEvent(mon.ctx->dpy, &e)) {
     if (EventRepr[e.type] && e.type != MotionNotify)
       EVENT("%s on window: %lu.\n", EventRepr[e.type], e.xany.window);

@@ -36,7 +36,8 @@ void mon_removeclient(Monitor *mon, Client *c)
   // detaching the client before doing anything else, as the corresponding
   // window has already been destroyed (don't want any excitement).
   ws_detachclient(ws, c);
-  mon_focusclient(mon, neighbour);
+  if (IsSet(c->state, ClActive))
+    mon_focusclient(mon, neighbour);
   mon_arrange(mon);
   free(c);
 }
@@ -44,7 +45,7 @@ void mon_removeclient(Monitor *mon, Client *c)
 void mon_focusclient(Monitor *mon, Client *c)
 {
   if (!c)
-    goto log_and_exit;
+    goto LOG_AND_EXIT;
   Set(c->state, ClActive);
   XSetWindowBorder(mon->ctx->dpy, c->window, mon->selws->border_active);
   for (Client *p = c->prev; p; p = p->prev) {
@@ -58,7 +59,7 @@ void mon_focusclient(Monitor *mon, Client *c)
   if (IsSet(c->state, ClFloating))
     XRaiseWindow(mon->ctx->dpy, c->window);
   XSetInputFocus(mon->ctx->dpy, c->window, RevertToParent, CurrentTime);
-log_and_exit:
+LOG_AND_EXIT:
   mon_statuslog(mon);
 }
 
@@ -101,6 +102,7 @@ Workspace *mon_get_client_ws(Monitor *mon, Client *c)
   return NULL;
 }
 
+// @FIXME: This function is an absolute mess.
 void mon_statuslog(Monitor *mon)
 {
   // @FIXME: File might be closed, but the pointer will still exist.
@@ -119,7 +121,6 @@ void mon_statuslog(Monitor *mon)
       sprintf(string, fmt, tmp);                                               \
     }                                                                          \
   }
-
     Workspace *ws;
     char *string = malloc(size);
     memset(string, 0, size);
@@ -127,7 +128,7 @@ void mon_statuslog(Monitor *mon)
       if (i && LogFormat[FmtWsSeperator])
         fprintf(mon->ctx->pipefile, "%s", LogFormat[FmtWsSeperator]);
       ws = mon_workspaceat(mon, i);
-      sprintf(string, "%s", workspaces[i]);
+      sprintf(string, "%s", ws->id);
       if (ws == mon->selws) {
         FormatWSString(LogFormat[FmtWsCurrent], string);
       } else {

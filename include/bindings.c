@@ -68,7 +68,7 @@ void shift_focus(Monitor *mon, const Arg *arg)
   Client *c;
   if (!(c = ws_find(mon->selws, ClActive))) {
     c = mon->selws->cl_head;
-    goto layout_and_exit;
+    goto LAYOUT_AND_EXIT;
   }
   if (offset > 0)
     while (offset--)
@@ -76,7 +76,7 @@ void shift_focus(Monitor *mon, const Arg *arg)
   else
     while (-offset++)
       c = c->prev ? c->prev : cl_last(c);
-layout_and_exit:
+LAYOUT_AND_EXIT:
   mon_focusclient(mon, c);
   mon_arrange(mon);
 }
@@ -114,14 +114,11 @@ void select_ws(Monitor *mon, const Arg *arg)
   Client *c = from->cl_head;
   for (; c; c = c->next)
     XUnmapWindow(mon->ctx->dpy, c->window);
-  // map windows in proper order.
-  Client *to_focus = to->cl_head;
-  for (c = cl_last(to->cl_head); c; c = c->prev) {
-    if (IsSet(c->state, ClActive))
-      to_focus = c;
+  for (c = cl_last(to->cl_head); c; c = c->prev)
     XMapWindow(mon->ctx->dpy, c->window);
-  }
-  mon_focusclient(mon, to_focus);
+
+  if (!ws_find(to, ClActive))
+    mon_focusclient(mon, to->cl_head);
   mon_arrange(mon);
 }
 

@@ -62,6 +62,8 @@ enum {
   NetNull
 };
 
+// These are mainly the values that don't (shouldn't) change throughout the
+// application lifetime.
 typedef struct {
   bool running : 1;
   Display *dpy;
@@ -72,6 +74,7 @@ typedef struct {
   FILE *pipefile;
 } Context;
 
+Context *get_context(void); // FIXME: not sure about this function.
 Context *create_context(void);
 Window input_focused_window(void);
 Geometry get_screen_rect(void);

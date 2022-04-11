@@ -46,6 +46,9 @@ void ws_attachclient(Workspace *ws, Client *c)
   if (ws->cl_head)
     ws->cl_head->prev = c;
   ws->cl_head = c;
+
+  Context *ctx = get_context();
+  XSetWindowBorderWidth(ctx->dpy, c->window, ws->borderpx);
 }
 
 // O(1)

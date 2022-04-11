@@ -20,7 +20,7 @@ typedef struct {
   PointerGrab grabbed;
 } Monitor;
 
-enum { ClientAdd, ClientRemove, NullHook };
+typedef enum { ClientAdd, ClientRemove, NullHook } hook_t;
 typedef void (*Hook)(Monitor *, Client *);
 typedef void (*EventHandler)(Monitor *, const XEvent *);
 
@@ -41,6 +41,7 @@ void mon_removeclient(Monitor *, Client *);
 void mon_focusclient(Monitor *, Client *);
 void mon_restack(Monitor *);
 void mon_arrange(Monitor *);
+// returns workspace associated with given client.
 Workspace *mon_get_client_ws(Monitor *, Client *);
 void mon_statuslog(Monitor *);
 

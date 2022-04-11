@@ -7,6 +7,8 @@
 
 static Context ctx;
 
+Context *get_context() { return &ctx; }
+
 Context *create_context()
 {
   if ((ctx.dpy = XOpenDisplay(NULL)) == NULL)

@@ -1,4 +1,2 @@
 *.o
 .cache/
-error.txt
-log.txt
