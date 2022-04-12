@@ -4,6 +4,7 @@
 // Includes. {{{
 #include "include/base.h"
 #include "include/bindings.h"
+#include "include/ewmh/docks.h"
 #include "include/layouts/tall.h"
 #include "include/scratchpad.h"
 #include <X11/Xutil.h>
@@ -68,6 +69,7 @@ static const WindowRule window_rules[] = {
 static const Binding keys[] = {
     {Mod,               XK_Return,  spawn,              {.cmd = CMD(Term)}},
     {Mod,               XK_space,   cycle_layout,       {0}},
+    {Mod,               XK_d,       dock_toggle,        {0}},
     {Mod,               XK_g,       toggle_gap,         {0}},
     {Mod,               XK_b,       toggle_border,      {0}},
     {Mod | ShiftMask,   XK_space,   reset_layout,       {0}},

@@ -1,5 +1,6 @@
 #include "docks.h"
 #include <X11/Xlib.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,20 +20,23 @@ enum {
   StrutEnd
 };
 
-typedef struct _DockCache {
-  Window windowid;
-  int64_t strut[StrutEnd];
-  struct _DockCache *next;
-} DockCache;
+static struct Dock {
+  bool visible : 1;
+  struct DockCache {
+    Window windowid;
+    int64_t strut[StrutEnd];
+    struct DockCache *next;
+  } * cache;
+} dock = {true, NULL};
 
-static DockCache *dock_cache = NULL;
+typedef struct DockCache DockCache;
 
 void update_screen_geometry(Monitor *mon)
 {
   // @TODO: '_NET_WM_STRUT_PARTIAL' not implemented (currently unnecessary, for
   // my personal use case, also, I don't understand it completely).
   int64_t left = 0, right = 0, top = 0, bottom = 0;
-  for (DockCache *d = dock_cache; d; d = d->next) {
+  for (DockCache *d = dock.cache; dock.visible && d; d = d->next) {
     left   = Max(left, d->strut[Left]);
     right  = Max(right, d->strut[Right]);
     top    = Max(top, d->strut[Top]);
@@ -51,13 +55,13 @@ void dcache_put(Window wid, int64_t *strut, int nstrut)
   cache->windowid  = wid;
   memset(cache->strut, 0, sizeof(int64_t) * StrutEnd);
   memcpy(cache->strut, strut, sizeof(int64_t) * nstrut);
-  cache->next = dock_cache;
-  dock_cache  = cache;
+  cache->next = dock.cache;
+  dock.cache  = cache;
 }
 
 DockCache *dcache_get(Window wid)
 {
-  DockCache *d = dock_cache;
+  DockCache *d = dock.cache;
   for (; d && d->windowid != wid; d = d->next)
     ;
   return d;
@@ -65,13 +69,13 @@ DockCache *dcache_get(Window wid)
 
 DockCache *dcache_remove(Window wid)
 {
-  DockCache *d = dock_cache, *prev = NULL;
+  DockCache *d = dock.cache, *prev = NULL;
   for (; d; prev = d, d = d->next)
     if (d->windowid == wid) {
       if (prev)
         prev->next = d->next;
       else
-        dock_cache = d->next;
+        dock.cache = d->next;
       break;
     }
   return d;
@@ -137,5 +141,13 @@ void dock_destroynotify(Monitor *mon, const XEvent *xevent)
   // pointer that we are holding in 'pipefile'), so we just make it null as soon
   // as any of the dock windows gets freed.
   mon->ctx->pipefile = NULL;
+  mon_arrange(mon);
+}
+
+void dock_toggle(Monitor *mon, const Arg *arg)
+{
+  (void)arg;
+  dock.visible = !dock.visible;
+  update_screen_geometry(mon);
   mon_arrange(mon);
 }
