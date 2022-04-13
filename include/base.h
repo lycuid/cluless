@@ -50,8 +50,13 @@ typedef struct {
 } Layout;
 
 enum { CurNormal, CurResize, CurMove, CurNull };
-enum { WMProtocols, WMName, WMDeleteWindow, WMTransientFor, WMNull };
 enum {
+  // ICCC Atoms.
+  WMProtocols,
+  WMName,
+  WMDeleteWindow,
+  WMTransientFor,
+  // EWMH Atoms.
   NetWMName,
   NetWMWindowType,
   NetWMWindowTypeDock,
@@ -59,7 +64,7 @@ enum {
   NetWMStrutPartial,
   NetActiveWindow,
   NetClientList,
-  NetNull
+  AtomNull
 };
 
 // These are mainly the values that don't (shouldn't) change throughout the
@@ -69,12 +74,12 @@ typedef struct {
   Display *dpy;
   Window root;
   Cursor cursors[CurNull];
-  Atom wmatoms[WMNull];
-  Atom netatoms[NetNull];
+  Atom atoms[AtomNull];
   FILE *pipefile;
 } Context;
 
-Context *get_context(void); // FIXME: not sure about this function.
+// @FIXME: not sure about this function.
+Context *request_context(void);
 Context *create_context(void);
 Window input_focused_window(void);
 Geometry get_screen_rect(void);

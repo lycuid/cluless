@@ -62,7 +62,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   EVENT("MapRequest on window: %lu.\n", e->window);
   Client *c;
   if (!(c = ws_getclient(mon->selws, e->window))) {
-    c = cl_create(mon->ctx, e->window);
+    c = cl_create(e->window);
     ManageHooks(ClientAdd, mon, c);
 
     // apply window rules.
@@ -131,9 +131,8 @@ void onPropertyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XPropertyEvent *e = &xevent->xproperty;
   EVENT("PropertyNotify on window: %lu.\n", e->window);
-  if (e->state == PropertyNewValue &&
-      (e->atom == mon->ctx->netatoms[NetWMName] ||
-       e->atom == mon->ctx->wmatoms[WMName]))
+  if (e->state == PropertyNewValue && (e->atom == mon->ctx->atoms[NetWMName] ||
+                                       e->atom == mon->ctx->atoms[WMName]))
     mon_statuslog(mon);
 }
 
