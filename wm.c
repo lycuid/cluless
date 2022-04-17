@@ -89,7 +89,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
     Set(c->state, ClTransient);
   mon_restack(mon);
-  mon_arrange(mon);
+  mon_applylayout(mon);
   XMapWindow(mon->ctx->dpy, c->window);
 }
 
@@ -124,7 +124,7 @@ void onConfigureRequest(Monitor *mon, const XEvent *xevent)
                             .stack_mode   = e->detail};
   XConfigureWindow(mon->ctx->dpy, e->window, e->value_mask, &changes);
   XSync(mon->ctx->dpy, False);
-  mon_arrange(mon);
+  mon_applylayout(mon);
 }
 
 void onPropertyNotify(Monitor *mon, const XEvent *xevent)

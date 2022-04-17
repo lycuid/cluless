@@ -108,7 +108,7 @@ void manage_dock(Monitor *mon, Window window)
   XFree(strut);
 
   update_screen_geometry(mon);
-  mon_arrange(mon);
+  mon_applylayout(mon);
 }
 
 void dock_mapnotify(Monitor *mon, const XEvent *xevent)
@@ -141,7 +141,7 @@ void dock_destroynotify(Monitor *mon, const XEvent *xevent)
   // pointer that we are holding in 'pipefile'), so we just make it null as soon
   // as any of the dock windows gets freed.
   mon->ctx->pipefile = NULL;
-  mon_arrange(mon);
+  mon_applylayout(mon);
 }
 
 void dock_toggle(Monitor *mon, const Arg *arg)
@@ -149,5 +149,5 @@ void dock_toggle(Monitor *mon, const Arg *arg)
   (void)arg;
   dock.visible = !dock.visible;
   update_screen_geometry(mon);
-  mon_arrange(mon);
+  mon_applylayout(mon);
 }

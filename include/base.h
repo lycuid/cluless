@@ -46,7 +46,7 @@ typedef struct {
 
 typedef struct {
   char *symbol;
-  void (*arrange)();
+  void (*apply)();
 } Layout;
 
 enum { CurNormal, CurResize, CurMove, CurNull };

@@ -40,7 +40,7 @@ void mon_addclient(Monitor *, Client *);
 void mon_removeclient(Monitor *, Client *);
 void mon_focusclient(Monitor *, Client *);
 void mon_restack(Monitor *);
-void mon_arrange(Monitor *);
+void mon_applylayout(Monitor *);
 // returns workspace associated with given client.
 Workspace *mon_get_client_ws(Monitor *, Client *);
 void mon_statuslog(Monitor *);

@@ -12,7 +12,11 @@ void sch_fromclient(Monitor *mon, const Arg *arg)
 {
   Client *c = ws_find(mon->selws, ClActive);
   Set(c->state, ClFloating);
-  sch_at(arg->i) = c;
+  // @NOTE: user can create multiple scratchpad windows with similar id, but we
+  // need to make sure that we only track one of them (first one created), for
+  // avoiding dangling pointers.
+  if (!sch_at(arg->i))
+    sch_at(arg->i) = c;
 }
 
 void sch_toggle(Monitor *mon, const Arg *arg)

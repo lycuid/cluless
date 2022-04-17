@@ -38,7 +38,7 @@ void mon_removeclient(Monitor *mon, Client *c)
   ws_detachclient(ws, c);
   if (IsSet(c->state, ClActive))
     mon_focusclient(mon, neighbour);
-  mon_arrange(mon);
+  mon_applylayout(mon);
   free(c);
 }
 
@@ -82,11 +82,11 @@ void mon_restack(Monitor *mon)
   XRestackWindows(mon->ctx->dpy, wid, fs);
 }
 
-void mon_arrange(Monitor *mon)
+void mon_applylayout(Monitor *mon)
 {
   const Layout *layout = ws_getlayout(mon->selws);
-  if (layout->arrange)
-    layout->arrange(mon);
+  if (layout->apply)
+    layout->apply(mon);
   mon_statuslog(mon);
 }
 
