@@ -36,7 +36,9 @@ static const uint32_t screen_gappx    = 5;
 static const uint32_t borderpx        = 3;
 static const uint32_t border_active   = 0x089cac;
 static const uint32_t border_inactive = 0x252525;
-static const char *const pipe_cmd[]   = {"xdbar", NULL}; // statusbar.}}}
+
+// statusbar command e.g {"command", "arg1", "arg2", ..., NULL}.
+static const char *const statusbar[] = {"xdbar", NULL};
 
 static const char *const workspaces[] = {
     Clickable("super+1", " 1 "), Clickable("super+2", " 2 "),

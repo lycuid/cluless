@@ -51,8 +51,7 @@ less important todos:
 
 bugs:
 -----
-  - [ ] The statusbar's file stream pointer need to be nullified if the statusbar
-        is terminated.
+  - [X] The statusbar's file stream pointer need to be nullified if the statusbar is terminated.
   - [X] negative resize causes crash.
 
 License:

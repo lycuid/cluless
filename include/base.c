@@ -1,6 +1,7 @@
 #include "base.h"
 #include <X11/cursorfont.h>
 #include <config.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,14 +10,20 @@ static Context ctx;
 
 Context *request_context() { return &ctx; }
 
+static void stop_status_logging() { ctx.statuslogger = NULL; }
+static void start_status_logging()
+{
+  signal(SIGPIPE, stop_status_logging);
+  ctx.statuslogger = statusbar[0] ? popen(statusbar[0], "w") : NULL;
+}
+
 Context *create_context()
 {
   if ((ctx.dpy = XOpenDisplay(NULL)) == NULL)
     die("Cannot open display.\n");
   ctx.root    = DefaultRootWindow(ctx.dpy);
   ctx.running = true;
-  // @FIXME: need to know if the file is closed.
-  ctx.pipefile = pipe_cmd[0] ? popen(pipe_cmd[0], "w") : NULL;
+  start_status_logging();
 
   ctx.cursors[CurNormal] = XCreateFontCursor(ctx.dpy, XC_left_ptr);
   ctx.cursors[CurResize] = XCreateFontCursor(ctx.dpy, XC_sizing);

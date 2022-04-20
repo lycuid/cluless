@@ -105,10 +105,9 @@ Workspace *mon_get_client_ws(Monitor *mon, Client *c)
 // @FIXME: This function is an absolute mess.
 void mon_statuslog(Monitor *mon)
 {
-  // @FIXME: File might be closed, but the pointer will still exist.
-  // need to make sure the pointer is nullified somehow, if the file is closed.
-  if (!mon->ctx->pipefile)
+  if (!mon->ctx->statuslogger)
     return;
+#define StatusLog(...) fprintf(mon->ctx->statuslogger, __VA_ARGS__)
 
   // workspaces.
   {
@@ -126,7 +125,7 @@ void mon_statuslog(Monitor *mon)
     memset(string, 0, size);
     for (size_t i = 0; i < Length(workspaces); ++i) {
       if (i && LogFormat[FmtWsSeperator])
-        fprintf(mon->ctx->pipefile, "%s", LogFormat[FmtWsSeperator]);
+        StatusLog("%s", LogFormat[FmtWsSeperator]);
       ws = mon_workspaceat(mon, i);
       sprintf(string, "%s", ws->id);
       if (ws == mon->selws) {
@@ -136,20 +135,20 @@ void mon_statuslog(Monitor *mon)
                                    : LogFormat[FmtWsHiddenEmpty],
                        string);
       }
-      fprintf(mon->ctx->pipefile, "%s", string);
+      StatusLog("%s", string);
     }
     free(string);
     if (LogFormat[FmtSeperator])
-      fprintf(mon->ctx->pipefile, "%s", LogFormat[FmtSeperator]);
+      StatusLog("%s", LogFormat[FmtSeperator]);
 #undef format_string
   }
 
   // layout.
   {
     const Layout *layout = ws_getlayout(mon->selws);
-    fprintf(mon->ctx->pipefile, LogFormat[FmtLayout], layout->symbol);
+    StatusLog(LogFormat[FmtLayout], layout->symbol);
     if (LogFormat[FmtSeperator])
-      fprintf(mon->ctx->pipefile, "%s", LogFormat[FmtSeperator]);
+      StatusLog("%s", LogFormat[FmtSeperator]);
   }
 
   // window title.
@@ -164,11 +163,12 @@ void mon_statuslog(Monitor *mon)
         memcpy(title, wm_name.value,
                wm_name.nitems >= trim ? trim - 3 : wm_name.nitems);
         title[Min(wm_name.nitems, trim)] = 0;
-        fprintf(mon->ctx->pipefile, " %s ", title);
+        StatusLog(" %s ", title);
       }
     }
   }
 
-  fprintf(mon->ctx->pipefile, "\n");
-  fflush(mon->ctx->pipefile);
+  StatusLog("\n");
+#undef statuslog
+  fflush(mon->ctx->statuslogger);
 }

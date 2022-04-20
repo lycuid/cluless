@@ -75,7 +75,7 @@ typedef struct {
   Window root;
   Cursor cursors[CurNull];
   Atom atoms[AtomNull];
-  FILE *pipefile;
+  FILE *statuslogger;
 } Context;
 
 // @FIXME: not sure about this function.
