@@ -2,16 +2,13 @@
 #define __WORKSPACE_H__
 
 #include "client.h"
+#include "layout.h"
 
 typedef struct {
   const char *id;
   Client *cl_head;
-  uint32_t screen_gappx, window_gappx;
-  uint32_t borderpx, border_active, border_inactive;
-  uint32_t layoutidx;
+  LayoutManager layout_manager;
 } Workspace;
-
-#define ws_getlayout(ws) (&layouts[(ws)->layoutidx % Length(layouts)])
 
 void ws_init(Workspace *, const char *);
 Client *ws_getclient(Workspace *, Window);   // O(n)

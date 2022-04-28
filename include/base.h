@@ -44,11 +44,6 @@ typedef struct {
   uint32_t w, h;
 } Geometry;
 
-typedef struct {
-  char *symbol;
-  void (*apply)();
-} Layout;
-
 enum { CurNormal, CurResize, CurMove, CurNull };
 enum {
   // ICCC Atoms.

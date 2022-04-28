@@ -47,14 +47,15 @@ void mon_focusclient(Monitor *mon, Client *c)
   if (!c)
     goto LOG_AND_EXIT;
   Set(c->state, ClActive);
-  XSetWindowBorder(mon->ctx->dpy, c->window, mon->selws->border_active);
+  LayoutManager *lm = &mon->selws->layout_manager;
+  XSetWindowBorder(mon->ctx->dpy, c->window, lm->border_active);
   for (Client *p = c->prev; p; p = p->prev) {
     UnSet(p->state, ClActive);
-    XSetWindowBorder(mon->ctx->dpy, p->window, mon->selws->border_inactive);
+    XSetWindowBorder(mon->ctx->dpy, p->window, lm->border_inactive);
   }
   for (Client *n = c->next; n; n = n->next) {
     UnSet(n->state, ClActive);
-    XSetWindowBorder(mon->ctx->dpy, n->window, mon->selws->border_inactive);
+    XSetWindowBorder(mon->ctx->dpy, n->window, lm->border_inactive);
   }
   if (IsSet(c->state, ClFloating))
     XRaiseWindow(mon->ctx->dpy, c->window);
@@ -84,7 +85,7 @@ void mon_restack(Monitor *mon)
 
 void mon_applylayout(Monitor *mon)
 {
-  const Layout *layout = ws_getlayout(mon->selws);
+  const Layout *layout = lm_getlayout(&mon->selws->layout_manager);
   if (layout->apply)
     layout->apply(mon);
   mon_statuslog(mon);
@@ -145,7 +146,7 @@ void mon_statuslog(Monitor *mon)
 
   // layout.
   {
-    const Layout *layout = ws_getlayout(mon->selws);
+    const Layout *layout = lm_getlayout(&mon->selws->layout_manager);
     StatusLog(LogFormat[FmtLayout], layout->symbol);
     if (LogFormat[FmtSeperator])
       StatusLog("%s", LogFormat[FmtSeperator]);

@@ -1,3 +1,4 @@
+// vim:fdm=marker:fmr={{{,}}}
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
@@ -5,7 +6,8 @@
 #include "include/base.h"
 #include "include/bindings.h"
 #include "include/ewmh/docks.h"
-#include "include/layouts/tall.h"
+#include "include/layout.h"
+#include "include/layout/tall.h"
 #include "include/scratchpad.h"
 #include <X11/Xutil.h>
 #include <stdarg.h>
@@ -113,5 +115,3 @@ static const Binding buttons[] = {
 #undef Mod
 // }}}
 #endif
-
-// vim:fdm=marker:fmr={{{,}}}

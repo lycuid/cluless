@@ -5,7 +5,7 @@ BIN=$(BUILDDIR)/$(NAME)
 PREFIX=/usr/local
 BINPREFIX=$(PREFIX)/bin
 
-SRCDIRS=include include/layouts include/ewmh
+SRCDIRS=include include/layout include/ewmh
 SRCFILES=$(wildcard $(SRCDIRS:%=%/*.c))
 OBJS=$(SRCFILES:%.c=$(BUILDDIR)/%.o)
 PKGS=x11

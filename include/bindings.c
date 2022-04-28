@@ -147,21 +147,17 @@ void float_client(Monitor *mon, const Arg *arg)
 void cycle_layout(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  // @TODO: dont do this here (instead create a function that changes layout,
-  // behind the scene, with out of bound error and stuff).
-  mon->selws->layoutidx = (mon->selws->layoutidx + 1) % Length(layouts);
+  lm_nextlayout(&mon->selws->layout_manager);
   mon_applylayout(mon);
 }
 
 void reset_layout(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  mon->selws->layoutidx    = 0;
-  mon->selws->window_gappx = window_gappx;
-  mon->selws->screen_gappx = screen_gappx;
-  mon->selws->borderpx     = borderpx;
+  LayoutManager *lm = &mon->selws->layout_manager;
+  lm_reset(lm);
   for (Client *c = mon->selws->cl_head; c; c = c->next)
-    XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
+    lm_decorate_client(lm, c);
   mon_applylayout(mon);
 }
 
@@ -175,7 +171,7 @@ void move_resize(Monitor *mon, const Arg *arg)
       .cursor = mon->ctx->cursors[state == Move ? CurMove : CurResize]};
   XChangeWindowAttributes(mon->ctx->dpy, c->window, CWCursor, &attrs);
   State new_state = state == Move ? ClMoving : ClResizing;
-  if (ws_getlayout(mon->selws)->apply)
+  if (lm_getlayout(&mon->selws->layout_manager)->apply)
     new_state |= ClFloating;
   Set(c->state, new_state);
   mon_focusclient(mon, c);
@@ -192,17 +188,18 @@ void focus_client(Monitor *mon, const Arg *arg)
 void toggle_gap(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  Workspace *ws    = mon->selws;
-  ws->window_gappx = ws->window_gappx == 0 ? window_gappx : 0;
-  ws->screen_gappx = ws->screen_gappx == 0 ? screen_gappx : 0;
+  LayoutManager *lm = &mon->selws->layout_manager;
+  lm->window_gappx  = lm->window_gappx == 0 ? window_gappx : 0;
+  lm->screen_gappx  = lm->screen_gappx == 0 ? screen_gappx : 0;
   mon_applylayout(mon);
 }
 
 void toggle_border(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  mon->selws->borderpx = mon->selws->borderpx == 0 ? borderpx : 0;
+  LayoutManager *lm = &mon->selws->layout_manager;
+  lm->borderpx      = lm->borderpx == 0 ? borderpx : 0;
   for (Client *c = mon->selws->cl_head; c; c = c->next)
-    XSetWindowBorderWidth(mon->ctx->dpy, c->window, mon->selws->borderpx);
+    XSetWindowBorderWidth(mon->ctx->dpy, c->window, lm->borderpx);
   mon_applylayout(mon);
 }

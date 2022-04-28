@@ -4,14 +4,9 @@
 
 void ws_init(Workspace *ws, const char *id)
 {
-  ws->id              = id;
-  ws->cl_head         = NULL;
-  ws->window_gappx    = window_gappx;
-  ws->screen_gappx    = screen_gappx;
-  ws->borderpx        = borderpx;
-  ws->border_active   = border_active;
-  ws->border_inactive = border_inactive;
-  ws->layoutidx       = 0;
+  ws->id      = id;
+  ws->cl_head = NULL;
+  lm_reset(&(ws->layout_manager));
 }
 
 // O(n)
@@ -46,9 +41,7 @@ void ws_attachclient(Workspace *ws, Client *c)
   if (ws->cl_head)
     ws->cl_head->prev = c;
   ws->cl_head = c;
-
-  Context *ctx = request_context();
-  XSetWindowBorderWidth(ctx->dpy, c->window, ws->borderpx);
+  lm_decorate_client(&ws->layout_manager, c);
 }
 
 // O(1)
