@@ -1,8 +1,8 @@
-#ifndef __WORKSPACE_H__
-#define __WORKSPACE_H__
+#ifndef __CORE__WORKSPACE_H__
+#define __CORE__WORKSPACE_H__
 
-#include "client.h"
-#include "layout.h"
+#include <include/core/client.h>
+#include <include/layout.h>
 
 typedef struct {
   const char *id;

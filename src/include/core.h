@@ -1,5 +1,5 @@
-#ifndef __BASE_H__
-#define __BASE_H__
+#ifndef __CORE_H__
+#define __CORE_H__
 
 #include "debug.h"
 #include <X11/Xlib.h>

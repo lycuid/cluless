@@ -1,8 +1,8 @@
 #include "bindings.h"
-#include "base.h"
-#include "client.h"
-#include "workspace.h"
 #include <config.h>
+#include <include/core.h>
+#include <include/core/client.h>
+#include <include/core/workspace.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>

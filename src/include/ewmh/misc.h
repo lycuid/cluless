@@ -1,7 +1,7 @@
 #ifndef __EWMH__MISC_H__
 #define __EWMH__MISC_H__
 
-#include <include/monitor.h>
+#include <include/core/monitor.h>
 
 void ewmh_clientadd(Monitor *, Client *);
 void ewmh_clientremove(Monitor *, Client *);

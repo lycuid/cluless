@@ -1,9 +1,9 @@
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#ifndef __CORE__MONITOR_H__
+#define __CORE__MONITOR_H__
 
-#include "base.h"
-#include "client.h"
-#include "workspace.h"
+#include <include/core.h>
+#include <include/core/client.h>
+#include <include/core/workspace.h>
 
 typedef struct {
   Client *client;

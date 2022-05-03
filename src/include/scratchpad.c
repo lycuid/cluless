@@ -1,6 +1,6 @@
 #include "scratchpad.h"
-#include "workspace.h"
 #include <config.h>
+#include <include/core/workspace.h>
 
 #define sch_cnt   (1 << 8)
 #define sch_at(i) sch_clients[i % sch_cnt]

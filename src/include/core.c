@@ -1,4 +1,4 @@
-#include "base.h"
+#include "core.h"
 #include <X11/cursorfont.h>
 #include <config.h>
 #include <signal.h>

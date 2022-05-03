@@ -1,7 +1,7 @@
 #ifndef __LAYOUT_H__
 #define __LAYOUT_H__
 
-#include "client.h"
+#include <include/core/client.h>
 #include <stdint.h>
 
 typedef struct {

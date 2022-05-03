@@ -1,5 +1,5 @@
 #include "client.h"
-#include "base.h"
+#include <include/core.h>
 #include <stdlib.h>
 
 Client *cl_create(Window w)

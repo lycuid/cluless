@@ -1,5 +1,5 @@
-#ifndef __CLIENT_H__
-#define __CLIENT_H__
+#ifndef __CORE__CLIENT_H__
+#define __CORE__CLIENT_H__
 
 #include <X11/Xlib.h>
 #include <stdint.h>

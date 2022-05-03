@@ -1,7 +1,7 @@
 #ifndef __BINDINGS_H__
 #define __BINDINGS_H__
 
-#include "monitor.h"
+#include <include/core/monitor.h>
 #include <stdint.h>
 
 enum { Move, Resize };
@@ -17,16 +17,6 @@ typedef struct {
   CustomHandler func;
   Arg arg;
 } Binding;
-
-// WM_CLASS(STRING) = ResInstance, ResClass
-// WM_NAME(STRING)  = ResTitle
-typedef enum { ResInstance, ResClass, ResTitle } ResourceType;
-typedef struct {
-  ResourceType res_type;
-  char *value;
-  CustomHandler func;
-  Arg arg;
-} WindowRule;
 
 // key bindings.
 void quit(Monitor *, const Arg *);

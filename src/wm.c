@@ -1,14 +1,17 @@
 #include "config.h"
-#include "include/base.h"
-#include "include/client.h"
-#include "include/ewmh/docks.h"
-#include "include/ewmh/misc.h"
-#include "include/monitor.h"
-#include "include/scratchpad.h"
-#include "include/workspace.h"
 #include <X11/Xlib.h>
+#include <include/core.h>
+#include <include/core/client.h>
+#include <include/core/monitor.h>
+#include <include/core/workspace.h>
+#include <include/ewmh/docks.h>
+#include <include/ewmh/misc.h>
+#include <include/scratchpad.h>
+#include <include/window_rule.h>
 #include <stdlib.h>
 #include <string.h>
+
+static inline void ManageHooks(hook_t, Monitor *, Client *);
 
 void onMapRequest(Monitor *, const XEvent *);
 void onMapNotify(Monitor *, const XEvent *);
@@ -48,14 +51,6 @@ static inline void ManageHooks(hook_t type, Monitor *mon, Client *c)
     default_hooks[type](mon, c);
 }
 
-#define TryApplyWindowRule(mon, rule, val)                                     \
-  {                                                                            \
-    if (strcmp(val, rule->value) == 0) {                                       \
-      rule->func(mon, &rule->arg);                                             \
-      break;                                                                   \
-    }                                                                          \
-  }
-
 void onMapRequest(Monitor *mon, const XEvent *xevent)
 {
   const XMapRequestEvent *e = &xevent->xmaprequest;
@@ -64,22 +59,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   if (!(c = ws_getclient(mon->selws, e->window))) {
     c = cl_create(e->window);
     ManageHooks(ClientAdd, mon, c);
-
-    // apply window rules.
-    XClassHint class;
-    XTextProperty wm_name;
-    for (size_t i = 0; i < Length(window_rules); ++i) {
-      const WindowRule *rule = &window_rules[i];
-      if (rule->res_type == ResTitle) {
-        if (get_window_title(e->window, &wm_name) && wm_name.nitems)
-          TryApplyWindowRule(mon, rule, (char *)wm_name.value);
-        continue;
-      }
-      if (XGetClassHint(mon->ctx->dpy, e->window, &class))
-        TryApplyWindowRule(mon, rule,
-                           rule->res_type == ResClass ? class.res_class
-                                                      : class.res_name);
-    }
+    window_rule_apply(mon, c);
   }
   // client might be moved to another workspace by a WindowRule, so we only map
   // the window if the client is found in selws.

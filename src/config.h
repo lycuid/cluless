@@ -3,34 +3,14 @@
 #define __CONFIG_H__
 
 // Includes. {{{
-#include "include/base.h"
-#include "include/bindings.h"
-#include "include/ewmh/docks.h"
-#include "include/layout.h"
-#include "include/layout/tall.h"
-#include "include/scratchpad.h"
-#include <X11/Xutil.h>
-#include <stdarg.h>
-// }}}
-
-// Temporary Macros. {{{
-#define Mod             Mod4Mask
-#define Underlined(s)   "<Box:Bottom=#089CAC:1>" s "</Box>"
-#define Clickable(k, s) "<BtnL=xdotool key " k ">" s "</BtnL>"
-#define Term            "st"
-#define CMD(...)        ((const char *[]){__VA_ARGS__, NULL})
-#define ScratchTerm     "scratchpad-term"
-#define ScratchFM       "scratchpad-fm"
-#define ScratchNM       "scratchpad-nmtui"
-// clang-format off
-#define WSKeys(key, ws)                                                        \
-  {Mod,             key, select_ws,         {.i = ws}},                        \
-  {Mod | ShiftMask, key, move_client_to_ws, {.i = ws}}
-// scratchpad '.cmd' value should be {sch_id, cmd, arg1, arg2, ...}.
-#define SCHKeys(key, c) {Mod | ControlMask, key, sch_toggle, { .cmd = c }}
-#define SCHToggle(id, ...)                                                     \
-  CMD((const char[]){id}, Term, "-g", "112x30+136+76", __VA_ARGS__)
-// clang-format on
+#include "preprocs.h"
+#include <include/bindings.h>
+#include <include/core.h>
+#include <include/ewmh/docks.h>
+#include <include/layout.h>
+#include <include/layout/tall.h>
+#include <include/scratchpad.h>
+#include <include/window_rule.h>
 // }}}
 
 static const uint32_t window_gappx    = 5;
@@ -101,17 +81,4 @@ static const Binding buttons[] = {
     {Mod,             Button1,    move_resize,        {.i = Move}},
     {Mod,             Button3,    move_resize,        {.i = Resize}}};
 
-// Removing Temporary Macros. {{{
-#undef SCHToggle
-#undef SCHKeys
-#undef WSKeys
-#undef ScratchTerm
-#undef ScratchFM
-#undef ScratchNM
-#undef CMD
-#undef Term
-#undef Clickable
-#undef Underlined
-#undef Mod
-// }}}
 #endif
