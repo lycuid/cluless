@@ -4,8 +4,8 @@
 #include <include/core/client.h>
 #include <include/core/monitor.h>
 #include <include/core/workspace.h>
+#include <include/ewmh.h>
 #include <include/ewmh/docks.h>
-#include <include/ewmh/misc.h>
 #include <include/scratchpad.h>
 #include <include/window_rule.h>
 #include <stdlib.h>
@@ -205,7 +205,7 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
 {
   char error_code[1024];
   XGetErrorText(dpy, e->error_code, error_code, 1024);
-  DBGLN("[ERROR] Error occurred during event no: %lu.", e->serial);
+  LOG("[ERROR] Error occurred during event no: %lu.\n", e->serial);
   ERROR("resourceId: %lu.\n", e->resourceid);
   ERROR("serial: %lu.\n", e->serial);
   ERROR("error_code: %s.\n", error_code);

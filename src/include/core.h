@@ -59,7 +59,7 @@ enum {
   NetWMStrutPartial,
   NetActiveWindow,
   NetClientList,
-  AtomNull
+  NullAtom
 };
 
 // These are mainly the values that don't (shouldn't) change throughout the
@@ -69,7 +69,7 @@ typedef struct {
   Display *dpy;
   Window root;
   Cursor cursors[CurNull];
-  Atom atoms[AtomNull];
+  Atom atoms[NullAtom];
   FILE *statuslogger;
 } Context;
 

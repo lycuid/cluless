@@ -81,8 +81,8 @@ bool send_event(Window window, Atom protocol)
   Atom *protos = NULL;
   int n, exists = 0;
   if (XGetWMProtocols(ctx.dpy, window, &protos, &n)) {
-    while (!exists && --n >= 0)
-      if ((exists = protos[n] == ctx.atoms[WMDeleteWindow])) {
+    while (!exists && --n >= 0) {
+      if ((exists = protos[n] == protocol)) {
         XEvent e               = {.type = ClientMessage};
         e.xclient.window       = window;
         e.xclient.format       = 32;
@@ -91,6 +91,7 @@ bool send_event(Window window, Atom protocol)
         e.xclient.data.l[1]    = CurrentTime;
         XSendEvent(ctx.dpy, window, False, NoEventMask, &e);
       }
+    }
     XFree(protos);
   }
   return exists;

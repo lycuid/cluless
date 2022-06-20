@@ -12,11 +12,10 @@
 
 #define ERROR(fmt, ...) __log__(stderr, "[ERROR] " fmt, ##__VA_ARGS__)
 
-#define DBG(...)         __log__(stdout, __VA_ARGS__)
-#define DBGLN(fmt, ...)  DBG(fmt "\n", ##__VA_ARGS__)
-#define EVENT(fmt, ...)  DBG("[EVENT] " fmt, ##__VA_ARGS__);
-#define INFO(fmt, ...)   DBG("[INFO] " fmt, ##__VA_ARGS__);
-#define ACTION(fmt, ...) DBG("[ACTION] " fmt, ##__VA_ARGS__);
+#define LOG(...)         __log__(stdout, __VA_ARGS__)
+#define EVENT(fmt, ...)  LOG("[EVENT] " fmt, ##__VA_ARGS__);
+#define INFO(fmt, ...)   LOG("[INFO] " fmt, ##__VA_ARGS__);
+#define ACTION(fmt, ...) LOG("[ACTION] " fmt, ##__VA_ARGS__);
 
 static const char *const EventRepr[LASTEvent] = {
     [KeyPress]         = "KeyPress",
