@@ -20,15 +20,20 @@ typedef struct {
   PointerGrab grabbed;
 } Monitor;
 
-typedef enum { ClientAdd, ClientRemove, NullHook } hook_t;
-typedef void (*Hook)(Monitor *, Client *);
+// hooks are only called on clients which are attached to the workspaces managed
+// my the monitor.
+typedef enum { ClientAdd, ClientRemove, NullHook } client_hook_t;
+typedef void (*ClientHook)(Monitor *, Client *);
 typedef void (*EventHandler)(Monitor *, const XEvent *);
 
 #define mon_workspaceat(mon, at) (&mon->wss[at % Length(workspaces)])
 
 void mon_init(Monitor *);
-void mon_addclient(Monitor *, Client *);
-void mon_removeclient(Monitor *, Client *);
+// client that can be reached by the monitor (present in some workspace in
+// the monitor 'mon->wss').
+void mon_manage_client(Monitor *, Client *);
+// remove client from any/all workspaces (unreachable client).
+void mon_unmanage_client(Monitor *, Client *);
 void mon_focusclient(Monitor *, Client *);
 void mon_restack(Monitor *);
 void mon_applylayout(Monitor *);

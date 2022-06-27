@@ -15,7 +15,7 @@ void mon_init(Monitor *mon)
   mon->grabbed = (PointerGrab){NULL, 0, 0, 0, 0, 0, 0, 0, 0};
 }
 
-void mon_addclient(Monitor *mon, Client *c)
+void mon_manage_client(Monitor *mon, Client *c)
 {
   if (!c)
     return;
@@ -24,10 +24,13 @@ void mon_addclient(Monitor *mon, Client *c)
   // yet, and we never know, it might get moved to another workspace via some
   // startup hook. Focusing the client on 'MapNotify' event is much more safe.
   Set(c->state, ClActive);
-  XSelectInput(mon->ctx->dpy, c->window, PropertyChangeMask);
+  XWindowAttributes attrs;
+  XGetWindowAttributes(mon->ctx->dpy, c->window, &attrs);
+  XSelectInput(mon->ctx->dpy, c->window,
+               attrs.your_event_mask | PropertyChangeMask);
 }
 
-void mon_removeclient(Monitor *mon, Client *c)
+void mon_unmanage_client(Monitor *mon, Client *c)
 {
   Workspace *ws = mon_get_client_ws(mon, c);
   if (!ws)
@@ -36,10 +39,9 @@ void mon_removeclient(Monitor *mon, Client *c)
   // detaching the client before doing anything else, as the corresponding
   // window has already been destroyed (don't want any excitement).
   ws_detachclient(ws, c);
-  if (IsSet(c->state, ClActive))
+  if (ws == mon->selws && IsSet(c->state, ClActive))
     mon_focusclient(mon, neighbour);
   mon_applylayout(mon);
-  free(c);
 }
 
 void mon_focusclient(Monitor *mon, Client *c)
@@ -122,7 +124,7 @@ void mon_statuslog(Monitor *mon)
     }                                                                          \
   }
     Workspace *ws;
-    char *string = malloc(size);
+    char string[size];
     memset(string, 0, size);
     for (size_t i = 0; i < Length(workspaces); ++i) {
       if (i && LogFormat[FmtWsSeperator])
@@ -138,10 +140,9 @@ void mon_statuslog(Monitor *mon)
       }
       StatusLog("%s", string);
     }
-    free(string);
     if (LogFormat[FmtSeperator])
       StatusLog("%s", LogFormat[FmtSeperator]);
-#undef format_string
+#undef FormatWSString
   }
 
   // layout.
@@ -170,6 +171,6 @@ void mon_statuslog(Monitor *mon)
   }
 
   StatusLog("\n");
-#undef statuslog
+#undef StatusLog
   fflush(mon->ctx->statuslogger);
 }

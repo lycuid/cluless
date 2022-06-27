@@ -1,5 +1,5 @@
 NAME=wm
-VERSION=0.2.7
+VERSION=0.3.0
 ODIR=build
 IDIR=src
 BIN=$(ODIR)/$(NAME)
