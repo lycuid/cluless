@@ -4,13 +4,13 @@
 
 // Includes. {{{
 #include "preprocs.h"
-#include <include/bindings.h>
-#include <include/core.h>
-#include <include/ewmh/docks.h>
-#include <include/layout.h>
-#include <include/layout/tall.h>
-#include <include/scratchpad.h>
-#include <include/window_rule.h>
+#include <cluless/bindings.h>
+#include <cluless/core.h>
+#include <cluless/ewmh/docks.h>
+#include <cluless/layout.h>
+#include <cluless/layout/tall.h>
+#include <cluless/scratchpad.h>
+#include <cluless/window_rule.h>
 // }}}
 
 static const uint32_t window_gappx    = 5;

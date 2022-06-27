@@ -1,8 +1,8 @@
 #ifndef __CORE__WORKSPACE_H__
 #define __CORE__WORKSPACE_H__
 
-#include <include/core/client.h>
-#include <include/layout.h>
+#include <cluless/core/client.h>
+#include <cluless/layout.h>
 
 typedef struct {
   const char *id;

@@ -1,6 +1,6 @@
 #include "scratchpad.h"
+#include <cluless/core/workspace.h>
 #include <config.h>
-#include <include/core/workspace.h>
 #include <stdlib.h>
 
 #define sch_cnt   (1 << 8)

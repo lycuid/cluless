@@ -1,13 +1,12 @@
 #include "config.h"
 #include <X11/Xlib.h>
-#include <include/core.h>
-#include <include/core/client.h>
-#include <include/core/monitor.h>
-#include <include/core/workspace.h>
-#include <include/ewmh.h>
-#include <include/ewmh/docks.h>
-#include <include/scratchpad.h>
-#include <include/window_rule.h>
+#include <cluless/core.h>
+#include <cluless/core/client.h>
+#include <cluless/core/monitor.h>
+#include <cluless/core/workspace.h>
+#include <cluless/ewmh.h>
+#include <cluless/ewmh/docks.h>
+#include <cluless/scratchpad.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -55,11 +54,8 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
 {
   const XMapRequestEvent *e = &xevent->xmaprequest;
   Client *c;
-  if (!(c = ws_getclient(mon->selws, e->window))) {
-    c = cl_create(e->window);
-    ManageClientHook(ClientAdd, mon, c);
-    window_rule_apply(mon, c);
-  }
+  if (!(c = ws_getclient(mon->selws, e->window)))
+    ManageClientHook(ClientAdd, mon, (c = cl_create(e->window)));
   // client might be moved to another workspace by a WindowRule, so we only map
   // the window if the client is found in selws.
   if (!ws_getclient(mon->selws, c->window))
@@ -213,8 +209,13 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
   return 1;
 }
 
-int main()
+int main(int argc, char const **argv)
 {
+  if (argc == 2 && (!strcmp("-v", argv[1]) || !strcmp("--version", argv[1]))) {
+    fprintf(stdout, NAME "-" VERSION "\n");
+    goto EXIT;
+  }
+
   XEvent e;
   Monitor mon;
   mon_init(&mon);
@@ -234,7 +235,8 @@ int main()
     if (e.type == DestroyNotify && default_event_handlers[e.type])
       default_event_handlers[e.type](&mon, &e);
   }
-
   XCloseDisplay(mon.ctx->dpy);
+
+EXIT:
   return 0;
 }

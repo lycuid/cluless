@@ -1,7 +1,7 @@
 #ifndef __EWMH_H__
 #define __EWMH_H__
 
-#include <include/core/monitor.h>
+#include <cluless/core/monitor.h>
 
 void ewmh_maprequest(Monitor *, const XEvent *);
 void ewmh_destroynotify(Monitor *, const XEvent *);

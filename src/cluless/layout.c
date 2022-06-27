@@ -1,5 +1,5 @@
 #include "layout.h"
-#include <include/core.h>
+#include <cluless/core.h>
 
 void lm_decorate_client(LayoutManager *lm, Client *c)
 {

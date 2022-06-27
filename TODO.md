@@ -1,19 +1,6 @@
-How it works:
--------------
-  - onMapRequest: if client not in `selws`, create client -> restack -> apply layout -> map window.
-  - onMapNotify: if client in `selws` and `ClActive` flag set, focus window.
-  - onUnmapNotify: if client in `selws`, call `ClientRemove` hook.
-  - onConfigureRequest: redirect as it is.
-  - onPropertyNotify: if `WM_NAME` or `_NET_WM_NAME`, then log status to `stdout`.
-  - onKeyPress: handle keybinding.
-  - onButtonPress: grab pointer data -> handle button binding.
-  - onMotionNotify: use pointer data to move/resize client (if needed).
-  - onButtonRelease: reset pointer data and release client from move/resize state (if needed).
-  - onDestroyNotify: if client is managed (part of any workspace), call `ClientRemove` hook.
-
 todo:
 -----
-  - [ ] **find a good name for the project**.
+  - [X] **find a good name for the project**.
   - [ ] proper `focus` change for multiple scenarios (on window destroyed, ws
         switched, move client to ws etc).
   - [X] Properly kill client on keypress.

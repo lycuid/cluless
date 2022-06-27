@@ -1,8 +1,8 @@
 #ifndef __SCRATCHPAD_H__
 #define __SCRATCHPAD_H__
 
-#include <include/bindings.h>
-#include <include/core/monitor.h>
+#include <cluless/bindings.h>
+#include <cluless/core/monitor.h>
 
 // used to create a togglable scratchpad from a 'Client' object.
 // uses a unique char id (provided in 'Arg') as a reference for toggling.

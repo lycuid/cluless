@@ -1,7 +1,7 @@
 #ifndef __BINDINGS_H__
 #define __BINDINGS_H__
 
-#include <include/core/monitor.h>
+#include <cluless/core/monitor.h>
 #include <stdint.h>
 
 enum { Move, Resize };

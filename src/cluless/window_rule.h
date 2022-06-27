@@ -1,8 +1,8 @@
 #ifndef __WINDOW_RULE_H__
 #define __WINDOW_RULE_H__
 
-#include <include/bindings.h>
-#include <include/core/monitor.h>
+#include <cluless/bindings.h>
+#include <cluless/core/monitor.h>
 
 // WM_CLASS(STRING) = ResInstance, ResClass
 // WM_NAME(STRING)  = ResTitle

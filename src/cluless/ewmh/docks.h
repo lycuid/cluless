@@ -1,8 +1,8 @@
 #ifndef __EWMH__DOCKS_H__
 #define __EWMH__DOCKS_H__
 
-#include <include/bindings.h>
-#include <include/core/monitor.h>
+#include <cluless/bindings.h>
+#include <cluless/core/monitor.h>
 
 void dock_toggle(Monitor *, const Arg *);
 void dock_mapnotify(Monitor *, const XEvent *);

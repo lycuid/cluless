@@ -3,7 +3,7 @@
 #include <config.h>
 #include <stdint.h>
 
-// TODO: figure out a better way of doing this.
+// @TODO: figure out a better way of doing this.
 // currently we are updating the client list on every window map and destroy.
 static inline void update_client_list(Monitor *mon)
 {
@@ -22,7 +22,7 @@ static inline void update_client_list(Monitor *mon)
                   managed_client_count);
 }
 
-// TODO: find a better way to do this.
+// @TODO: find a better way to do this.
 // currently adding focuschange mask everytime a window is mapped (which is
 // unecessary, only need to do this once).
 void ewmh_maprequest(Monitor *mon, const XEvent *xevent)

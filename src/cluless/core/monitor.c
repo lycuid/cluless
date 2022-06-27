@@ -1,6 +1,7 @@
 #include "monitor.h"
+#include <cluless/core/workspace.h>
+#include <cluless/window_rule.h>
 #include <config.h>
-#include <include/core/workspace.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -28,6 +29,7 @@ void mon_manage_client(Monitor *mon, Client *c)
   XGetWindowAttributes(mon->ctx->dpy, c->window, &attrs);
   XSelectInput(mon->ctx->dpy, c->window,
                attrs.your_event_mask | PropertyChangeMask);
+  window_rule_apply(mon, c);
 }
 
 void mon_unmanage_client(Monitor *mon, Client *c)
