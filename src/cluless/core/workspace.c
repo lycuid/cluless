@@ -26,7 +26,7 @@ Client *ws_find(Workspace *ws, State flags)
   if (!ws)
     return NULL;
   Client *c = ws->cl_head;
-  for (; c && !IsSet(c->state, flags); c = c->next)
+  for (; c && !IS_SET(c->state, flags); c = c->next)
     ;
   return c;
 }

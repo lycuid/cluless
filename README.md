@@ -30,6 +30,10 @@ put the following line in the `~/.xinitrc` file, and use any preferred method (e
 ```sh
 exec cluless
 ```
+for logging (used for debugging while development).
+```sh
+exec cluless >~/log.txt 2>~/err.txt 
+```
 
 License:
 --------

@@ -5,7 +5,7 @@ void tall(Monitor *mon)
 {
   int nstack = -1;
   for (Client *c = mon->selws->cl_head; c; c = c->next)
-    nstack += !IsSet(c->state, ClFloating | ClTransient);
+    nstack += !IS_SET(c->state, ClFloating | ClTransient);
   if (nstack == -1)
     return;
   LayoutManager *lm    = &mon->selws->layout_manager;
@@ -13,7 +13,7 @@ void tall(Monitor *mon)
 
   // arrange 'Master' window.
   Client *master = mon->selws->cl_head, *stack;
-  if (IsSet(master->state, ClFloating | ClTransient))
+  if (IS_SET(master->state, ClFloating | ClTransient))
     master = cl_nexttiled(master);
   int mx = draw_region.x + lm->window_gappx,
       my = draw_region.y + lm->window_gappx,

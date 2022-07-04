@@ -34,8 +34,8 @@ typedef struct {
     .h = (region)->h - ((lm)->screen_gappx * 2)                                \
   }
 
-#define lm_nextlayout(lm) ((lm)->index = ((lm)->index + 1) % Length(layouts))
-#define lm_getlayout(lm)  (&layouts[(lm)->index % Length(layouts)])
+#define lm_nextlayout(lm) ((lm)->index = ((lm)->index + 1) % LENGTH(layouts))
+#define lm_getlayout(lm)  (&layouts[(lm)->index % LENGTH(layouts)])
 
 void lm_decorate_client(LayoutManager *, Client *);
 

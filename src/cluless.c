@@ -62,7 +62,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
     return;
   Window w;
   if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
-    Set(c->state, ClTransient);
+    SET(c->state, ClTransient);
   mon_restack(mon);
   mon_applylayout(mon);
   XMapWindow(mon->ctx->dpy, c->window);
@@ -71,16 +71,14 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
 void onMapNotify(Monitor *mon, const XEvent *xevent)
 {
   const XMapEvent *e = &xevent->xmap;
-  EVENT("MapNotify on window: %lu.\n", e->window);
   Client *c;
-  if ((c = ws_getclient(mon->selws, e->window)) && IsSet(c->state, ClActive))
+  if ((c = ws_getclient(mon->selws, e->window)) && IS_SET(c->state, ClActive))
     mon_focusclient(mon, c);
 }
 
 void onUnmapNotify(Monitor *mon, const XEvent *xevent)
 {
   const XUnmapEvent *e = &xevent->xunmap;
-  EVENT("UnmapNotify on window: %lu.\n", e->window);
   Client *c;
   if ((c = ws_getclient(mon->selws, e->window)))
     ManageClientHook(ClientRemove, mon, c);
@@ -89,14 +87,13 @@ void onUnmapNotify(Monitor *mon, const XEvent *xevent)
 void onConfigureRequest(Monitor *mon, const XEvent *xevent)
 {
   const XConfigureRequestEvent *e = &xevent->xconfigurerequest;
-  EVENT("ConfigureRequest on window: %lu.\n", e->window);
-  XWindowChanges changes = {.x            = e->x,
-                            .y            = e->y,
-                            .width        = e->width,
-                            .height       = e->height,
-                            .border_width = e->border_width,
-                            .sibling      = e->above,
-                            .stack_mode   = e->detail};
+  XWindowChanges changes          = {.x            = e->x,
+                                     .y            = e->y,
+                                     .width        = e->width,
+                                     .height       = e->height,
+                                     .border_width = e->border_width,
+                                     .sibling      = e->above,
+                                     .stack_mode   = e->detail};
   XConfigureWindow(mon->ctx->dpy, e->window, e->value_mask, &changes);
   XSync(mon->ctx->dpy, False);
   mon_applylayout(mon);
@@ -105,7 +102,6 @@ void onConfigureRequest(Monitor *mon, const XEvent *xevent)
 void onPropertyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XPropertyEvent *e = &xevent->xproperty;
-  EVENT("PropertyNotify on window: %lu.\n", e->window);
   if (e->state == PropertyNewValue && (e->atom == mon->ctx->atoms[NetWMName] ||
                                        e->atom == mon->ctx->atoms[WMName]))
     mon_statuslog(mon);
@@ -114,10 +110,12 @@ void onPropertyNotify(Monitor *mon, const XEvent *xevent)
 void onKeyPress(Monitor *mon, const XEvent *xevent)
 {
   const XKeyEvent *e = &xevent->xkey;
-  for (size_t i = 0; i < Length(keys); ++i)
-    if (e->keycode == XKeysymToKeycode(mon->ctx->dpy, keys[i].sym) &&
-        e->state == keys[i].mask)
-      keys[i].func(mon, &keys[i].arg);
+  FOREACH(const Binding *key, keys)
+  {
+    if (e->keycode == XKeysymToKeycode(mon->ctx->dpy, key->sym) &&
+        e->state == key->mask)
+      key->func(mon, &key->arg);
+  }
 }
 
 void onButtonPress(Monitor *mon, const XEvent *xevent)
@@ -129,12 +127,12 @@ void onButtonPress(Monitor *mon, const XEvent *xevent)
   Client *c;
   memset(&mon->grabbed, 0, sizeof(mon->grabbed));
   if ((c = ws_getclient(mon->selws, e->subwindow))) {
-    int mask = e->button == Button1   ? Button1Mask
-               : e->button == Button2 ? Button2Mask
-               : e->button == Button3 ? Button3Mask
-               : e->button == Button4 ? Button4Mask
-               : e->button == Button5 ? Button5Mask
-                                      : 0;
+    int state = e->button == Button1   ? Button1Mask
+                : e->button == Button2 ? Button2Mask
+                : e->button == Button3 ? Button3Mask
+                : e->button == Button4 ? Button4Mask
+                : e->button == Button5 ? Button5Mask
+                                       : 0;
 
     XWindowAttributes wa;
     XGetWindowAttributes(mon->ctx->dpy, c->window, &wa);
@@ -145,28 +143,29 @@ void onButtonPress(Monitor *mon, const XEvent *xevent)
                                  .cy     = wa.y,
                                  .cw     = wa.width,
                                  .ch     = wa.height,
-                                 .mask   = e->state | mask,
+                                 .state  = e->state | state,
                                  .at     = e->time};
   }
-  for (size_t i = 0; i < Length(buttons); ++i)
-    if (e->button == buttons[i].sym && e->state == buttons[i].mask)
-      buttons[i].func(mon, &buttons[i].arg);
+  FOREACH(const Binding *button, buttons)
+  {
+    if (e->button == button->sym && e->state == button->mask)
+      button->func(mon, &button->arg);
+  }
 }
-
 void onMotionNotify(Monitor *mon, const XEvent *xevent)
 {
   const XMotionEvent *e = &xevent->xmotion;
   PointerGrab *grabbed  = &mon->grabbed;
   Client *c             = grabbed->client;
-  if (!c || e->state != grabbed->mask || (e->time - grabbed->at) < (1000 / 60))
+  if (!c || e->state != grabbed->state || (e->time - grabbed->at) < (1000 / 60))
     return;
 
   int dx = e->x - grabbed->x, dy = e->y - grabbed->y;
-  if (IsSet(c->state, ClMoving))
+  if (IS_SET(c->state, ClMoving))
     XMoveWindow(mon->ctx->dpy, c->window, grabbed->cx + dx, grabbed->cy + dy);
-  else if (IsSet(c->state, ClResizing))
-    XResizeWindow(mon->ctx->dpy, c->window, Max(grabbed->cw + dx, c->minw),
-                  Max(grabbed->ch + dy, c->minh));
+  else if (IS_SET(c->state, ClResizing))
+    XResizeWindow(mon->ctx->dpy, c->window, MAX(grabbed->cw + dx, c->minw),
+                  MAX(grabbed->ch + dy, c->minh));
   grabbed->at = e->time;
 }
 
@@ -176,9 +175,10 @@ void onButtonRelease(Monitor *mon, const XEvent *xevent)
   Client *c;
   if (!(c = mon->grabbed.client))
     return;
-  XSetWindowAttributes attrs = {.cursor = mon->ctx->cursors[CurNormal]};
-  XChangeWindowAttributes(mon->ctx->dpy, c->window, CWCursor, &attrs);
-  UnSet(c->state, ClMoving | ClResizing);
+  XChangeWindowAttributes(
+      mon->ctx->dpy, c->window, CWCursor,
+      &(XSetWindowAttributes){.cursor = mon->ctx->cursors[CurNormal]});
+  UNSET(c->state, ClMoving | ClResizing);
   memset(&mon->grabbed, 0, sizeof(mon->grabbed));
   XUngrabPointer(mon->ctx->dpy, CurrentTime);
 }
@@ -186,12 +186,12 @@ void onButtonRelease(Monitor *mon, const XEvent *xevent)
 void onDestroyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XDestroyWindowEvent *e = &xevent->xdestroywindow;
-  EVENT("DestroyNotify on window: %lu.\n", e->window);
-  for (size_t i = 0; i < Length(workspaces); ++i) {
-    Client *c = NULL;
-    if ((c = ws_getclient(mon_workspaceat(mon, i), e->window))) {
+  ITER(workspaces)
+  {
+    Client *c = ws_getclient(mon_workspaceat(mon, it), e->window);
+    if (c) {
       ManageClientHook(ClientRemove, mon, c);
-      return;
+      break;
     }
   }
 }
@@ -223,7 +223,7 @@ int main(int argc, char const **argv)
 
   while (mon.ctx->running && !XNextEvent(mon.ctx->dpy, &e)) {
     if (EventRepr[e.type] && e.type != MotionNotify)
-      EVENT("%s on window: %lu.\n", EventRepr[e.type], e.xany.window);
+      LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
     if (e.type != DestroyNotify && default_event_handlers[e.type])
       default_event_handlers[e.type](&mon, &e);
     if (sch_event_handlers[e.type])

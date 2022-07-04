@@ -7,15 +7,20 @@
 // currently we are updating the client list on every window map and destroy.
 static inline void update_client_list(Monitor *mon)
 {
-  uint32_t i = 0, managed_client_count = 0;
-  for (i = 0; i < Length(workspaces); ++i)
-    for (Client *c = mon_workspaceat(mon, i)->cl_head; c; c = c->next)
+  size_t managed_client_count = 0;
+  ITER(workspaces)
+  {
+    for (Client *c = mon_workspaceat(mon, it)->cl_head; c; c = c->next)
       managed_client_count++;
+  }
 
   Window wids[managed_client_count];
-  for (i = 0, managed_client_count = 0; i < Length(workspaces); ++i)
-    for (Client *c = mon_workspaceat(mon, i)->cl_head; c; c = c->next)
+  managed_client_count = 0;
+  ITER(workspaces)
+  {
+    for (Client *c = mon_workspaceat(mon, it)->cl_head; c; c = c->next)
       wids[managed_client_count++] = c->window;
+  }
 
   XChangeProperty(mon->ctx->dpy, mon->ctx->root, mon->ctx->atoms[NetClientList],
                   XA_WINDOW, 32, PropModeReplace, (uint8_t *)wids,
@@ -30,7 +35,7 @@ void ewmh_maprequest(Monitor *mon, const XEvent *xevent)
   const XMapRequestEvent *e = &xevent->xmaprequest;
   XWindowAttributes attrs;
   XGetWindowAttributes(mon->ctx->dpy, e->window, &attrs);
-  if (!IsSet(attrs.your_event_mask, FocusChangeMask))
+  if (!IS_SET(attrs.your_event_mask, FocusChangeMask))
     XSelectInput(mon->ctx->dpy, e->window,
                  attrs.your_event_mask | FocusChangeMask);
   // map request only fires on windows with 'override_redirect' set to false.

@@ -48,15 +48,20 @@ Context *create_context()
   ctx.atoms[NetClientList] = XInternAtom(ctx.dpy, "_NET_CLIENT_LIST", False);
 
   XDeleteProperty(ctx.dpy, ctx.root, ctx.atoms[NetClientList]);
-  XSetWindowAttributes attrs = {.cursor     = ctx.cursors[CurNormal],
-                                .event_mask = RootWindowEventMasks};
-  XChangeWindowAttributes(ctx.dpy, ctx.root, CWCursor | CWEventMask, &attrs);
-  for (size_t i = 0; i < Length(keys); ++i)
-    XGrabKey(ctx.dpy, XKeysymToKeycode(ctx.dpy, keys[i].sym), keys[i].mask,
-             ctx.root, 0, GrabModeAsync, GrabModeAsync);
-  for (size_t i = 0; i < Length(buttons); ++i)
-    XGrabButton(ctx.dpy, buttons[i].sym, buttons[i].mask, ctx.root, False,
+  XChangeWindowAttributes(
+      ctx.dpy, ctx.root, CWCursor | CWEventMask,
+      &(XSetWindowAttributes){.cursor     = ctx.cursors[CurNormal],
+                              .event_mask = RootWindowEventMasks});
+  FOREACH(const Binding *key, keys)
+  {
+    XGrabKey(ctx.dpy, XKeysymToKeycode(ctx.dpy, key->sym), key->mask, ctx.root,
+             0, GrabModeAsync, GrabModeAsync);
+  }
+  FOREACH(const Binding *button, buttons)
+  {
+    XGrabButton(ctx.dpy, button->sym, button->mask, ctx.root, False,
                 ButtonMasks, GrabModeAsync, GrabModeAsync, None, None);
+  }
   return &ctx;
 }
 

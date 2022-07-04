@@ -4,7 +4,6 @@
 #include <cluless/core/monitor.h>
 #include <stdint.h>
 
-enum { Move, Resize };
 typedef union {
   int i;
   const char **cmd;
@@ -35,7 +34,8 @@ void toggle_gap(Monitor *, const Arg *);
 void toggle_border(Monitor *, const Arg *);
 
 // button bindings.
-void move_resize(Monitor *, const Arg *);
+void move_client(Monitor *, const Arg *);
+void resize_client(Monitor *, const Arg *);
 void focus_client(Monitor *, const Arg *);
 
 #endif

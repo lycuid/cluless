@@ -1,9 +1,9 @@
 NAME=cluless
-VERSION=0.4.0
+VERSION=0.4.1
 BUILD=.build
-ODIR=$(BUILD)/cache
 IDIR=src
-BIN=$(BUILD)/$(NAME)
+ODIR=$(BUILD)/cache
+BIN=$(BUILD)/bin/$(NAME)
 PREFIX=/usr/local
 BINPREFIX=$(PREFIX)/bin
 
@@ -27,20 +27,17 @@ FLAGS=-Wall -Wextra -pedantic -I$(IDIR) -ggdb -O3
 override CFLAGS+=$(FLAGS) $(DEFINE) $(shell pkg-config --cflags $(PKGS))
 override LDFLAGS+=$(shell pkg-config --libs $(PKGS))
 
-define compile-src =
-	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
-endef
-
 # Link.
 $(BIN): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(BIN) $(OBJS)
-
-# Build.
-$(ODIR)/%.o: $(IDIR)/%.c $(IDIR)/%.h ; $(compile-src)
-$(ODIR)/%.o: $(IDIR)/%.c             ; $(compile-src)
+	mkdir -p $(@D) && $(CC) $(CFLAGS) $(LDFLAGS) -o $(BIN) $(OBJS)
 
 $(OBJS): $(IDIR)/config.h $(IDIR)/preprocs.h
+
+# Build.
+$(ODIR)/%.o: $(IDIR)/%.c $(IDIR)/%.h $(@D)
+	mkdir -p $(@D) && $(CC) $(CFLAGS) -c -o $@ $<
+$(ODIR)/%.o: $(IDIR)/%.c $(@D)
+	mkdir -p $(@D) && $(CC) $(CFLAGS) -c -o $@ $<
 
 .PHONY: install
 install: $(BIN)
