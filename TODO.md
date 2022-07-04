@@ -15,11 +15,14 @@ todo:
 
 less important todos:
 ---------------------
-  - [ ] a parent (frame) window for the clients, to possibly support titlebar, close button, window move etc.
+  - [ ] a parent (frame) window for the clients, to possibly support titlebar,
+        close button, window move etc.
   - [ ] workspace related apis (e.g. `ws_getclient`) in constant time.
 
 bugs:
 -----
-  - [X] The statusbar's file stream pointer need to be nullified if the statusbar is terminated.
+  - [X] The statusbar's file stream pointer need to be nullified if the
+        statusbar is terminated.
   - [X] negative resize causes crash.
   - [X] scratchpad dangling pointer, if window gets destroyed while unmapped.
+  - [ ] ewmh's `_NET_CLIENT_LIST` doesn't play well with scratchpads.

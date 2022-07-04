@@ -10,22 +10,28 @@
 #define RootWindowEventMasks SubstructureRedirectMask | SubstructureNotifyMask
 
 // misc.
-#define Length(s)   (sizeof(s) / sizeof(*s))
 #define ButtonMasks (ButtonPressMask | ButtonReleaseMask)
-#define Max(x, y)   (x) > (y) ? (x) : (y)
-#define Min(x, y)   (x) < (y) ? (x) : (y)
+#define LENGTH(s)   (sizeof(s) / sizeof(s[0]))
+#define MAX(x, y)   (x) > (y) ? (x) : (y)
+#define MIN(x, y)   (x) < (y) ? (x) : (y)
+
+// cannot have nested, variable 'it' will repeat.
+#define ITER(iterable) for (size_t it = 0; it < LENGTH(iterable); ++it)
+#define FOREACH(var, iterable)                                                 \
+  for (int cond = 1, it = 0, size = LENGTH(iterable); cond && it < size;       \
+       cond = !cond, it = it + 1)                                              \
+    for (var = iterable + it; cond; cond = !cond)
 
 // flag ops.
-#define Set(state, mask)    state |= (mask)
-#define UnSet(state, mask)  state &= ~(mask)
-#define Toggle(state, mask) state ^= (mask)
-#define IsSet(state, mask)  (state & (mask))
+#define SET(state, mask)    state |= (mask)
+#define UNSET(state, mask)  state &= ~(mask)
+#define TOGGLE(state, mask) state ^= (mask)
+#define IS_SET(state, mask) (state & (mask))
 
 // logging.
-#define eprintf(...) fprintf(stderr, __VA_ARGS__)
 #define die(...)                                                               \
   {                                                                            \
-    eprintf(__VA_ARGS__);                                                      \
+    fprintf(stderr, __VA_ARGS__);                                              \
     exit(EXIT_FAILURE);                                                        \
   }
 typedef enum {
@@ -39,6 +45,7 @@ typedef enum {
   FmtOptionsCount
 } Logging;
 
+typedef uint32_t State;
 typedef struct {
   int x, y;
   uint32_t w, h;

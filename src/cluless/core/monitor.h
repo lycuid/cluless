@@ -8,7 +8,7 @@
 typedef struct {
   Client *client;
   int x, y, cx, cy, cw, ch;
-  uint32_t mask;
+  State state;
   Time at;
 } PointerGrab;
 
@@ -26,13 +26,12 @@ typedef enum { ClientAdd, ClientRemove, NullHook } client_hook_t;
 typedef void (*ClientHook)(Monitor *, Client *);
 typedef void (*EventHandler)(Monitor *, const XEvent *);
 
-#define mon_workspaceat(mon, at) (&mon->wss[at % Length(workspaces)])
+#define mon_workspaceat(mon, at) (&mon->wss[at % LENGTH(workspaces)])
 
 void mon_init(Monitor *);
-// client that can be reached by the monitor (present in some workspace in
-// the monitor 'mon->wss').
+// client is added to some workspace in the monitor.
 void mon_manage_client(Monitor *, Client *);
-// remove client from any/all workspaces (unreachable client).
+// client is removed from any/all workspaces in the monitor.
 void mon_unmanage_client(Monitor *, Client *);
 void mon_focusclient(Monitor *, Client *);
 void mon_restack(Monitor *);

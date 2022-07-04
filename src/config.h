@@ -40,7 +40,7 @@ static const char *const LogFormat[FmtOptionsCount] = {
 
 // clang-format off
 static const WindowRule window_rules[] = {
-    {ResClass, "LibreWolf",     move_client_to_ws,  {.i = 2}},
+    {ResClass, "librewolf",     move_client_to_ws,  {.i = 2}},
     {ResClass, "Brave-browser", move_client_to_ws,  {.i = 2}},
     {ResClass, "mpv",           float_client,       {0}},
     {ResClass, "vlc",           float_client,       {0}},
@@ -60,9 +60,9 @@ static const Binding keys[] = {
     {Mod | ShiftMask,   XK_q,       quit,               {0}},
     {Mod | ShiftMask,   XK_Return,  swap_master,        {0}},
     {Mod | ShiftMask,   XK_c,       kill_client,        {0}},
-    {Mod | ShiftMask,   XK_j,       shift_client,       {.i = 1}},
+    {Mod | ShiftMask,   XK_j,       shift_client,       {.i = +1}},
     {Mod | ShiftMask,   XK_k,       shift_client,       {.i = -1}},
-    {Mod,               XK_j,       shift_focus,        {.i = 1}},
+    {Mod,               XK_j,       shift_focus,        {.i = +1}},
     {Mod,               XK_k,       shift_focus,        {.i = -1}},
     {Mod,               XK_t,       tile_client,        {0}},
     // scratchpad.
@@ -77,8 +77,8 @@ static const Binding keys[] = {
     WSKeys(             XK_5,                           4)};
 
 static const Binding buttons[] = {
-    {ControlMask,     Button3,    focus_client,       {0}},
-    {Mod,             Button1,    move_resize,        {.i = Move}},
-    {Mod,             Button3,    move_resize,        {.i = Resize}}};
+    {Mod,             Button1,    move_client,        {0}},
+    {Mod,             Button3,    resize_client,      {0}},
+    {ControlMask,     Button3,    focus_client,       {0}}};
 
 #endif

@@ -12,7 +12,7 @@ static Client *revert_focus_to = NULL;
 void sch_fromclient(Monitor *mon, const Arg *arg)
 {
   Client *c = ws_find(mon->selws, ClActive);
-  Set(c->state, ClFloating);
+  SET(c->state, ClFloating);
   // @NOTE: user can create multiple scratchpad windows with similar id, but we
   // need to make sure that we only track one of them (first one created), for
   // avoiding dangling pointers.
@@ -49,9 +49,10 @@ static inline void sch_nullify_local_pointer(Window w)
     revert_focus_to = NULL;
     return;
   }
-  for (size_t i = 0; i < sch_cnt; ++i) {
-    if (sch_clients[i] && sch_clients[i]->window == w) {
-      sch_clients[i] = NULL;
+  ITER(sch_clients)
+  {
+    if (sch_clients[it] && sch_clients[it]->window == w) {
+      sch_clients[it] = NULL;
       return;
     }
   }

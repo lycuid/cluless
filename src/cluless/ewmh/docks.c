@@ -37,10 +37,10 @@ void update_screen_geometry(Monitor *mon)
   // my personal use case, also, I don't understand it completely).
   int64_t left = 0, right = 0, top = 0, bottom = 0;
   for (DockCache *d = dock.cache; dock.visible && d; d = d->next) {
-    left   = Max(left, d->strut[Left]);
-    right  = Max(right, d->strut[Right]);
-    top    = Max(top, d->strut[Top]);
-    bottom = Max(bottom, d->strut[Bottom]);
+    left   = MAX(left, d->strut[Left]);
+    right  = MAX(right, d->strut[Right]);
+    top    = MAX(top, d->strut[Top]);
+    bottom = MAX(bottom, d->strut[Bottom]);
   }
   mon->screen = get_screen_rect();
   mon->screen.x += left;

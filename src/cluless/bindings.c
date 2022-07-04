@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+static inline void move_resize_client(Monitor *, State);
+
 void quit(Monitor *mon, const Arg *arg)
 {
   (void)arg;
@@ -128,7 +130,7 @@ void tile_client(Monitor *mon, const Arg *arg)
   Client *c = ws_find(mon->selws, ClActive);
   if (!c)
     return;
-  UnSet(c->state, CL_UNTILED_STATE);
+  UNSET(c->state, CL_UNTILED_STATE);
   mon_restack(mon);
   mon_applylayout(mon);
 }
@@ -139,7 +141,7 @@ void float_client(Monitor *mon, const Arg *arg)
   Client *c = ws_find(mon->selws, ClActive);
   if (!c)
     return;
-  Set(c->state, ClFloating);
+  SET(c->state, ClFloating);
   mon_restack(mon);
   mon_applylayout(mon);
 }
@@ -161,22 +163,16 @@ void reset_layout(Monitor *mon, const Arg *arg)
   mon_applylayout(mon);
 }
 
-void move_resize(Monitor *mon, const Arg *arg)
+void move_client(Monitor *mon, const Arg *arg)
 {
-  int state = arg->i;
-  Client *c = mon->grabbed.client;
-  if (!c)
-    return;
-  XSetWindowAttributes attrs = {
-      .cursor = mon->ctx->cursors[state == Move ? CurMove : CurResize]};
-  XChangeWindowAttributes(mon->ctx->dpy, c->window, CWCursor, &attrs);
-  State new_state = state == Move ? ClMoving : ClResizing;
-  if (lm_getlayout(&mon->selws->layout_manager)->apply)
-    new_state |= ClFloating;
-  Set(c->state, new_state);
-  mon_focusclient(mon, c);
-  mon_restack(mon);
-  mon_applylayout(mon);
+  (void)arg;
+  move_resize_client(mon, ClMoving);
+}
+
+void resize_client(Monitor *mon, const Arg *arg)
+{
+  (void)arg;
+  move_resize_client(mon, ClResizing);
 }
 
 void focus_client(Monitor *mon, const Arg *arg)
@@ -201,5 +197,24 @@ void toggle_border(Monitor *mon, const Arg *arg)
   lm->borderpx      = lm->borderpx == 0 ? borderpx : 0;
   for (Client *c = mon->selws->cl_head; c; c = c->next)
     XSetWindowBorderWidth(mon->ctx->dpy, c->window, lm->borderpx);
+  mon_applylayout(mon);
+}
+
+static inline void move_resize_client(Monitor *mon, State state)
+{
+  Client *c = mon->grabbed.client;
+  if (!c)
+    return;
+  // set cursor
+  int cur = mon->ctx->cursors[IS_SET(state, ClMoving) ? CurMove : CurResize];
+  XChangeWindowAttributes(mon->ctx->dpy, c->window, CWCursor,
+                          &(XSetWindowAttributes){.cursor = cur});
+  // set client as floating if the layout is not NULL (floating layout).
+  if (lm_getlayout(&mon->selws->layout_manager)->apply)
+    SET(state, ClFloating);
+  // update client state.
+  SET(c->state, state);
+  mon_focusclient(mon, c);
+  mon_restack(mon);
   mon_applylayout(mon);
 }

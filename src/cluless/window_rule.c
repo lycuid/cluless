@@ -16,9 +16,8 @@ void window_rule_apply(Monitor *mon, Client *c)
 {
   XClassHint class;
   XTextProperty wm_name;
-  for (size_t i = 0; i < Length(window_rules); ++i) {
-    const WindowRule *rule = &window_rules[i];
-
+  FOREACH(const WindowRule *rule, window_rules)
+  {
     // ResTitle.
     if (rule->res_type == ResTitle)
       if (get_window_title(c->window, &wm_name) && wm_name.nitems)

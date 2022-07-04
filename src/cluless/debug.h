@@ -10,12 +10,8 @@
     fflush(sink);                                                              \
   }
 
-#define ERROR(fmt, ...) __log__(stderr, "[ERROR] " fmt, ##__VA_ARGS__)
-
-#define LOG(...)         __log__(stdout, __VA_ARGS__)
-#define EVENT(fmt, ...)  LOG("[EVENT] " fmt, ##__VA_ARGS__);
-#define INFO(fmt, ...)   LOG("[INFO] " fmt, ##__VA_ARGS__);
-#define ACTION(fmt, ...) LOG("[ACTION] " fmt, ##__VA_ARGS__);
+#define LOG(...)   __log__(stdout, __VA_ARGS__)
+#define ERROR(...) __log__(stderr, __VA_ARGS__)
 
 static const char *const EventRepr[LASTEvent] = {
     [KeyPress]         = "KeyPress",

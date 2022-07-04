@@ -2,7 +2,7 @@
 #define __CORE__CLIENT_H__
 
 #include <X11/Xlib.h>
-#include <stdint.h>
+#include <cluless/core.h>
 
 #define ClActive     (1 << 0)
 #define ClFloating   (1 << 1)
@@ -15,7 +15,6 @@
 
 #define cl_neighbour(c) (c ? c->prev ? c->prev : c->next : NULL)
 
-typedef uint32_t State;
 typedef struct _Client {
   State state;
   Window window;

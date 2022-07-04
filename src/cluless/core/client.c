@@ -1,5 +1,4 @@
 #include "client.h"
-#include <cluless/core.h>
 #include <stdlib.h>
 
 Client *cl_create(Window w)
@@ -13,8 +12,8 @@ Client *cl_create(Window w)
   XSizeHints size;
   long flags;
   XGetWMNormalHints(ctx->dpy, c->window, &size, &flags);
-  c->minw = IsSet(flags, PMinSize) ? size.min_width : 10;
-  c->minh = IsSet(flags, PMinSize) ? size.min_height : 10;
+  c->minw = IS_SET(flags, PMinSize) ? size.min_width : 10;
+  c->minh = IS_SET(flags, PMinSize) ? size.min_height : 10;
   return c;
 }
 
@@ -22,7 +21,7 @@ Client *cl_create(Window w)
 Client *cl_nexttiled(Client *c)
 {
   if (c)
-    for (c = c->next; c && IsSet(c->state, CL_UNTILED_STATE); c = c->next)
+    for (c = c->next; c && IS_SET(c->state, CL_UNTILED_STATE); c = c->next)
       ;
   return c;
 }
