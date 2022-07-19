@@ -4,27 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum {
-  Left,
-  Right,
-  Top,
-  Bottom,
-  LeftStartY,
-  LeftEndY,
-  RightStartY,
-  RightEndY,
-  TopStartX,
-  TopEndX,
-  BottomStartX,
-  BottomEndX,
-  StrutEnd
-};
+ENUM(Strut, Left, Right, Top, Bottom, LeftStartY, LeftEndY, RightStartY,
+     RightEndY, TopStartX, TopEndX, BottomStartX, BottomEndX);
 
 static struct Dock {
   bool visible : 1;
   struct DockCache {
     Window windowid;
-    int64_t strut[StrutEnd];
+    int64_t strut[NullStrut];
     struct DockCache *next;
   } * cache;
 } dock = {true, NULL};
@@ -53,7 +40,7 @@ void dcache_put(Window wid, int64_t *strut, int nstrut)
 {
   DockCache *cache = malloc(sizeof(DockCache));
   cache->windowid  = wid;
-  memset(cache->strut, 0, sizeof(int64_t) * StrutEnd);
+  memset(cache->strut, 0, sizeof(int64_t) * NullStrut);
   memcpy(cache->strut, strut, sizeof(int64_t) * nstrut);
   cache->next = dock.cache;
   dock.cache  = cache;
@@ -95,7 +82,7 @@ void manage_dock(Monitor *mon, Window window)
   XFree(dock_window);
 
   // getting strut values for the dock type window.
-  int nstrut     = StrutEnd;
+  int nstrut     = NullStrut;
   int64_t *strut = NULL;
   get_window_property(window, mon->ctx->atoms[NetWMStrutPartial],
                       sizeof(int64_t) * nstrut, (uint8_t **)&strut);

@@ -13,6 +13,7 @@ Context *request_context() { return &ctx; }
 static void stop_status_logging() { ctx.statuslogger = NULL; }
 static void start_status_logging()
 {
+  // [Broken Pipe] piped program crashes/stops, nullify the pointer.
   signal(SIGPIPE, stop_status_logging);
   ctx.statuslogger = statusbar[0] ? popen(statusbar[0], "w") : NULL;
 }
