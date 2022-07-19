@@ -6,18 +6,26 @@
 #include <X11/Xutil.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define RootWindowEventMasks SubstructureRedirectMask | SubstructureNotifyMask
 
 // misc.
-#define ButtonMasks (ButtonPressMask | ButtonReleaseMask)
-#define LENGTH(s)   (sizeof(s) / sizeof(s[0]))
-#define MAX(x, y)   (x) > (y) ? (x) : (y)
-#define MIN(x, y)   (x) < (y) ? (x) : (y)
+#define ButtonMasks  (ButtonPressMask | ButtonReleaseMask)
+#define LENGTH(s)    (sizeof(s) / sizeof(s[0]))
+#define MAX(x, y)    (x) > (y) ? (x) : (y)
+#define MIN(x, y)    (x) < (y) ? (x) : (y)
+#define CALL(f, ...) f ? f(__VA_ARGS__) : (void)0
 
-// cannot have nested, variable 'it' will repeat.
-#define ITER(iterable) for (size_t it = 0; it < LENGTH(iterable); ++it)
+#define ENUM(identifier, ...) /* 'NULL' terminated enum values. */             \
+  typedef enum { __VA_ARGS__, Null##identifier } identifier
+
+#define ITER(iterable)                                                         \
+  /* @NOTE: cannot have nested as variable 'it' will repeat */                 \
+  for (size_t it = 0; it < LENGTH(iterable); ++it)
+
 #define FOREACH(var, iterable)                                                 \
+  /* @NOTE: cannot have nested as variable 'it' will repeat */                 \
   for (int cond = 1, it = 0, size = LENGTH(iterable); cond && it < size;       \
        cond = !cond, it = it + 1)                                              \
     for (var = iterable + it; cond; cond = !cond)
@@ -26,7 +34,7 @@
 #define SET(state, mask)    state |= (mask)
 #define UNSET(state, mask)  state &= ~(mask)
 #define TOGGLE(state, mask) state ^= (mask)
-#define IS_SET(state, mask) (state & (mask))
+#define IS_SET(state, mask) ((state & (mask)) > 0)
 
 // logging.
 #define die(...)                                                               \
@@ -51,23 +59,13 @@ typedef struct {
   uint32_t w, h;
 } Geometry;
 
-enum { CurNormal, CurResize, CurMove, CurNull };
-enum {
-  // ICCC Atoms.
-  WMProtocols,
-  WMName,
-  WMDeleteWindow,
-  WMTransientFor,
-  // EWMH Atoms.
-  NetWMName,
-  NetWMWindowType,
-  NetWMWindowTypeDock,
-  NetWMStrut,
-  NetWMStrutPartial,
-  NetActiveWindow,
-  NetClientList,
-  NullAtom
-};
+ENUM(CursorType, CurNormal, CurResize, CurMove);
+ENUM(AtomType,
+     // ICCC Atoms.
+     WMProtocols, WMName, WMDeleteWindow, WMTransientFor,
+     // EWMH Atoms.
+     NetWMName, NetWMWindowType, NetWMWindowTypeDock, NetWMStrut,
+     NetWMStrutPartial, NetActiveWindow, NetClientList);
 
 // These are mainly the values that don't (shouldn't) change throughout the
 // application lifetime.
@@ -75,8 +73,8 @@ typedef struct {
   bool running : 1;
   Display *dpy;
   Window root;
-  Cursor cursors[CurNull];
-  Atom atoms[NullAtom];
+  Cursor cursors[NullCursorType];
+  Atom atoms[NullAtomType];
   FILE *statuslogger;
 } Context;
 

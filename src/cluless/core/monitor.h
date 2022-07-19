@@ -22,7 +22,7 @@ typedef struct {
 
 // hooks are only called on clients which are attached to the workspaces managed
 // my the monitor.
-typedef enum { ClientAdd, ClientRemove, NullHook } client_hook_t;
+ENUM(HookType, ClientAdd, ClientRemove);
 typedef void (*ClientHook)(Monitor *, Client *);
 typedef void (*EventHandler)(Monitor *, const XEvent *);
 

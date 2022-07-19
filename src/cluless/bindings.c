@@ -34,7 +34,6 @@ void swap_master(Monitor *mon, const Arg *arg)
     return;
   ws_detachclient(mon->selws, c);
   ws_attachclient(mon->selws, c);
-  mon_restack(mon);
   mon_applylayout(mon);
 }
 
@@ -60,7 +59,6 @@ void shift_client(Monitor *mon, const Arg *arg)
   else
     while (-offset++)
       ws_clmoveup(mon->selws, c);
-  mon_restack(mon);
   mon_applylayout(mon);
 }
 
@@ -80,7 +78,6 @@ void shift_focus(Monitor *mon, const Arg *arg)
       c = c->prev ? c->prev : cl_last(c);
 LAYOUT_AND_EXIT:
   mon_focusclient(mon, c);
-  mon_applylayout(mon);
 }
 
 void move_client_to_ws(Monitor *mon, const Arg *arg)
@@ -102,7 +99,6 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
     ws_attachclient(to, c);
   // as the client is detached from the 'selws', it wont be destroyed on unmap.
   XUnmapWindow(mon->ctx->dpy, c->window);
-  mon_applylayout(mon);
 }
 
 void select_ws(Monitor *mon, const Arg *arg)
@@ -121,7 +117,6 @@ void select_ws(Monitor *mon, const Arg *arg)
 
   if (!ws_find(to, ClActive))
     mon_focusclient(mon, to->cl_head);
-  mon_applylayout(mon);
 }
 
 void tile_client(Monitor *mon, const Arg *arg)
@@ -131,7 +126,6 @@ void tile_client(Monitor *mon, const Arg *arg)
   if (!c)
     return;
   UNSET(c->state, CL_UNTILED_STATE);
-  mon_restack(mon);
   mon_applylayout(mon);
 }
 
@@ -142,7 +136,6 @@ void float_client(Monitor *mon, const Arg *arg)
   if (!c)
     return;
   SET(c->state, ClFloating);
-  mon_restack(mon);
   mon_applylayout(mon);
 }
 
@@ -215,6 +208,5 @@ static inline void move_resize_client(Monitor *mon, State state)
   // update client state.
   SET(c->state, state);
   mon_focusclient(mon, c);
-  mon_restack(mon);
   mon_applylayout(mon);
 }

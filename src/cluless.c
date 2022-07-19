@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline void ManageClientHook(client_hook_t, Monitor *, Client *);
+static inline void ManageClientHook(HookType, Monitor *, Client *);
 
 void onMapRequest(Monitor *, const XEvent *);
 void onMapNotify(Monitor *, const XEvent *);
@@ -23,7 +23,7 @@ void onMotionNotify(Monitor *, const XEvent *);
 void onButtonRelease(Monitor *, const XEvent *);
 void onDestroyNotify(Monitor *, const XEvent *);
 
-static const ClientHook default_client_hooks[NullHook] = {
+static const ClientHook default_client_hooks[NullHookType] = {
     [ClientAdd] = mon_manage_client, [ClientRemove] = mon_unmanage_client};
 
 static const EventHandler default_event_handlers[LASTEvent] = {
@@ -38,14 +38,13 @@ static const EventHandler default_event_handlers[LASTEvent] = {
     [ButtonRelease]    = onButtonRelease,
     [DestroyNotify]    = onDestroyNotify};
 
-static inline void ManageClientHook(client_hook_t type, Monitor *mon, Client *c)
+static inline void ManageClientHook(HookType type, Monitor *mon, Client *c)
 {
-  if (type != ClientRemove && default_client_hooks[type])
-    default_client_hooks[type](mon, c);
-  if (sch_client_hooks[type])
-    sch_client_hooks[type](mon, c);
-  if (type == ClientRemove && default_client_hooks[type])
-    default_client_hooks[type](mon, c);
+  if (type != ClientRemove)
+    CALL(default_client_hooks[type], mon, c);
+  CALL(sch_client_hooks[type], mon, c);
+  if (type == ClientRemove)
+    CALL(default_client_hooks[type], mon, c);
   if (type == ClientRemove && c)
     free(c);
 }
@@ -63,7 +62,6 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   Window w;
   if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
     SET(c->state, ClTransient);
-  mon_restack(mon);
   mon_applylayout(mon);
   XMapWindow(mon->ctx->dpy, c->window);
 }
@@ -96,7 +94,6 @@ void onConfigureRequest(Monitor *mon, const XEvent *xevent)
                                      .stack_mode   = e->detail};
   XConfigureWindow(mon->ctx->dpy, e->window, e->value_mask, &changes);
   XSync(mon->ctx->dpy, False);
-  mon_applylayout(mon);
 }
 
 void onPropertyNotify(Monitor *mon, const XEvent *xevent)
@@ -224,17 +221,23 @@ int main(int argc, char const **argv)
   while (mon.ctx->running && !XNextEvent(mon.ctx->dpy, &e)) {
     if (EventRepr[e.type] && e.type != MotionNotify)
       LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
-    if (e.type != DestroyNotify && default_event_handlers[e.type])
-      default_event_handlers[e.type](&mon, &e);
-    if (sch_event_handlers[e.type])
-      sch_event_handlers[e.type](&mon, &e);
-    if (dock_event_handlers[e.type])
-      dock_event_handlers[e.type](&mon, &e);
-    if (ewmh_event_handlers[e.type])
-      ewmh_event_handlers[e.type](&mon, &e);
-    if (e.type == DestroyNotify && default_event_handlers[e.type])
-      default_event_handlers[e.type](&mon, &e);
+    if (e.type != DestroyNotify)
+      CALL(default_event_handlers[e.type], &mon, &e);
+    CALL(sch_event_handlers[e.type], &mon, &e);
+    CALL(dock_event_handlers[e.type], &mon, &e);
+    CALL(ewmh_event_handlers[e.type], &mon, &e);
+    if (e.type == DestroyNotify)
+      CALL(default_event_handlers[e.type], &mon, &e);
+    switch (e.type) {
+    case MapNotify:
+    case UnmapNotify:
+    case FocusIn:
+    case ConfigureNotify:
+      mon_applylayout(&mon);
+    }
   }
+  XUngrabKey(mon.ctx->dpy, AnyKey, AnyModifier, mon.ctx->root);
+  XUngrabButton(mon.ctx->dpy, AnyButton, AnyModifier, mon.ctx->root);
   XCloseDisplay(mon.ctx->dpy);
 
 EXIT:

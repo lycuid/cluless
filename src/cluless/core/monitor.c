@@ -69,21 +69,32 @@ LOG_AND_EXIT:
 
 void mon_restack(Monitor *mon)
 {
-  Client *c;
-  int i, fs, fl;
-  for (c = mon->selws->cl_head, i = fs = fl = 0; c; c = c->next, i++) {
+  Client *c = mon->selws->cl_head, *active = NULL;
+  if (!c)
+    return;
+
+  int floating = 0, fullscreen = 0, i = 0;
+  for (; c; c = c->next, i++) {
     if (IS_SET(c->state, ClFloating | ClTransient))
-      fl++;
+      floating++;
     if (IS_SET(c->state, ClFullscreen))
-      fs++;
+      fullscreen++;
+    if (IS_SET(c->state, ClActive))
+      active = c;
   }
-  fs += fl;
-  Window wid[i];
-  for (c = mon->selws->cl_head, i = 0; c; c = c->next)
-    wid[IS_SET(c->state, ClFloating | ClTransient) ? i++
-        : IS_SET(c->state, ClFullscreen)           ? fl++
-                                                   : fs++] = c->window;
-  XRestackWindows(mon->ctx->dpy, wid, fs);
+  Window stack[i];
+  fullscreen += floating, i = 0;
+#define AddToStack(c)                                                          \
+  stack[IS_SET(c->state, ClFloating | ClTransient) ? i++                       \
+        : IS_SET(c->state, ClFullscreen)           ? floating++                \
+                                                   : fullscreen++] = c->window;
+  if (active)
+    AddToStack(active);
+  for (c = mon->selws->cl_head; c; c = c->next)
+    if (c != active)
+      AddToStack(c);
+#undef AddToStack
+  XRestackWindows(mon->ctx->dpy, stack, fullscreen);
 }
 
 void mon_applylayout(Monitor *mon)
@@ -91,6 +102,7 @@ void mon_applylayout(Monitor *mon)
   const Layout *layout = lm_getlayout(&mon->selws->layout_manager);
   if (layout->apply)
     layout->apply(mon);
+  mon_restack(mon);
   mon_statuslog(mon);
 }
 
@@ -162,13 +174,12 @@ void mon_statuslog(Monitor *mon)
     if (active) {
       XTextProperty wm_name;
       if (get_window_title(active->window, &wm_name) && wm_name.nitems) {
-        size_t trim = 30;
-        char title[trim + 1];
+        char title[trim_title + 1];
         memset(title, '.', sizeof(title));
         memcpy(title, wm_name.value,
-               wm_name.nitems >= trim ? trim - 3 : wm_name.nitems);
-        title[MIN(wm_name.nitems, trim)] = 0;
-        StatusLog(" %s ", title);
+               wm_name.nitems >= trim_title ? trim_title - 3 : wm_name.nitems);
+        title[MIN(wm_name.nitems, trim_title)] = 0;
+        StatusLog(LogFormat[FmtWindowTitle], title);
       }
     }
   }
