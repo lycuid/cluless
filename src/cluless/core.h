@@ -60,12 +60,9 @@ typedef struct {
 } Geometry;
 
 ENUM(CursorType, CurNormal, CurResize, CurMove);
-ENUM(AtomType,
-     // ICCC Atoms.
-     WMProtocols, WMName, WMDeleteWindow, WMTransientFor,
-     // EWMH Atoms.
-     NetWMName, NetWMWindowType, NetWMWindowTypeDock, NetWMStrut,
-     NetWMStrutPartial, NetActiveWindow, NetClientList);
+ENUM(WMAtom, WM_PROTOCOLS, WM_NAME, WM_DELETE_WINDOW, WM_TRANSIENT_FOR);
+ENUM(NetAtom, NET_WM_NAME, NET_WM_WINDOW_TYPE, NET_WM_WINDOW_TYPE_DOCK,
+     NET_WM_STRUT, NET_WM_STRUT_PARTIAL, NET_ACTIVE_WINDOW, NET_CLIENT_LIST);
 
 // These are mainly the values that don't (shouldn't) change throughout the
 // application lifetime.
@@ -74,7 +71,7 @@ typedef struct {
   Display *dpy;
   Window root;
   Cursor cursors[NullCursorType];
-  Atom atoms[NullAtomType];
+  Atom wmatoms[NullWMAtom], netatoms[NullNetAtom];
   FILE *statuslogger;
 } Context;
 

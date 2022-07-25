@@ -13,7 +13,6 @@ static inline void update_client_list(Monitor *mon)
     for (Client *c = mon_workspaceat(mon, it)->cl_head; c; c = c->next)
       managed_client_count++;
   }
-
   Window wids[managed_client_count];
   managed_client_count = 0;
   ITER(workspaces)
@@ -21,10 +20,9 @@ static inline void update_client_list(Monitor *mon)
     for (Client *c = mon_workspaceat(mon, it)->cl_head; c; c = c->next)
       wids[managed_client_count++] = c->window;
   }
-
-  XChangeProperty(mon->ctx->dpy, mon->ctx->root, mon->ctx->atoms[NetClientList],
-                  XA_WINDOW, 32, PropModeReplace, (uint8_t *)wids,
-                  managed_client_count);
+  XChangeProperty(mon->ctx->dpy, mon->ctx->root,
+                  mon->ctx->netatoms[NET_CLIENT_LIST], XA_WINDOW, 32,
+                  PropModeReplace, (uint8_t *)wids, managed_client_count);
 }
 
 // @TODO: find a better way to do this.
@@ -55,7 +53,7 @@ void ewmh_focusin(Monitor *mon, const XEvent *xevent)
   if (!(c = ws_getclient(mon->selws, e->window)))
     return;
   XChangeProperty(mon->ctx->dpy, mon->ctx->root,
-                  mon->ctx->atoms[NetActiveWindow], XA_WINDOW, 32,
+                  mon->ctx->netatoms[NET_ACTIVE_WINDOW], XA_WINDOW, 32,
                   PropModeReplace, (uint8_t *)&c->window, 1);
 }
 
@@ -63,5 +61,5 @@ void ewmh_focusout(Monitor *mon, const XEvent *xevent)
 {
   (void)xevent;
   XDeleteProperty(mon->ctx->dpy, mon->ctx->root,
-                  mon->ctx->atoms[NetActiveWindow]);
+                  mon->ctx->netatoms[NET_ACTIVE_WINDOW]);
 }

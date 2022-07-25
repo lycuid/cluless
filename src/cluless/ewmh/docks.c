@@ -75,19 +75,20 @@ void manage_dock(Monitor *mon, Window window)
 
   // checking if window is of type dock.
   Atom *dock_window = NULL;
-  get_window_property(window, mon->ctx->atoms[NetWMWindowType], 1,
+  get_window_property(window, mon->ctx->netatoms[NET_WM_WINDOW_TYPE], 1,
                       (uint8_t **)&dock_window);
-  if (!dock_window || *dock_window != mon->ctx->atoms[NetWMWindowTypeDock])
+  if (!dock_window ||
+      *dock_window != mon->ctx->netatoms[NET_WM_WINDOW_TYPE_DOCK])
     return;
   XFree(dock_window);
 
   // getting strut values for the dock type window.
   int nstrut     = NullStrut;
   int64_t *strut = NULL;
-  get_window_property(window, mon->ctx->atoms[NetWMStrutPartial],
+  get_window_property(window, mon->ctx->netatoms[NET_WM_STRUT_PARTIAL],
                       sizeof(int64_t) * nstrut, (uint8_t **)&strut);
   if (!strut)
-    get_window_property(window, mon->ctx->atoms[NetWMStrut],
+    get_window_property(window, mon->ctx->netatoms[NET_WM_STRUT],
                         sizeof(int64_t) * (nstrut = 4), (uint8_t **)&strut);
   if (!strut)
     return;
@@ -109,8 +110,8 @@ void dock_mapnotify(Monitor *mon, const XEvent *xevent)
 void dock_propertynotify(Monitor *mon, const XEvent *xevent)
 {
   const XPropertyEvent *e = &xevent->xproperty;
-  if (e->atom != mon->ctx->atoms[NetWMStrut] &&
-      e->atom != mon->ctx->atoms[NetWMStrutPartial])
+  if (e->atom != mon->ctx->netatoms[NET_WM_STRUT] &&
+      e->atom != mon->ctx->netatoms[NET_WM_STRUT_PARTIAL])
     return;
   manage_dock(mon, e->window);
 }
