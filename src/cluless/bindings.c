@@ -43,7 +43,7 @@ void kill_client(Monitor *mon, const Arg *arg)
   Client *c;
   if (!(c = ws_find(mon->selws, ClActive)))
     return;
-  if (!send_event(c->window, mon->ctx->atoms[WMDeleteWindow]))
+  if (!send_event(c->window, mon->ctx->wmatoms[WM_DELETE_WINDOW]))
     XKillClient(mon->ctx->dpy, c->window);
 }
 

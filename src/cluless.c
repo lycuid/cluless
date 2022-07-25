@@ -99,8 +99,9 @@ void onConfigureRequest(Monitor *mon, const XEvent *xevent)
 void onPropertyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XPropertyEvent *e = &xevent->xproperty;
-  if (e->state == PropertyNewValue && (e->atom == mon->ctx->atoms[NetWMName] ||
-                                       e->atom == mon->ctx->atoms[WMName]))
+  if (e->state == PropertyNewValue &&
+      (e->atom == mon->ctx->netatoms[NET_WM_NAME] ||
+       e->atom == mon->ctx->wmatoms[WM_NAME]))
     mon_statuslog(mon);
 }
 
