@@ -62,7 +62,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   Window w;
   if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
     SET(c->state, ClTransient);
-  mon_applylayout(mon);
+  mon->applylayout();
   XMapWindow(mon->ctx->dpy, c->window);
 }
 
@@ -71,7 +71,7 @@ void onMapNotify(Monitor *mon, const XEvent *xevent)
   const XMapEvent *e = &xevent->xmap;
   Client *c;
   if ((c = ws_getclient(mon->selws, e->window)) && IS_SET(c->state, ClActive))
-    mon_focusclient(mon, c);
+    mon->focusclient(c);
 }
 
 void onUnmapNotify(Monitor *mon, const XEvent *xevent)
@@ -102,7 +102,7 @@ void onPropertyNotify(Monitor *mon, const XEvent *xevent)
   if (e->state == PropertyNewValue &&
       (e->atom == mon->ctx->netatoms[NET_WM_NAME] ||
        e->atom == mon->ctx->wmatoms[WM_NAME]))
-    mon_statuslog(mon);
+    mon->statuslog();
 }
 
 void onKeyPress(Monitor *mon, const XEvent *xevent)
@@ -209,37 +209,36 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
 
 int main(int argc, char const **argv)
 {
+  Monitor *mon = mon_init();
+
   if (argc == 2 && (!strcmp("-v", argv[1]) || !strcmp("--version", argv[1]))) {
     fprintf(stdout, NAME "-" VERSION "\n");
     goto EXIT;
   }
 
-  XEvent e;
-  Monitor mon;
-  mon_init(&mon);
   XSetErrorHandler(xerror_handler);
-
-  while (mon.ctx->running && !XNextEvent(mon.ctx->dpy, &e)) {
+  XEvent e;
+  while (mon->ctx->running && !XNextEvent(mon->ctx->dpy, &e)) {
     if (EventRepr[e.type] && e.type != MotionNotify)
       LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
     if (e.type != DestroyNotify)
-      CALL(default_event_handlers[e.type], &mon, &e);
-    CALL(sch_event_handlers[e.type], &mon, &e);
-    CALL(dock_event_handlers[e.type], &mon, &e);
-    CALL(ewmh_event_handlers[e.type], &mon, &e);
+      CALL(default_event_handlers[e.type], mon, &e);
+    CALL(sch_event_handlers[e.type], mon, &e);
+    CALL(dock_event_handlers[e.type], mon, &e);
+    CALL(ewmh_event_handlers[e.type], mon, &e);
     if (e.type == DestroyNotify)
-      CALL(default_event_handlers[e.type], &mon, &e);
+      CALL(default_event_handlers[e.type], mon, &e);
     switch (e.type) {
     case MapNotify:
     case UnmapNotify:
     case FocusIn:
     case ConfigureNotify:
-      mon_applylayout(&mon);
+      mon->applylayout();
     }
   }
-  XUngrabKey(mon.ctx->dpy, AnyKey, AnyModifier, mon.ctx->root);
-  XUngrabButton(mon.ctx->dpy, AnyButton, AnyModifier, mon.ctx->root);
-  XCloseDisplay(mon.ctx->dpy);
+  XUngrabKey(mon->ctx->dpy, AnyKey, AnyModifier, mon->ctx->root);
+  XUngrabButton(mon->ctx->dpy, AnyButton, AnyModifier, mon->ctx->root);
+  XCloseDisplay(mon->ctx->dpy);
 
 EXIT:
   return 0;

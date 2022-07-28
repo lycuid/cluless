@@ -23,7 +23,7 @@ typedef struct _Client {
 } Client;
 
 Client *cl_create(Window);
-Client *cl_nexttiled(Client *); // O(n)
-Client *cl_last(Client *);      // O(n)
+Client *cl_nexttiled(Client *);
+Client *cl_last(Client *);
 
 #endif

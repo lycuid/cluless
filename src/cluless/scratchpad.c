@@ -27,20 +27,20 @@ void sch_toggle(Monitor *mon, const Arg *arg)
     spawn(mon, &(Arg){.cmd = &arg->cmd[1]});
     return;
   }
-  Workspace *from = mon_get_client_ws(mon, sch_client);
+  Workspace *from = mon->get_client_ws(sch_client);
   // detach sch_client, if attached to any workspace.
   if (from)
     ws_detachclient(from, sch_client);
   // if the sch_client was detached from 'selws', that means it was mapped.
   if (from == mon->selws) {
     XUnmapWindow(mon->ctx->dpy, sch_client->window);
-    mon_focusclient(mon, revert_focus_to ? revert_focus_to : from->cl_head);
+    mon->focusclient(revert_focus_to ? revert_focus_to : from->cl_head);
     return;
   }
   revert_focus_to = ws_find(mon->selws, ClActive);
   ws_attachclient(mon->selws, sch_client);
   XMapWindow(mon->ctx->dpy, sch_client->window);
-  mon_focusclient(mon, sch_client);
+  mon->focusclient(sch_client);
 }
 
 static inline void sch_nullify_local_pointer(Window w)

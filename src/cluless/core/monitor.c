@@ -5,14 +5,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-void mon_init(Monitor *mon)
+void focusclient(Client *);
+void restack();
+void applylayout();
+Workspace *get_client_ws(Client *);
+void statuslog();
+
+static Monitor mon = {.focusclient   = focusclient,
+                      .restack       = restack,
+                      .applylayout   = applylayout,
+                      .get_client_ws = get_client_ws,
+                      .statuslog     = statuslog};
+
+Monitor *mon_init()
 {
-  mon->ctx = create_context();
-  mon->wss = malloc(LENGTH(workspaces) * sizeof(Workspace));
-  ITER(workspaces) ws_init(mon_workspaceat(mon, it), workspaces[it]);
-  mon->selws  = &mon->wss[0];
-  mon->screen = get_screen_rect();
-  memset(&mon->grabbed, 0, sizeof(PointerGrab));
+  mon.ctx = create_context();
+  mon.wss = malloc(LENGTH(workspaces) * sizeof(Workspace));
+  ITER(workspaces) ws_init(mon_workspaceat(&mon, it), workspaces[it]);
+  mon.selws  = &mon.wss[0];
+  mon.screen = get_screen_rect();
+  memset(&mon.grabbed, 0, sizeof(PointerGrab));
+  return &mon;
 }
 
 void mon_manage_client(Monitor *mon, Client *c)
@@ -33,7 +46,7 @@ void mon_manage_client(Monitor *mon, Client *c)
 
 void mon_unmanage_client(Monitor *mon, Client *c)
 {
-  Workspace *ws = mon_get_client_ws(mon, c);
+  Workspace *ws = mon->get_client_ws(c);
   if (!ws)
     return;
   Client *neighbour = cl_neighbour(c);
@@ -41,35 +54,35 @@ void mon_unmanage_client(Monitor *mon, Client *c)
   // window has already been destroyed (don't want any excitement).
   ws_detachclient(ws, c);
   if (ws == mon->selws && IS_SET(c->state, ClActive))
-    mon_focusclient(mon, neighbour);
-  mon_applylayout(mon);
+    mon->focusclient(neighbour);
+  mon->applylayout();
 }
 
-void mon_focusclient(Monitor *mon, Client *c)
+void focusclient(Client *c)
 {
+  LayoutManager *lm = &mon.selws->layout_manager;
   if (!c)
     goto LOG_AND_EXIT;
   SET(c->state, ClActive);
-  LayoutManager *lm = &mon->selws->layout_manager;
-  XSetWindowBorder(mon->ctx->dpy, c->window, lm->border_active);
+  XSetWindowBorder(mon.ctx->dpy, c->window, lm->border_active);
   for (Client *p = c->prev; p; p = p->prev) {
     UNSET(p->state, ClActive);
-    XSetWindowBorder(mon->ctx->dpy, p->window, lm->border_inactive);
+    XSetWindowBorder(mon.ctx->dpy, p->window, lm->border_inactive);
   }
   for (Client *n = c->next; n; n = n->next) {
     UNSET(n->state, ClActive);
-    XSetWindowBorder(mon->ctx->dpy, n->window, lm->border_inactive);
+    XSetWindowBorder(mon.ctx->dpy, n->window, lm->border_inactive);
   }
   if (IS_SET(c->state, ClFloating))
-    XRaiseWindow(mon->ctx->dpy, c->window);
-  XSetInputFocus(mon->ctx->dpy, c->window, RevertToParent, CurrentTime);
+    XRaiseWindow(mon.ctx->dpy, c->window);
+  XSetInputFocus(mon.ctx->dpy, c->window, RevertToParent, CurrentTime);
 LOG_AND_EXIT:
-  mon_statuslog(mon);
+  mon.statuslog();
 }
 
-void mon_restack(Monitor *mon)
+void restack()
 {
-  Client *c = mon->selws->cl_head, *active = NULL;
+  Client *c = mon.selws->cl_head, *active = NULL;
   if (!c)
     return;
 
@@ -90,28 +103,28 @@ void mon_restack(Monitor *mon)
                                                    : fullscreen++] = c->window;
   if (active)
     AddToStack(active);
-  for (c = mon->selws->cl_head; c; c = c->next)
+  for (c = mon.selws->cl_head; c; c = c->next)
     if (c != active)
       AddToStack(c);
 #undef AddToStack
-  XRestackWindows(mon->ctx->dpy, stack, fullscreen);
+  XRestackWindows(mon.ctx->dpy, stack, fullscreen);
 }
 
-void mon_applylayout(Monitor *mon)
+void applylayout()
 {
-  const Layout *layout = lm_getlayout(&mon->selws->layout_manager);
+  const Layout *layout = lm_getlayout(&mon.selws->layout_manager);
   if (layout->apply)
-    layout->apply(mon);
-  mon_restack(mon);
-  mon_statuslog(mon);
+    layout->apply(&mon);
+  restack();
+  mon.statuslog();
 }
 
-Workspace *mon_get_client_ws(Monitor *mon, Client *c)
+Workspace *get_client_ws(Client *c)
 {
   if (c) {
     ITER(workspaces)
     {
-      Workspace *ws = mon_workspaceat(mon, it);
+      Workspace *ws = mon_workspaceat(&mon, it);
       if (ws_getclient(ws, c->window))
         return ws;
     }
@@ -120,11 +133,11 @@ Workspace *mon_get_client_ws(Monitor *mon, Client *c)
 }
 
 // @FIXME: This function is an absolute mess.
-void mon_statuslog(Monitor *mon)
+void statuslog()
 {
-  if (!mon->ctx->statuslogger)
+  if (!mon.ctx->statuslogger)
     return;
-#define StatusLog(...) fprintf(mon->ctx->statuslogger, __VA_ARGS__)
+#define StatusLog(...) fprintf(mon.ctx->statuslogger, __VA_ARGS__)
 
   // workspaces.
   {
@@ -142,11 +155,11 @@ void mon_statuslog(Monitor *mon)
     memset(string, 0, size);
     ITER(workspaces)
     {
-      ws = mon_workspaceat(mon, it);
+      ws = mon_workspaceat(&mon, it);
       if (it && LogFormat[FmtWsSeperator])
         StatusLog("%s", LogFormat[FmtWsSeperator]);
       sprintf(string, "%s", ws->id);
-      if (ws == mon->selws) {
+      if (ws == mon.selws) {
         FormatWSString(LogFormat[FmtWsCurrent], string);
       } else {
         FormatWSString(ws->cl_head ? LogFormat[FmtWsHidden]
@@ -162,7 +175,7 @@ void mon_statuslog(Monitor *mon)
 
   // layout.
   {
-    const Layout *layout = lm_getlayout(&mon->selws->layout_manager);
+    const Layout *layout = lm_getlayout(&mon.selws->layout_manager);
     StatusLog(LogFormat[FmtLayout], layout->symbol);
     if (LogFormat[FmtSeperator])
       StatusLog("%s", LogFormat[FmtSeperator]);
@@ -170,7 +183,7 @@ void mon_statuslog(Monitor *mon)
 
   // window title.
   {
-    Client *active = ws_find(mon->selws, ClActive);
+    Client *active = ws_find(mon.selws, ClActive);
     if (active) {
       XTextProperty wm_name;
       if (get_window_title(active->window, &wm_name) && wm_name.nitems) {
@@ -186,5 +199,5 @@ void mon_statuslog(Monitor *mon)
 
   StatusLog("\n");
 #undef StatusLog
-  fflush(mon->ctx->statuslogger);
+  fflush(mon.ctx->statuslogger);
 }

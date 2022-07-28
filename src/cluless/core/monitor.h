@@ -14,11 +14,20 @@ typedef struct {
 
 typedef struct {
   Context *ctx;
-  Workspace *wss;
-  Workspace *selws; // This should never be 'NULL' :dansgame:.
+  Workspace *wss, *selws;
   Geometry screen;
   PointerGrab grabbed;
+
+  void (*focusclient)(Client *);
+  void (*restack)(void);
+  void (*applylayout)(void);
+  Workspace *(*get_client_ws)(Client *);
+  void (*statuslog)(void);
 } Monitor;
+
+Monitor *mon_init();
+void mon_manage_client(Monitor *, Client *);
+void mon_unmanage_client(Monitor *, Client *);
 
 // hooks are only called on clients which are attached to the workspaces managed
 // my the monitor.
@@ -26,18 +35,6 @@ ENUM(HookType, ClientAdd, ClientRemove);
 typedef void (*ClientHook)(Monitor *, Client *);
 typedef void (*EventHandler)(Monitor *, const XEvent *);
 
-#define mon_workspaceat(mon, at) (&mon->wss[at % LENGTH(workspaces)])
-
-void mon_init(Monitor *);
-// client is added to some workspace in the monitor.
-void mon_manage_client(Monitor *, Client *);
-// client is removed from any/all workspaces in the monitor.
-void mon_unmanage_client(Monitor *, Client *);
-void mon_focusclient(Monitor *, Client *);
-void mon_restack(Monitor *);
-void mon_applylayout(Monitor *);
-// returns workspace associated with given client.
-Workspace *mon_get_client_ws(Monitor *, Client *);
-void mon_statuslog(Monitor *);
+#define mon_workspaceat(mon, at) (&(mon)->wss[at % LENGTH(workspaces)])
 
 #endif

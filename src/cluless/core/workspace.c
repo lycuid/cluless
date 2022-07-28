@@ -9,7 +9,7 @@ void ws_init(Workspace *ws, const char *id)
   lm_reset(&(ws->layout_manager));
 }
 
-// O(n)
+// needs to be O(1), currently O(n).
 Client *ws_getclient(Workspace *ws, Window w)
 {
   if (!ws)
@@ -20,7 +20,7 @@ Client *ws_getclient(Workspace *ws, Window w)
   return c;
 }
 
-// O(n)
+// needs to be O(1), currently O(n).
 Client *ws_find(Workspace *ws, State flags)
 {
   if (!ws)
@@ -31,7 +31,6 @@ Client *ws_find(Workspace *ws, State flags)
   return c;
 }
 
-// O(1)
 void ws_attachclient(Workspace *ws, Client *c)
 {
   if (!c || !ws)
@@ -44,7 +43,6 @@ void ws_attachclient(Workspace *ws, Client *c)
   lm_decorate_client(&ws->layout_manager, c);
 }
 
-// O(1)
 void ws_detachclient(Workspace *ws, Client *c)
 {
   if (!c || !ws)
@@ -59,7 +57,6 @@ void ws_detachclient(Workspace *ws, Client *c)
   c->next = c->prev = NULL;
 }
 
-// O(1)
 void ws_clmoveup(Workspace *ws, Client *c)
 {
   if (!c || !c->prev || !ws)
@@ -78,7 +75,6 @@ void ws_clmoveup(Workspace *ws, Client *c)
     ws->cl_head = c; // (Stack [c]) <-> [p1] <-> [n]
 }
 
-// O(1)
 void ws_clmovedown(Workspace *ws, Client *c)
 {
   if (!c || !c->next || !ws)

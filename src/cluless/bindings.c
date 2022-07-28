@@ -34,7 +34,7 @@ void swap_master(Monitor *mon, const Arg *arg)
     return;
   ws_detachclient(mon->selws, c);
   ws_attachclient(mon->selws, c);
-  mon_applylayout(mon);
+  mon->applylayout();
 }
 
 void kill_client(Monitor *mon, const Arg *arg)
@@ -59,7 +59,7 @@ void shift_client(Monitor *mon, const Arg *arg)
   else
     while (-offset++)
       ws_clmoveup(mon->selws, c);
-  mon_applylayout(mon);
+  mon->applylayout();
 }
 
 void shift_focus(Monitor *mon, const Arg *arg)
@@ -77,7 +77,7 @@ void shift_focus(Monitor *mon, const Arg *arg)
     while (-offset++)
       c = c->prev ? c->prev : cl_last(c);
 LAYOUT_AND_EXIT:
-  mon_focusclient(mon, c);
+  mon->focusclient(c);
 }
 
 void move_client_to_ws(Monitor *mon, const Arg *arg)
@@ -90,9 +90,9 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
   // focused.
   Client *neighbour = cl_neighbour(c),
          *focused   = ws_getclient(mon->selws, input_focused_window());
-  mon_focusclient(mon, focused && focused != c ? focused
-                       : neighbour             ? neighbour
-                                               : from->cl_head);
+  mon->focusclient(focused && focused != c ? focused
+                   : neighbour             ? neighbour
+                                           : from->cl_head);
   // to avoid attaching same client multiple times.
   ws_detachclient(from, c);
   if (!ws_getclient(to, c->window))
@@ -116,7 +116,7 @@ void select_ws(Monitor *mon, const Arg *arg)
     XMapWindow(mon->ctx->dpy, c->window);
 
   if (!ws_find(to, ClActive))
-    mon_focusclient(mon, to->cl_head);
+    mon->focusclient(to->cl_head);
 }
 
 void tile_client(Monitor *mon, const Arg *arg)
@@ -126,7 +126,7 @@ void tile_client(Monitor *mon, const Arg *arg)
   if (!c)
     return;
   UNSET(c->state, CL_UNTILED_STATE);
-  mon_applylayout(mon);
+  mon->applylayout();
 }
 
 void float_client(Monitor *mon, const Arg *arg)
@@ -136,14 +136,14 @@ void float_client(Monitor *mon, const Arg *arg)
   if (!c)
     return;
   SET(c->state, ClFloating);
-  mon_applylayout(mon);
+  mon->applylayout();
 }
 
 void cycle_layout(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   lm_nextlayout(&mon->selws->layout_manager);
-  mon_applylayout(mon);
+  mon->applylayout();
 }
 
 void reset_layout(Monitor *mon, const Arg *arg)
@@ -153,7 +153,7 @@ void reset_layout(Monitor *mon, const Arg *arg)
   lm_reset(lm);
   for (Client *c = mon->selws->cl_head; c; c = c->next)
     lm_decorate_client(lm, c);
-  mon_applylayout(mon);
+  mon->applylayout();
 }
 
 void move_client(Monitor *mon, const Arg *arg)
@@ -171,7 +171,7 @@ void resize_client(Monitor *mon, const Arg *arg)
 void focus_client(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  mon_focusclient(mon, mon->grabbed.client);
+  mon->focusclient(mon->grabbed.client);
 }
 
 void toggle_gap(Monitor *mon, const Arg *arg)
@@ -180,7 +180,7 @@ void toggle_gap(Monitor *mon, const Arg *arg)
   LayoutManager *lm = &mon->selws->layout_manager;
   lm->window_gappx  = lm->window_gappx == 0 ? window_gappx : 0;
   lm->screen_gappx  = lm->screen_gappx == 0 ? screen_gappx : 0;
-  mon_applylayout(mon);
+  mon->applylayout();
 }
 
 void toggle_border(Monitor *mon, const Arg *arg)
@@ -190,7 +190,7 @@ void toggle_border(Monitor *mon, const Arg *arg)
   lm->borderpx      = lm->borderpx == 0 ? borderpx : 0;
   for (Client *c = mon->selws->cl_head; c; c = c->next)
     XSetWindowBorderWidth(mon->ctx->dpy, c->window, lm->borderpx);
-  mon_applylayout(mon);
+  mon->applylayout();
 }
 
 static inline void move_resize_client(Monitor *mon, State state)
@@ -207,6 +207,6 @@ static inline void move_resize_client(Monitor *mon, State state)
     SET(state, ClFloating);
   // update client state.
   SET(c->state, state);
-  mon_focusclient(mon, c);
-  mon_applylayout(mon);
+  mon->focusclient(c);
+  mon->applylayout();
 }

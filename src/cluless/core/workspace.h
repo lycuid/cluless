@@ -11,11 +11,11 @@ typedef struct {
 } Workspace;
 
 void ws_init(Workspace *, const char *);
-Client *ws_getclient(Workspace *, Window);   // O(n)
-Client *ws_find(Workspace *, State);         // O(n)
-void ws_attachclient(Workspace *, Client *); // O(1)
-void ws_detachclient(Workspace *, Client *); // O(1)
-void ws_clmoveup(Workspace *, Client *);     // O(1)
-void ws_clmovedown(Workspace *, Client *);   // O(1)
+Client *ws_getclient(Workspace *, Window); // needs to be O(1), currently O(n).
+Client *ws_find(Workspace *, State);       // needs to be O(1), currently O(n).
+void ws_attachclient(Workspace *, Client *);
+void ws_detachclient(Workspace *, Client *);
+void ws_clmoveup(Workspace *, Client *);
+void ws_clmovedown(Workspace *, Client *);
 
 #endif

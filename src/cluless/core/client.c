@@ -17,7 +17,6 @@ Client *cl_create(Window w)
   return c;
 }
 
-// O(n)
 Client *cl_nexttiled(Client *c)
 {
   if (c)
@@ -26,7 +25,6 @@ Client *cl_nexttiled(Client *c)
   return c;
 }
 
-// O(n)
 Client *cl_last(Client *c)
 {
   for (; c && c->next; c = c->next)
