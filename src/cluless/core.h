@@ -2,16 +2,14 @@
 #define __CORE_H__
 
 #include "debug.h"
-#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#define RootWindowEventMasks SubstructureRedirectMask | SubstructureNotifyMask
+#define RootWindowEventMasks (SubstructureRedirectMask | SubstructureNotifyMask)
+#define ButtonMasks          (ButtonPressMask | ButtonReleaseMask)
 
-// misc.
-#define ButtonMasks  (ButtonPressMask | ButtonReleaseMask)
 #define LENGTH(s)    (sizeof(s) / sizeof(s[0]))
 #define MAX(x, y)    (x) > (y) ? (x) : (y)
 #define MIN(x, y)    (x) < (y) ? (x) : (y)
@@ -27,7 +25,7 @@
 #define FOREACH(var, iterable)                                                 \
   /* @NOTE: cannot have nested as variable 'it' will repeat */                 \
   for (int cond = 1, it = 0, size = LENGTH(iterable); cond && it < size;       \
-       cond = !cond, it = it + 1)                                              \
+       cond = !cond, it++)                                                     \
     for (var = iterable + it; cond; cond = !cond)
 
 // flag ops.
@@ -66,18 +64,15 @@ ENUM(NetAtom, NET_WM_NAME, NET_WM_WINDOW_TYPE, NET_WM_WINDOW_TYPE_DOCK,
 
 // These are mainly the values that don't (shouldn't) change throughout the
 // application lifetime.
-typedef struct {
-  bool running : 1;
+extern const struct Core {
   Display *dpy;
   Window root;
   Cursor cursors[NullCursorType];
   Atom wmatoms[NullWMAtom], netatoms[NullNetAtom];
   FILE *statuslogger;
-} Context;
+} *const core;
 
-// @FIXME: not sure about this function.
-Context *request_context(void);
-Context *create_context(void);
+void core_init(void);
 Window input_focused_window(void);
 Geometry get_screen_rect(void);
 bool send_event(Window, Atom);

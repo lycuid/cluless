@@ -25,7 +25,7 @@ void window_rule_apply(Monitor *mon, Client *c)
           break;
 
     // ResClass | ResInstance.
-    if (XGetClassHint(mon->ctx->dpy, c->window, &class))
+    if (XGetClassHint(core->dpy, c->window, &class))
       if (TryApplyWindowRule(mon, rule,
                              ResClass ? class.res_class : class.res_name))
         break;

@@ -32,7 +32,7 @@ exec cluless
 ```
 for logging (used for debugging while development).
 ```sh
-exec cluless >~/log.txt 2>~/err.txt 
+exec cluless >/tmp/log.txt 2>/tmp/err.txt 
 ```
 
 License:

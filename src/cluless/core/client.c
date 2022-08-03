@@ -1,17 +1,16 @@
 #include "client.h"
+#include <cluless/core.h>
 #include <stdlib.h>
 
 Client *cl_create(Window w)
 {
-  Context *ctx = request_context();
-  Client *c    = malloc(sizeof(Client));
-  c->state     = 0x0;
-  c->window    = w;
-  c->prev      = NULL;
-  c->next      = NULL;
+  Client *c = malloc(sizeof(Client));
+  c->state  = 0x0;
+  c->window = w;
+  c->prev   = (c->next = NULL);
   XSizeHints size;
   long flags;
-  XGetWMNormalHints(ctx->dpy, c->window, &size, &flags);
+  XGetWMNormalHints(core->dpy, c->window, &size, &flags);
   c->minw = IS_SET(flags, PMinSize) ? size.min_width : 10;
   c->minh = IS_SET(flags, PMinSize) ? size.min_height : 10;
   return c;

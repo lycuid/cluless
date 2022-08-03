@@ -12,15 +12,16 @@ static inline void move_resize_client(Monitor *, State);
 void quit(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  mon->ctx->running = false;
+  mon->running = false;
 }
 
 void spawn(Monitor *mon, const Arg *arg)
 {
+  (void)mon;
   if (fork())
     return;
-  if (mon->ctx->dpy)
-    close(ConnectionNumber(mon->ctx->dpy));
+  if (core->dpy)
+    close(ConnectionNumber(core->dpy));
   setsid();
   execvp(arg->cmd[0], (char **)arg->cmd);
   exit(EXIT_SUCCESS);
@@ -43,8 +44,8 @@ void kill_client(Monitor *mon, const Arg *arg)
   Client *c;
   if (!(c = ws_find(mon->selws, ClActive)))
     return;
-  if (!send_event(c->window, mon->ctx->wmatoms[WM_DELETE_WINDOW]))
-    XKillClient(mon->ctx->dpy, c->window);
+  if (!send_event(c->window, core->wmatoms[WM_DELETE_WINDOW]))
+    XKillClient(core->dpy, c->window);
 }
 
 void shift_client(Monitor *mon, const Arg *arg)
@@ -98,7 +99,7 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
   if (!ws_getclient(to, c->window))
     ws_attachclient(to, c);
   // as the client is detached from the 'selws', it wont be destroyed on unmap.
-  XUnmapWindow(mon->ctx->dpy, c->window);
+  XUnmapWindow(core->dpy, c->window);
 }
 
 void select_ws(Monitor *mon, const Arg *arg)
@@ -111,9 +112,9 @@ void select_ws(Monitor *mon, const Arg *arg)
   // wont be destroyed).
   Client *c = from->cl_head;
   for (; c; c = c->next)
-    XUnmapWindow(mon->ctx->dpy, c->window);
+    XUnmapWindow(core->dpy, c->window);
   for (c = cl_last(to->cl_head); c; c = c->prev)
-    XMapWindow(mon->ctx->dpy, c->window);
+    XMapWindow(core->dpy, c->window);
 
   if (!ws_find(to, ClActive))
     mon->focusclient(to->cl_head);
@@ -189,7 +190,7 @@ void toggle_border(Monitor *mon, const Arg *arg)
   LayoutManager *lm = &mon->selws->layout_manager;
   lm->borderpx      = lm->borderpx == 0 ? borderpx : 0;
   for (Client *c = mon->selws->cl_head; c; c = c->next)
-    XSetWindowBorderWidth(mon->ctx->dpy, c->window, lm->borderpx);
+    XSetWindowBorderWidth(core->dpy, c->window, lm->borderpx);
   mon->applylayout();
 }
 
@@ -199,8 +200,8 @@ static inline void move_resize_client(Monitor *mon, State state)
   if (!c)
     return;
   // set cursor
-  int cur = mon->ctx->cursors[IS_SET(state, ClMoving) ? CurMove : CurResize];
-  XChangeWindowAttributes(mon->ctx->dpy, c->window, CWCursor,
+  int cur = core->cursors[IS_SET(state, ClMoving) ? CurMove : CurResize];
+  XChangeWindowAttributes(core->dpy, c->window, CWCursor,
                           &(XSetWindowAttributes){.cursor = cur});
   // set client as floating if the layout is not NULL (floating layout).
   if (lm_getlayout(&mon->selws->layout_manager)->apply)

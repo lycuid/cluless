@@ -19,8 +19,8 @@ static Monitor mon = {.focusclient   = focusclient,
 
 Monitor *mon_init()
 {
-  mon.ctx = create_context();
-  mon.wss = malloc(LENGTH(workspaces) * sizeof(Workspace));
+  mon.running = true;
+  mon.wss     = malloc(LENGTH(workspaces) * sizeof(Workspace));
   ITER(workspaces) ws_init(mon_workspaceat(&mon, it), workspaces[it]);
   mon.selws  = &mon.wss[0];
   mon.screen = get_screen_rect();
@@ -38,8 +38,8 @@ void mon_manage_client(Monitor *mon, Client *c)
   // startup hook. Focusing the client on 'MapNotify' event is much more safe.
   SET(c->state, ClActive);
   XWindowAttributes attrs;
-  XGetWindowAttributes(mon->ctx->dpy, c->window, &attrs);
-  XSelectInput(mon->ctx->dpy, c->window,
+  XGetWindowAttributes(core->dpy, c->window, &attrs);
+  XSelectInput(core->dpy, c->window,
                attrs.your_event_mask | PropertyChangeMask);
   window_rule_apply(mon, c);
 }
@@ -64,18 +64,18 @@ void focusclient(Client *c)
   if (!c)
     goto LOG_AND_EXIT;
   SET(c->state, ClActive);
-  XSetWindowBorder(mon.ctx->dpy, c->window, lm->border_active);
+  XSetWindowBorder(core->dpy, c->window, lm->border_active);
   for (Client *p = c->prev; p; p = p->prev) {
     UNSET(p->state, ClActive);
-    XSetWindowBorder(mon.ctx->dpy, p->window, lm->border_inactive);
+    XSetWindowBorder(core->dpy, p->window, lm->border_inactive);
   }
   for (Client *n = c->next; n; n = n->next) {
     UNSET(n->state, ClActive);
-    XSetWindowBorder(mon.ctx->dpy, n->window, lm->border_inactive);
+    XSetWindowBorder(core->dpy, n->window, lm->border_inactive);
   }
   if (IS_SET(c->state, ClFloating))
-    XRaiseWindow(mon.ctx->dpy, c->window);
-  XSetInputFocus(mon.ctx->dpy, c->window, RevertToParent, CurrentTime);
+    XRaiseWindow(core->dpy, c->window);
+  XSetInputFocus(core->dpy, c->window, RevertToParent, CurrentTime);
 LOG_AND_EXIT:
   mon.statuslog();
 }
@@ -107,7 +107,7 @@ void restack()
     if (c != active)
       AddToStack(c);
 #undef AddToStack
-  XRestackWindows(mon.ctx->dpy, stack, fullscreen);
+  XRestackWindows(core->dpy, stack, fullscreen);
 }
 
 void applylayout()
@@ -115,7 +115,7 @@ void applylayout()
   const Layout *layout = lm_getlayout(&mon.selws->layout_manager);
   if (layout->apply)
     layout->apply(&mon);
-  restack();
+  mon.restack();
   mon.statuslog();
 }
 
@@ -135,9 +135,9 @@ Workspace *get_client_ws(Client *c)
 // @FIXME: This function is an absolute mess.
 void statuslog()
 {
-  if (!mon.ctx->statuslogger)
+  if (!core->statuslogger)
     return;
-#define StatusLog(...) fprintf(mon.ctx->statuslogger, __VA_ARGS__)
+#define StatusLog(...) fprintf(core->statuslogger, __VA_ARGS__)
 
   // workspaces.
   {
@@ -199,5 +199,5 @@ void statuslog()
 
   StatusLog("\n");
 #undef StatusLog
-  fflush(mon.ctx->statuslogger);
+  fflush(core->statuslogger);
 }

@@ -20,9 +20,9 @@ static inline void update_client_list(Monitor *mon)
     for (Client *c = mon_workspaceat(mon, it)->cl_head; c; c = c->next)
       wids[managed_client_count++] = c->window;
   }
-  XChangeProperty(mon->ctx->dpy, mon->ctx->root,
-                  mon->ctx->netatoms[NET_CLIENT_LIST], XA_WINDOW, 32,
-                  PropModeReplace, (uint8_t *)wids, managed_client_count);
+  XChangeProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST],
+                  XA_WINDOW, 32, PropModeReplace, (uint8_t *)wids,
+                  managed_client_count);
 }
 
 // @TODO: find a better way to do this.
@@ -32,10 +32,9 @@ void ewmh_maprequest(Monitor *mon, const XEvent *xevent)
 {
   const XMapRequestEvent *e = &xevent->xmaprequest;
   XWindowAttributes attrs;
-  XGetWindowAttributes(mon->ctx->dpy, e->window, &attrs);
+  XGetWindowAttributes(core->dpy, e->window, &attrs);
   if (!IS_SET(attrs.your_event_mask, FocusChangeMask))
-    XSelectInput(mon->ctx->dpy, e->window,
-                 attrs.your_event_mask | FocusChangeMask);
+    XSelectInput(core->dpy, e->window, attrs.your_event_mask | FocusChangeMask);
   // map request only fires on windows with 'override_redirect' set to false.
   update_client_list(mon);
 }
@@ -52,14 +51,13 @@ void ewmh_focusin(Monitor *mon, const XEvent *xevent)
   Client *c;
   if (!(c = ws_getclient(mon->selws, e->window)))
     return;
-  XChangeProperty(mon->ctx->dpy, mon->ctx->root,
-                  mon->ctx->netatoms[NET_ACTIVE_WINDOW], XA_WINDOW, 32,
-                  PropModeReplace, (uint8_t *)&c->window, 1);
+  XChangeProperty(core->dpy, core->root, core->netatoms[NET_ACTIVE_WINDOW],
+                  XA_WINDOW, 32, PropModeReplace, (uint8_t *)&c->window, 1);
 }
 
 void ewmh_focusout(Monitor *mon, const XEvent *xevent)
 {
+  (void)mon;
   (void)xevent;
-  XDeleteProperty(mon->ctx->dpy, mon->ctx->root,
-                  mon->ctx->netatoms[NET_ACTIVE_WINDOW]);
+  XDeleteProperty(core->dpy, core->root, core->netatoms[NET_ACTIVE_WINDOW]);
 }

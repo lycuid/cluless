@@ -60,10 +60,10 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   if (!ws_getclient(mon->selws, c->window))
     return;
   Window w;
-  if (XGetTransientForHint(mon->ctx->dpy, c->window, &w))
+  if (XGetTransientForHint(core->dpy, c->window, &w))
     SET(c->state, ClTransient);
   mon->applylayout();
-  XMapWindow(mon->ctx->dpy, c->window);
+  XMapWindow(core->dpy, c->window);
 }
 
 void onMapNotify(Monitor *mon, const XEvent *xevent)
@@ -84,6 +84,7 @@ void onUnmapNotify(Monitor *mon, const XEvent *xevent)
 
 void onConfigureRequest(Monitor *mon, const XEvent *xevent)
 {
+  (void)mon;
   const XConfigureRequestEvent *e = &xevent->xconfigurerequest;
   XWindowChanges changes          = {.x            = e->x,
                                      .y            = e->y,
@@ -92,16 +93,15 @@ void onConfigureRequest(Monitor *mon, const XEvent *xevent)
                                      .border_width = e->border_width,
                                      .sibling      = e->above,
                                      .stack_mode   = e->detail};
-  XConfigureWindow(mon->ctx->dpy, e->window, e->value_mask, &changes);
-  XSync(mon->ctx->dpy, False);
+  XConfigureWindow(core->dpy, e->window, e->value_mask, &changes);
+  XSync(core->dpy, False);
 }
 
 void onPropertyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XPropertyEvent *e = &xevent->xproperty;
-  if (e->state == PropertyNewValue &&
-      (e->atom == mon->ctx->netatoms[NET_WM_NAME] ||
-       e->atom == mon->ctx->wmatoms[WM_NAME]))
+  if (e->state == PropertyNewValue && (e->atom == core->netatoms[NET_WM_NAME] ||
+                                       e->atom == core->wmatoms[WM_NAME]))
     mon->statuslog();
 }
 
@@ -110,7 +110,7 @@ void onKeyPress(Monitor *mon, const XEvent *xevent)
   const XKeyEvent *e = &xevent->xkey;
   FOREACH(const Binding *key, keys)
   {
-    if (e->keycode == XKeysymToKeycode(mon->ctx->dpy, key->sym) &&
+    if (e->keycode == XKeysymToKeycode(core->dpy, key->sym) &&
         e->state == key->mask)
       key->func(mon, &key->arg);
   }
@@ -119,9 +119,8 @@ void onKeyPress(Monitor *mon, const XEvent *xevent)
 void onButtonPress(Monitor *mon, const XEvent *xevent)
 {
   const XButtonEvent *e = &xevent->xbutton;
-  XGrabPointer(mon->ctx->dpy, mon->ctx->root, False,
-               ButtonMasks | PointerMotionMask, GrabModeAsync, GrabModeAsync,
-               None, None, CurrentTime);
+  XGrabPointer(core->dpy, core->root, False, ButtonMasks | PointerMotionMask,
+               GrabModeAsync, GrabModeAsync, None, None, CurrentTime);
   Client *c;
   memset(&mon->grabbed, 0, sizeof(mon->grabbed));
   if ((c = ws_getclient(mon->selws, e->subwindow))) {
@@ -133,16 +132,16 @@ void onButtonPress(Monitor *mon, const XEvent *xevent)
                                        : 0;
 
     XWindowAttributes wa;
-    XGetWindowAttributes(mon->ctx->dpy, c->window, &wa);
-    mon->grabbed = (PointerGrab){.client = c,
-                                 .x      = e->x_root,
-                                 .y      = e->y_root,
-                                 .cx     = wa.x,
-                                 .cy     = wa.y,
-                                 .cw     = wa.width,
-                                 .ch     = wa.height,
-                                 .state  = e->state | state,
-                                 .at     = e->time};
+    XGetWindowAttributes(core->dpy, c->window, &wa);
+    mon->grabbed.client = c;
+    mon->grabbed.x      = e->x_root;
+    mon->grabbed.y      = e->y_root;
+    mon->grabbed.cx     = wa.x;
+    mon->grabbed.cy     = wa.y;
+    mon->grabbed.cw     = wa.width;
+    mon->grabbed.ch     = wa.height;
+    mon->grabbed.state  = e->state | state;
+    mon->grabbed.at     = e->time;
   }
   FOREACH(const Binding *button, buttons)
   {
@@ -150,6 +149,7 @@ void onButtonPress(Monitor *mon, const XEvent *xevent)
       button->func(mon, &button->arg);
   }
 }
+
 void onMotionNotify(Monitor *mon, const XEvent *xevent)
 {
   const XMotionEvent *e = &xevent->xmotion;
@@ -160,9 +160,9 @@ void onMotionNotify(Monitor *mon, const XEvent *xevent)
 
   int dx = e->x - grabbed->x, dy = e->y - grabbed->y;
   if (IS_SET(c->state, ClMoving))
-    XMoveWindow(mon->ctx->dpy, c->window, grabbed->cx + dx, grabbed->cy + dy);
+    XMoveWindow(core->dpy, c->window, grabbed->cx + dx, grabbed->cy + dy);
   else if (IS_SET(c->state, ClResizing))
-    XResizeWindow(mon->ctx->dpy, c->window, MAX(grabbed->cw + dx, c->minw),
+    XResizeWindow(core->dpy, c->window, MAX(grabbed->cw + dx, c->minw),
                   MAX(grabbed->ch + dy, c->minh));
   grabbed->at = e->time;
 }
@@ -174,11 +174,11 @@ void onButtonRelease(Monitor *mon, const XEvent *xevent)
   if (!(c = mon->grabbed.client))
     return;
   XChangeWindowAttributes(
-      mon->ctx->dpy, c->window, CWCursor,
-      &(XSetWindowAttributes){.cursor = mon->ctx->cursors[CurNormal]});
+      core->dpy, c->window, CWCursor,
+      &(XSetWindowAttributes){.cursor = core->cursors[CurNormal]});
   UNSET(c->state, ClMoving | ClResizing);
   memset(&mon->grabbed, 0, sizeof(mon->grabbed));
-  XUngrabPointer(mon->ctx->dpy, CurrentTime);
+  XUngrabPointer(core->dpy, CurrentTime);
 }
 
 void onDestroyNotify(Monitor *mon, const XEvent *xevent)
@@ -207,18 +207,24 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
   return 1;
 }
 
-int main(int argc, char const **argv)
+static inline void argparse(int argc, const char **argv)
 {
-  Monitor *mon = mon_init();
-
   if (argc == 2 && (!strcmp("-v", argv[1]) || !strcmp("--version", argv[1]))) {
     fprintf(stdout, NAME "-" VERSION "\n");
-    goto EXIT;
+    exit(EXIT_SUCCESS);
   }
+}
 
+int main(int argc, char const **argv)
+{
+  argparse(argc, argv);
+
+  core_init();
+  Monitor *mon = mon_init();
   XSetErrorHandler(xerror_handler);
+
   XEvent e;
-  while (mon->ctx->running && !XNextEvent(mon->ctx->dpy, &e)) {
+  while (mon->running && !XNextEvent(core->dpy, &e)) {
     if (EventRepr[e.type] && e.type != MotionNotify)
       LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
     if (e.type != DestroyNotify)
@@ -236,10 +242,10 @@ int main(int argc, char const **argv)
       mon->applylayout();
     }
   }
-  XUngrabKey(mon->ctx->dpy, AnyKey, AnyModifier, mon->ctx->root);
-  XUngrabButton(mon->ctx->dpy, AnyButton, AnyModifier, mon->ctx->root);
-  XCloseDisplay(mon->ctx->dpy);
 
-EXIT:
+  XUngrabKey(core->dpy, AnyKey, AnyModifier, core->root);
+  XUngrabButton(core->dpy, AnyButton, AnyModifier, core->root);
+  XCloseDisplay(core->dpy);
+
   return 0;
 }

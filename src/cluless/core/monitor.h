@@ -4,6 +4,7 @@
 #include <cluless/core.h>
 #include <cluless/core/client.h>
 #include <cluless/core/workspace.h>
+#include <stdbool.h>
 
 typedef struct {
   Client *client;
@@ -13,7 +14,7 @@ typedef struct {
 } PointerGrab;
 
 typedef struct {
-  Context *ctx;
+  bool running : 1;
   Workspace *wss, *selws;
   Geometry screen;
   PointerGrab grabbed;

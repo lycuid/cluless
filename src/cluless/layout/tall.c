@@ -20,7 +20,7 @@ void tall(Monitor *mon)
       mw = (nstack ? (draw_region.w / 2) : draw_region.w) -
            ((lm->borderpx + lm->window_gappx) * 2),
       mh = draw_region.h - ((lm->borderpx + lm->window_gappx) * 2);
-  XMoveResizeWindow(mon->ctx->dpy, master->window, mx, my, mw, mh);
+  XMoveResizeWindow(core->dpy, master->window, mx, my, mw, mh);
 
   // arrange 'Stack' windows.
   if (nstack && (stack = cl_nexttiled(master))) {
@@ -30,6 +30,6 @@ void tall(Monitor *mon)
         sh = (draw_region.h / nstack) - ((lm->borderpx + lm->window_gappx) * 2);
     for (; stack; sy += sh + ((lm->borderpx + lm->window_gappx) * 2),
                   stack = cl_nexttiled(stack))
-      XMoveResizeWindow(mon->ctx->dpy, stack->window, sx, sy, sw, sh);
+      XMoveResizeWindow(core->dpy, stack->window, sx, sy, sw, sh);
   }
 }

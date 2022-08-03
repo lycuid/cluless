@@ -72,7 +72,7 @@ void ws_clmoveup(Workspace *ws, Client *c)
   if (p2)
     p2->next = c; // [p2] <-> [c] <-> [p1] <-> [n]
   else
-    ws->cl_head = c; // (Stack [c]) <-> [p1] <-> [n]
+    ws->cl_head = c; // (Head [c]) <-> [p1] <-> [n]
 }
 
 void ws_clmovedown(Workspace *ws, Client *c)
@@ -90,5 +90,5 @@ void ws_clmovedown(Workspace *ws, Client *c)
   if (p)
     p->next = n1; // [p] <-> [n1] <-> [c] <-> [n2]
   else
-    ws->cl_head = n1; // (Stack [n1]) <-> [c] <-> [n2]
+    ws->cl_head = n1; // (Head [n1]) <-> [c] <-> [n2]
 }

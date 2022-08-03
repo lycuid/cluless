@@ -10,7 +10,7 @@
 // clang-format off
 // }}}
 
-// {{{ Helper Macros.
+// {{{ Defines.
 // Constants.
 #define Mod             Mod4Mask
 #define Term            "st"
@@ -100,4 +100,19 @@ static const Binding buttons[] = {
     {Mod,             Button3,    resize_client,      {0}},
     {ControlMask,     Button3,    focus_client,       {0}}};
 
-// vim:fdm=marker:fmr={{{,}}}
+// {{{ Undefs.
+#undef Mod
+#undef Term
+#undef ScratchTerm
+#undef ScratchFM
+#undef ScratchNM
+#undef ScratchTermCmd
+#undef ScratchFMCmd
+#undef ScratchNMCmd
+#undef UNDERLINED
+#undef CLICKABLE
+#undef CMD
+#undef WS_KEYS
+// }}}
+
+// vim:fdm=marker

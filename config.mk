@@ -1,5 +1,5 @@
 NAME=cluless
-VERSION=0.4.3
+VERSION=0.4.4
 BUILD=.build
 IDIR=src
 ODIR=$(BUILD)/cache

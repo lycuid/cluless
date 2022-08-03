@@ -3,6 +3,5 @@
 
 void lm_decorate_client(LayoutManager *lm, Client *c)
 {
-  Context *ctx = request_context();
-  XSetWindowBorderWidth(ctx->dpy, c->window, lm->borderpx);
+  XSetWindowBorderWidth(core->dpy, c->window, lm->borderpx);
 }
