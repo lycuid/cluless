@@ -36,6 +36,4 @@ ENUM(HookType, ClientAdd, ClientRemove);
 typedef void (*ClientHook)(Monitor *, Client *);
 typedef void (*EventHandler)(Monitor *, const XEvent *);
 
-#define mon_workspaceat(mon, at) (&(mon)->wss[at % LENGTH(workspaces)])
-
 #endif

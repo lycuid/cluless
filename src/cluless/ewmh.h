@@ -12,6 +12,7 @@ static const EventHandler ewmh_event_handlers[LASTEvent] = {
     [MapRequest]    = ewmh_maprequest,
     [DestroyNotify] = ewmh_destroynotify,
     [FocusIn]       = ewmh_focusin,
-    [FocusOut]      = ewmh_focusout};
+    [FocusOut]      = ewmh_focusout,
+};
 
 #endif

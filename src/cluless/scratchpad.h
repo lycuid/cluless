@@ -15,9 +15,11 @@ void sch_destroynotify(Monitor *, const XEvent *);
 void sch_clientremove(Monitor *, Client *);
 
 static const EventHandler sch_event_handlers[LASTEvent] = {
-    [DestroyNotify] = sch_destroynotify};
+    [DestroyNotify] = sch_destroynotify,
+};
 
-static const ClientHook sch_client_hooks[NullHookType] = {[ClientRemove] =
-                                                              sch_clientremove};
+static const ClientHook sch_client_hooks[NullHookType] = {
+    [ClientRemove] = sch_clientremove,
+};
 
 #endif

@@ -10,14 +10,14 @@ static inline void update_client_list(Monitor *mon)
   size_t managed_client_count = 0;
   ITER(workspaces)
   {
-    for (Client *c = mon_workspaceat(mon, it)->cl_head; c; c = c->next)
+    for (Client *c = mon->wss[it].cl_head; c; c = c->next)
       managed_client_count++;
   }
   Window wids[managed_client_count];
   managed_client_count = 0;
   ITER(workspaces)
   {
-    for (Client *c = mon_workspaceat(mon, it)->cl_head; c; c = c->next)
+    for (Client *c = mon->wss[it].cl_head; c; c = c->next)
       wids[managed_client_count++] = c->window;
   }
   XChangeProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST],

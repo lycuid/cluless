@@ -20,7 +20,7 @@ void window_rule_apply(Monitor *mon, Client *c)
   {
     // ResTitle.
     if (rule->res_type == ResTitle)
-      if (get_window_title(c->window, &wm_name) && wm_name.nitems)
+      if (core->get_window_title(c->window, &wm_name) && wm_name.nitems)
         if (TryApplyWindowRule(mon, rule, (char *)wm_name.value))
           break;
 

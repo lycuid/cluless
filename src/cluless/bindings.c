@@ -44,7 +44,7 @@ void kill_client(Monitor *mon, const Arg *arg)
   Client *c;
   if (!(c = ws_find(mon->selws, ClActive)))
     return;
-  if (!send_event(c->window, core->wmatoms[WM_DELETE_WINDOW]))
+  if (!core->send_event(c->window, core->wmatoms[WM_DELETE_WINDOW]))
     XKillClient(core->dpy, c->window);
 }
 
@@ -83,14 +83,14 @@ LAYOUT_AND_EXIT:
 
 void move_client_to_ws(Monitor *mon, const Arg *arg)
 {
-  Workspace *from = mon->selws, *to = mon_workspaceat(mon, arg->i);
+  Workspace *from = mon->selws, *to = &mon->wss[arg->i];
   Client *c = ws_find(from, ClActive);
   if (!from || !to || from == to || !c)
     return;
   // if this function is called by a Rule, then the active client might not be
   // focused.
   Client *neighbour = cl_neighbour(c),
-         *focused   = ws_getclient(mon->selws, input_focused_window());
+         *focused   = ws_getclient(mon->selws, core->input_focused_window());
   mon->focusclient(focused && focused != c ? focused
                    : neighbour             ? neighbour
                                            : from->cl_head);
@@ -104,7 +104,7 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
 
 void select_ws(Monitor *mon, const Arg *arg)
 {
-  Workspace *from = mon->selws, *to = mon_workspaceat(mon, arg->i);
+  Workspace *from = mon->selws, *to = &mon->wss[arg->i];
   if (!to || !from || to == from)
     return;
   mon->selws = to;

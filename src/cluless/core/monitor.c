@@ -21,9 +21,9 @@ Monitor *mon_init()
 {
   mon.running = true;
   mon.wss     = malloc(LENGTH(workspaces) * sizeof(Workspace));
-  ITER(workspaces) ws_init(mon_workspaceat(&mon, it), workspaces[it]);
+  ITER(workspaces) ws_init(&mon.wss[it], workspaces[it]);
   mon.selws  = &mon.wss[0];
-  mon.screen = get_screen_rect();
+  mon.screen = core->get_screen_rect();
   memset(&mon.grabbed, 0, sizeof(PointerGrab));
   return &mon;
 }
@@ -124,7 +124,7 @@ Workspace *get_client_ws(Client *c)
   if (c) {
     ITER(workspaces)
     {
-      Workspace *ws = mon_workspaceat(&mon, it);
+      Workspace *ws = &mon.wss[it];
       if (ws_getclient(ws, c->window))
         return ws;
     }
@@ -155,7 +155,7 @@ void statuslog()
     memset(string, 0, size);
     ITER(workspaces)
     {
-      ws = mon_workspaceat(&mon, it);
+      ws = &mon.wss[it];
       if (it && LogFormat[FmtWsSeperator])
         StatusLog("%s", LogFormat[FmtWsSeperator]);
       sprintf(string, "%s", ws->id);
@@ -186,7 +186,7 @@ void statuslog()
     Client *active = ws_find(mon.selws, ClActive);
     if (active) {
       XTextProperty wm_name;
-      if (get_window_title(active->window, &wm_name) && wm_name.nitems) {
+      if (core->get_window_title(active->window, &wm_name) && wm_name.nitems) {
         char title[trim_title + 1];
         memset(title, '.', sizeof(title));
         memcpy(title, wm_name.value,

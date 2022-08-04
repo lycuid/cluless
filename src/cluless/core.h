@@ -19,22 +19,20 @@
   typedef enum { __VA_ARGS__, Null##identifier } identifier
 
 #define ITER(iterable)                                                         \
-  /* @NOTE: cannot have nested as variable 'it' will repeat */                 \
+  /* @NOTE: In case of nested, 'it' will repeat */                             \
   for (size_t it = 0; it < LENGTH(iterable); ++it)
 
 #define FOREACH(var, iterable)                                                 \
-  /* @NOTE: cannot have nested as variable 'it' will repeat */                 \
+  /* @NOTE: In case of nested, 'it' will repeat */                             \
   for (int cond = 1, it = 0, size = LENGTH(iterable); cond && it < size;       \
        cond = !cond, it++)                                                     \
     for (var = iterable + it; cond; cond = !cond)
 
-// flag ops.
 #define SET(state, mask)    state |= (mask)
 #define UNSET(state, mask)  state &= ~(mask)
 #define TOGGLE(state, mask) state ^= (mask)
 #define IS_SET(state, mask) ((state & (mask)) > 0)
 
-// logging.
 #define die(...)                                                               \
   {                                                                            \
     fprintf(stderr, __VA_ARGS__);                                              \
@@ -70,13 +68,14 @@ extern const struct Core {
   Cursor cursors[NullCursorType];
   Atom wmatoms[NullWMAtom], netatoms[NullNetAtom];
   FILE *statuslogger;
+
+  Window (*input_focused_window)(void);
+  Geometry (*get_screen_rect)(void);
+  bool (*send_event)(Window, Atom);
+  int (*get_window_property)(Window, Atom, int, uint8_t **);
+  int (*get_window_title)(Window, XTextProperty *);
 } *const core;
 
 void core_init(void);
-Window input_focused_window(void);
-Geometry get_screen_rect(void);
-bool send_event(Window, Atom);
-int get_window_property(Window, Atom, int, uint8_t **);
-int get_window_title(Window, XTextProperty *);
 
 #endif

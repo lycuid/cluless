@@ -29,7 +29,7 @@ void update_screen_geometry(Monitor *mon)
     top    = MAX(top, d->strut[Top]);
     bottom = MAX(bottom, d->strut[Bottom]);
   }
-  mon->screen = get_screen_rect();
+  mon->screen = core->get_screen_rect();
   mon->screen.x += left;
   mon->screen.y += top;
   mon->screen.w -= (left + right);
@@ -75,8 +75,8 @@ void manage_dock(Monitor *mon, Window window)
 
   // checking if window is of type dock.
   Atom *dock_window = NULL;
-  get_window_property(window, core->netatoms[NET_WM_WINDOW_TYPE], 1,
-                      (uint8_t **)&dock_window);
+  core->get_window_property(window, core->netatoms[NET_WM_WINDOW_TYPE], 1,
+                            (uint8_t **)&dock_window);
   if (!dock_window || *dock_window != core->netatoms[NET_WM_WINDOW_TYPE_DOCK])
     return;
   XFree(dock_window);
@@ -84,11 +84,12 @@ void manage_dock(Monitor *mon, Window window)
   // getting strut values for the dock type window.
   int nstrut     = NullStrut;
   int64_t *strut = NULL;
-  get_window_property(window, core->netatoms[NET_WM_STRUT_PARTIAL],
-                      sizeof(int64_t) * nstrut, (uint8_t **)&strut);
+  core->get_window_property(window, core->netatoms[NET_WM_STRUT_PARTIAL],
+                            sizeof(int64_t) * nstrut, (uint8_t **)&strut);
   if (!strut)
-    get_window_property(window, core->netatoms[NET_WM_STRUT],
-                        sizeof(int64_t) * (nstrut = 4), (uint8_t **)&strut);
+    core->get_window_property(window, core->netatoms[NET_WM_STRUT],
+                              sizeof(int64_t) * (nstrut = 4),
+                              (uint8_t **)&strut);
   if (!strut)
     return;
   dcache_put(window, strut, nstrut);

@@ -24,7 +24,9 @@ void onButtonRelease(Monitor *, const XEvent *);
 void onDestroyNotify(Monitor *, const XEvent *);
 
 static const ClientHook default_client_hooks[NullHookType] = {
-    [ClientAdd] = mon_manage_client, [ClientRemove] = mon_unmanage_client};
+    [ClientAdd]    = mon_manage_client,
+    [ClientRemove] = mon_unmanage_client,
+};
 
 static const EventHandler default_event_handlers[LASTEvent] = {
     [MapRequest]       = onMapRequest,
@@ -36,7 +38,8 @@ static const EventHandler default_event_handlers[LASTEvent] = {
     [ButtonPress]      = onButtonPress,
     [MotionNotify]     = onMotionNotify,
     [ButtonRelease]    = onButtonRelease,
-    [DestroyNotify]    = onDestroyNotify};
+    [DestroyNotify]    = onDestroyNotify,
+};
 
 static inline void ManageClientHook(HookType type, Monitor *mon, Client *c)
 {
@@ -186,7 +189,7 @@ void onDestroyNotify(Monitor *mon, const XEvent *xevent)
   const XDestroyWindowEvent *e = &xevent->xdestroywindow;
   ITER(workspaces)
   {
-    Client *c = ws_getclient(mon_workspaceat(mon, it), e->window);
+    Client *c = ws_getclient(&mon->wss[it], e->window);
     if (c) {
       ManageClientHook(ClientRemove, mon, c);
       break;
