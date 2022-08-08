@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CALL(f, ...) f ? f(__VA_ARGS__) : (void)0
+
 static inline void ManageClientHook(HookType, Monitor *, Client *);
 
 void onMapRequest(Monitor *, const XEvent *);

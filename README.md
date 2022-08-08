@@ -16,7 +16,8 @@ Layouts
 Requirements
 ------------
   - libx11
-  - GNU Make (optional)
+  - gnu make (optional)
+  - pkg-config (optional)
 
 Build and Install
 -----------------

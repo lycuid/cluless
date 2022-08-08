@@ -41,8 +41,8 @@ void swap_master(Monitor *mon, const Arg *arg)
 void kill_client(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  Client *c;
-  if (!(c = ws_find(mon->selws, ClActive)))
+  Client *c = ws_find(mon->selws, ClActive);
+  if (!c)
     return;
   if (!core->send_event(c->window, core->wmatoms[WM_DELETE_WINDOW]))
     XKillClient(core->dpy, c->window);
@@ -51,8 +51,8 @@ void kill_client(Monitor *mon, const Arg *arg)
 void shift_client(Monitor *mon, const Arg *arg)
 {
   int offset = arg->i;
-  Client *c;
-  if (!(c = ws_find(mon->selws, ClActive)))
+  Client *c  = ws_find(mon->selws, ClActive);
+  if (!c)
     return;
   if (offset > 0)
     while (offset--)
@@ -66,8 +66,8 @@ void shift_client(Monitor *mon, const Arg *arg)
 void shift_focus(Monitor *mon, const Arg *arg)
 {
   int offset = arg->i;
-  Client *c;
-  if (!(c = ws_find(mon->selws, ClActive))) {
+  Client *c  = ws_find(mon->selws, ClActive);
+  if (!c) {
     c = mon->selws->cl_head;
     goto LAYOUT_AND_EXIT;
   }
@@ -179,8 +179,8 @@ void toggle_gap(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   LayoutManager *lm = &mon->selws->layout_manager;
-  lm->window_gappx  = lm->window_gappx == 0 ? window_gappx : 0;
-  lm->screen_gappx  = lm->screen_gappx == 0 ? screen_gappx : 0;
+  lm->window_gappx  = lm->window_gappx == 0 ? WindowGapPX : 0;
+  lm->screen_gappx  = lm->screen_gappx == 0 ? ScreenGapPX : 0;
   mon->applylayout();
 }
 
@@ -188,7 +188,7 @@ void toggle_border(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   LayoutManager *lm = &mon->selws->layout_manager;
-  lm->borderpx      = lm->borderpx == 0 ? borderpx : 0;
+  lm->borderpx      = lm->borderpx == 0 ? BorderPX : 0;
   for (Client *c = mon->selws->cl_head; c; c = c->next)
     XSetWindowBorderWidth(core->dpy, c->window, lm->borderpx);
   mon->applylayout();

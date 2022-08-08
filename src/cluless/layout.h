@@ -18,11 +18,11 @@ typedef struct {
 #define lm_reset(lm)                                                           \
   {                                                                            \
     (lm)->index           = 0;                                                 \
-    (lm)->screen_gappx    = screen_gappx;                                      \
-    (lm)->window_gappx    = window_gappx;                                      \
-    (lm)->borderpx        = borderpx;                                          \
-    (lm)->border_active   = border_active;                                     \
-    (lm)->border_inactive = border_inactive;                                   \
+    (lm)->screen_gappx    = ScreenGapPX;                                       \
+    (lm)->window_gappx    = WindowGapPX;                                       \
+    (lm)->borderpx        = BorderPX;                                          \
+    (lm)->border_active   = BorderActive;                                      \
+    (lm)->border_inactive = BorderInactive;                                    \
   }
 
 #define lm_drawregion(lm, region)                                              \

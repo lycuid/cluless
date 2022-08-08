@@ -10,10 +10,9 @@
 #define RootWindowEventMasks (SubstructureRedirectMask | SubstructureNotifyMask)
 #define ButtonMasks          (ButtonPressMask | ButtonReleaseMask)
 
-#define LENGTH(s)    (sizeof(s) / sizeof(s[0]))
-#define MAX(x, y)    (x) > (y) ? (x) : (y)
-#define MIN(x, y)    (x) < (y) ? (x) : (y)
-#define CALL(f, ...) f ? f(__VA_ARGS__) : (void)0
+#define LENGTH(s) (sizeof(s) / sizeof(s[0]))
+#define MAX(x, y) (x) > (y) ? (x) : (y)
+#define MIN(x, y) (x) < (y) ? (x) : (y)
 
 #define ENUM(identifier, ...) /* 'NULL' terminated enum values. */             \
   typedef enum { __VA_ARGS__, Null##identifier } identifier
@@ -24,9 +23,9 @@
 
 #define FOREACH(var, iterable)                                                 \
   /* @NOTE: In case of nested, 'it' will repeat */                             \
-  for (int cond = 1, it = 0, size = LENGTH(iterable); cond && it < size;       \
-       cond = !cond, it++)                                                     \
-    for (var = iterable + it; cond; cond = !cond)
+  for (int keep = 1, it = 0, size = LENGTH(iterable); keep && it < size;       \
+       keep = !keep, it++)                                                     \
+    for (var = iterable + it; keep; keep = !keep)
 
 #define SET(state, mask)    state |= (mask)
 #define UNSET(state, mask)  state &= ~(mask)

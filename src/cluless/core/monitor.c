@@ -11,11 +11,13 @@ void applylayout();
 Workspace *get_client_ws(Client *);
 void statuslog();
 
-static Monitor mon = {.focusclient   = focusclient,
-                      .restack       = restack,
-                      .applylayout   = applylayout,
-                      .get_client_ws = get_client_ws,
-                      .statuslog     = statuslog};
+static Monitor mon = {
+    .focusclient   = focusclient,
+    .restack       = restack,
+    .applylayout   = applylayout,
+    .get_client_ws = get_client_ws,
+    .statuslog     = statuslog,
+};
 
 Monitor *mon_init()
 {
@@ -95,7 +97,7 @@ void restack()
     if (IS_SET(c->state, ClActive))
       active = c;
   }
-  Window stack[i];
+  Window *stack = malloc(i * sizeof(Window));
   fullscreen += floating, i = 0;
 #define AddToStack(c)                                                          \
   stack[IS_SET(c->state, ClFloating | ClTransient) ? i++                       \
@@ -108,6 +110,7 @@ void restack()
       AddToStack(c);
 #undef AddToStack
   XRestackWindows(core->dpy, stack, fullscreen);
+  free(stack);
 }
 
 void applylayout()
@@ -141,18 +144,18 @@ void statuslog()
 
   // workspaces.
   {
-    int size = 1024;
-    char tmp[size];
+#define SIZE 1024
+    char tmp[SIZE];
 #define FormatWSString(fmt, string)                                            \
   {                                                                            \
     if (fmt) {                                                                 \
-      memcpy(tmp, string, size);                                               \
+      memcpy(tmp, string, SIZE);                                               \
       sprintf(string, fmt, tmp);                                               \
     }                                                                          \
   }
     Workspace *ws;
-    char string[size];
-    memset(string, 0, size);
+    char string[SIZE];
+    memset(string, 0, SIZE);
     ITER(workspaces)
     {
       ws = &mon.wss[it];
@@ -171,6 +174,7 @@ void statuslog()
     if (LogFormat[FmtSeperator])
       StatusLog("%s", LogFormat[FmtSeperator]);
 #undef FormatWSString
+#undef SIZE
   }
 
   // layout.
@@ -187,11 +191,11 @@ void statuslog()
     if (active) {
       XTextProperty wm_name;
       if (core->get_window_title(active->window, &wm_name) && wm_name.nitems) {
-        char title[trim_title + 1];
+        char title[TrimTitle + 1];
         memset(title, '.', sizeof(title));
         memcpy(title, wm_name.value,
-               wm_name.nitems >= trim_title ? trim_title - 3 : wm_name.nitems);
-        title[MIN(wm_name.nitems, trim_title)] = 0;
+               wm_name.nitems >= TrimTitle ? TrimTitle - 3 : wm_name.nitems);
+        title[MIN(wm_name.nitems, TrimTitle)] = 0;
         StatusLog(LogFormat[FmtWindowTitle], title);
       }
     }

@@ -1,5 +1,5 @@
 NAME=cluless
-VERSION=0.4.4
+VERSION=0.4.5
 BUILD=.build
 IDIR=src
 ODIR=$(BUILD)/cache
@@ -23,6 +23,6 @@ SRC=$(IDIR)/$(NAME).c                 \
 OBJS=$(SRC:$(IDIR)/%.c=$(ODIR)/%.o)
 PKGS=x11
 DEFINE=-D_GNU_SOURCE -DNAME='"$(NAME)"' -DVERSION='"$(VERSION)"'
-FLAGS=-Wall -Wextra -pedantic -I$(IDIR) -ggdb -O3
+FLAGS=-Wall -Wextra -Wvla -pedantic -I$(IDIR) -ggdb -O3
 override CFLAGS+=$(FLAGS) $(DEFINE) $(shell pkg-config --cflags $(PKGS))
 override LDFLAGS+=$(shell pkg-config --libs $(PKGS))

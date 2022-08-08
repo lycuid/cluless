@@ -2,6 +2,7 @@
 #include <X11/Xatom.h>
 #include <config.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // @TODO: figure out a better way of doing this.
 // currently we are updating the client list on every window map and destroy.
@@ -13,7 +14,7 @@ static inline void update_client_list(Monitor *mon)
     for (Client *c = mon->wss[it].cl_head; c; c = c->next)
       managed_client_count++;
   }
-  Window wids[managed_client_count];
+  Window *wids         = malloc(managed_client_count * sizeof(Window));
   managed_client_count = 0;
   ITER(workspaces)
   {
@@ -23,6 +24,7 @@ static inline void update_client_list(Monitor *mon)
   XChangeProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST],
                   XA_WINDOW, 32, PropModeReplace, (uint8_t *)wids,
                   managed_client_count);
+  free(wids);
 }
 
 // @TODO: find a better way to do this.
