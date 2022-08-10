@@ -4,6 +4,7 @@
 #include <cluless/core.h>
 #include <cluless/ewmh/docks.h>
 #include <cluless/layout.h>
+#include <cluless/layout/full.h>
 #include <cluless/layout/tall.h>
 #include <cluless/scratchpad.h>
 #include <cluless/window_rule.h>
@@ -37,7 +38,7 @@ static const char *const workspaces[] = {
     CLICKABLE(" 5 ", "super+5"),
 };
 
-static const Layout layouts[] = {{"[]=", tall}, {"<><", NULL}};
+static const Layout layouts[] = {{"[]=", tall}, {"[M]", full}, {"<><", NULL}};
 
 static const char *const LogFormat[FmtOptionsCount] = {
     [FmtWsCurrent]     = UNDERLINED("%s"),

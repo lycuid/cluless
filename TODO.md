@@ -11,7 +11,7 @@ todo:
   - [ ] simple left click to focus.
   - [X] windows change size after mapping.
   - [ ] status logging as a seperate module.
-  - [ ] Other layouts (Fullscreen etc).
+  - [X] Other layouts (Fullscreen etc).
 
 less important todos:
 ---------------------
