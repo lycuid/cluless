@@ -98,24 +98,22 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
   ws_detachclient(from, c);
   if (!ws_getclient(to, c->window))
     ws_attachclient(to, c);
-  // as the client is detached from the 'selws', it wont be destroyed on unmap.
   XUnmapWindow(core->dpy, c->window);
 }
 
 void select_ws(Monitor *mon, const Arg *arg)
 {
   Workspace *from = mon->selws, *to = &mon->wss[arg->i];
-  if (!to || !from || to == from)
+  if (!from || !to || from == to)
     return;
   mon->selws = to;
-  // we can unmap safely as 'selws' has already been changed (unmapped client
-  // wont be destroyed).
-  Client *c = from->cl_head;
-  for (; c; c = c->next)
+  Client *c;
+  for (c = from->cl_head; c; c = c->next)
     XUnmapWindow(core->dpy, c->window);
-  for (c = cl_last(to->cl_head); c; c = c->prev)
+  for (c = to->cl_head; c; c = c->next)
     XMapWindow(core->dpy, c->window);
-
+  // If any client with 'ClActive' state exists, then it will be focused by
+  // event handlers, otherwise we need to focus some client manually.
   if (!ws_find(to, ClActive))
     mon->focusclient(to->cl_head);
 }
@@ -157,13 +155,13 @@ void reset_layout(Monitor *mon, const Arg *arg)
   mon->applylayout();
 }
 
-void move_client(Monitor *mon, const Arg *arg)
+void mouse_move(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   move_resize_client(mon, ClMoving);
 }
 
-void resize_client(Monitor *mon, const Arg *arg)
+void mouse_resize(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   move_resize_client(mon, ClResizing);

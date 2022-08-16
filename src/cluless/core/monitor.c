@@ -5,18 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-void focusclient(Client *);
-void restack();
-void applylayout();
-Workspace *get_client_ws(Client *);
-void statuslog();
+void mon_focusclient(Client *);
+void mon_restack();
+void mon_applylayout();
+Workspace *mon_get_client_ws(Client *);
+void mon_statuslog();
 
 static Monitor mon = {
-    .focusclient   = focusclient,
-    .restack       = restack,
-    .applylayout   = applylayout,
-    .get_client_ws = get_client_ws,
-    .statuslog     = statuslog,
+    .focusclient   = mon_focusclient,
+    .restack       = mon_restack,
+    .applylayout   = mon_applylayout,
+    .get_client_ws = mon_get_client_ws,
+    .statuslog     = mon_statuslog,
 };
 
 Monitor *mon_init()
@@ -51,6 +51,7 @@ void mon_unmanage_client(Monitor *mon, Client *c)
   Workspace *ws = mon->get_client_ws(c);
   if (!ws)
     return;
+  XSetWindowBorderWidth(core->dpy, c->window, 0);
   Client *neighbour = cl_neighbour(c);
   // detaching the client before doing anything else, as the corresponding
   // window has already been destroyed (don't want any excitement).
@@ -60,7 +61,7 @@ void mon_unmanage_client(Monitor *mon, Client *c)
   mon->applylayout();
 }
 
-void focusclient(Client *c)
+void mon_focusclient(Client *c)
 {
   LayoutManager *lm = &mon.selws->layout_manager;
   if (!c)
@@ -79,10 +80,10 @@ void focusclient(Client *c)
     XRaiseWindow(core->dpy, c->window);
   XSetInputFocus(core->dpy, c->window, RevertToParent, CurrentTime);
 LOG_AND_EXIT:
-  mon.statuslog();
+  mon_statuslog();
 }
 
-void restack()
+void mon_restack()
 {
   Client *c = mon.selws->cl_head, *active = NULL;
   if (!c)
@@ -113,16 +114,16 @@ void restack()
   free(stack);
 }
 
-void applylayout()
+void mon_applylayout()
 {
   const Layout *layout = lm_getlayout(&mon.selws->layout_manager);
   if (layout->apply)
     layout->apply(&mon);
-  mon.restack();
-  mon.statuslog();
+  mon_restack();
+  mon_statuslog();
 }
 
-Workspace *get_client_ws(Client *c)
+Workspace *mon_get_client_ws(Client *c)
 {
   if (c) {
     ITER(workspaces)
@@ -136,7 +137,7 @@ Workspace *get_client_ws(Client *c)
 }
 
 // @FIXME: This function is an absolute mess.
-void statuslog()
+void mon_statuslog()
 {
   if (!core->statuslogger)
     return;

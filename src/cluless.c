@@ -45,11 +45,8 @@ static const EventHandler default_event_handlers[LASTEvent] = {
 
 static inline void ManageClientHook(HookType type, Monitor *mon, Client *c)
 {
-  if (type != ClientRemove)
-    CALL(default_client_hooks[type], mon, c);
+  CALL(default_client_hooks[type], mon, c);
   CALL(sch_client_hooks[type], mon, c);
-  if (type == ClientRemove)
-    CALL(default_client_hooks[type], mon, c);
   if (type == ClientRemove && c)
     free(c);
 }
@@ -91,13 +88,15 @@ void onConfigureRequest(Monitor *mon, const XEvent *xevent)
 {
   (void)mon;
   const XConfigureRequestEvent *e = &xevent->xconfigurerequest;
-  XWindowChanges changes          = {.x            = e->x,
-                                     .y            = e->y,
-                                     .width        = e->width,
-                                     .height       = e->height,
-                                     .border_width = e->border_width,
-                                     .sibling      = e->above,
-                                     .stack_mode   = e->detail};
+  XWindowChanges changes          = {
+               .x            = e->x,
+               .y            = e->y,
+               .width        = e->width,
+               .height       = e->height,
+               .border_width = e->border_width,
+               .sibling      = e->above,
+               .stack_mode   = e->detail,
+  };
   XConfigureWindow(core->dpy, e->window, e->value_mask, &changes);
   XSync(core->dpy, False);
 }
@@ -105,8 +104,10 @@ void onConfigureRequest(Monitor *mon, const XEvent *xevent)
 void onPropertyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XPropertyEvent *e = &xevent->xproperty;
-  if (e->state == PropertyNewValue && (e->atom == core->netatoms[NET_WM_NAME] ||
-                                       e->atom == core->wmatoms[WM_NAME]))
+  if (e->state == PropertyDelete)
+    return;
+  if (e->atom == core->netatoms[NET_WM_NAME] ||
+      e->atom == core->wmatoms[WM_NAME])
     mon->statuslog();
 }
 
@@ -232,13 +233,10 @@ int main(int argc, char const **argv)
   while (mon->running && !XNextEvent(core->dpy, &e)) {
     if (EventRepr[e.type] && e.type != MotionNotify)
       LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
-    if (e.type != DestroyNotify)
-      CALL(default_event_handlers[e.type], mon, &e);
+    CALL(default_event_handlers[e.type], mon, &e);
+    CALL(ewmh_event_handlers[e.type], mon, &e);
     CALL(sch_event_handlers[e.type], mon, &e);
     CALL(dock_event_handlers[e.type], mon, &e);
-    CALL(ewmh_event_handlers[e.type], mon, &e);
-    if (e.type == DestroyNotify)
-      CALL(default_event_handlers[e.type], mon, &e);
     switch (e.type) {
     case MapNotify:
     case UnmapNotify:

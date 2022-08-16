@@ -34,8 +34,8 @@ void toggle_gap(Monitor *, const Arg *);
 void toggle_border(Monitor *, const Arg *);
 
 // button bindings.
-void move_client(Monitor *, const Arg *);
-void resize_client(Monitor *, const Arg *);
+void mouse_move(Monitor *, const Arg *);
+void mouse_resize(Monitor *, const Arg *);
 void focus_client(Monitor *, const Arg *);
 
 #endif

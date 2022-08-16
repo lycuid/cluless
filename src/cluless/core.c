@@ -97,10 +97,12 @@ Window input_focused_window()
 
 Geometry get_screen_rect()
 {
-  return (Geometry){.x = 0,
-                    .y = 0,
-                    .w = DisplayWidth(local.dpy, DefaultScreen(local.dpy)),
-                    .h = DisplayHeight(local.dpy, DefaultScreen(local.dpy))};
+  return (Geometry){
+      .x = 0,
+      .y = 0,
+      .w = DisplayWidth(local.dpy, DefaultScreen(local.dpy)),
+      .h = DisplayHeight(local.dpy, DefaultScreen(local.dpy)),
+  };
 }
 
 bool send_event(Window window, Atom protocol)

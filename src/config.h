@@ -77,14 +77,12 @@ static const Binding keys[] = {
     {Mod,                 XK_j,       shift_focus,        {.i = +1}},
     {Mod,                 XK_k,       shift_focus,        {.i = -1}},
     {Mod,                 XK_t,       tile_client,        {0}},
-
     // scratchpad ('.cmd' value should be {sch_id, cmd, arg1, arg2, ...}).
 #define SchWindow Term, "-g", "125x30+100+50", "-t"
     {Mod | ControlMask,   XK_Return,  sch_toggle,         {.cmd = CMD("t", SchWindow, ScratchTerm)}},
-    {Mod | ControlMask,   XK_f,       sch_toggle,         {.cmd = CMD("f", SchWindow, ScratchFM, "-e", "lf")}},
+    {Mod | ControlMask,   XK_f,       sch_toggle,         {.cmd = CMD("f", SchWindow, ScratchFM, "-e", "vifm")}},
     {Mod | ControlMask,   XK_n,       sch_toggle,         {.cmd = CMD("n", SchWindow, ScratchNM, "-e", "nmtui")}},
 #undef SchWindow
-
     // workspace.
 #define WS_KEYS(key, arg)                                                      \
     {Mod,                 key,        select_ws,          arg},                \
@@ -98,8 +96,8 @@ static const Binding keys[] = {
 };
 
 static const Binding buttons[] = {
-    {Mod,                 Button1,    move_client,        {0}},
-    {Mod,                 Button3,    resize_client,      {0}},
+    {Mod,                 Button1,    mouse_move,        {0}},
+    {Mod,                 Button3,    mouse_resize,      {0}},
     {ControlMask,         Button3,    focus_client,       {0}},
 };
 

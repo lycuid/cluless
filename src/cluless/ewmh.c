@@ -2,48 +2,39 @@
 #include <X11/Xatom.h>
 #include <config.h>
 #include <stdint.h>
-#include <stdlib.h>
 
-// @TODO: figure out a better way of doing this.
-// currently we are updating the client list on every window map and destroy.
-static inline void update_client_list(Monitor *mon)
-{
-  size_t managed_client_count = 0;
-  ITER(workspaces)
-  {
-    for (Client *c = mon->wss[it].cl_head; c; c = c->next)
-      managed_client_count++;
-  }
-  Window *wids         = malloc(managed_client_count * sizeof(Window));
-  managed_client_count = 0;
-  ITER(workspaces)
-  {
-    for (Client *c = mon->wss[it].cl_head; c; c = c->next)
-      wids[managed_client_count++] = c->window;
-  }
-  XChangeProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST],
-                  XA_WINDOW, 32, PropModeReplace, (uint8_t *)wids,
-                  managed_client_count);
-  free(wids);
-}
-
-// @TODO: find a better way to do this.
-// currently adding focuschange mask everytime a window is mapped (which is
-// unecessary, only need to do this once).
 void ewmh_maprequest(Monitor *mon, const XEvent *xevent)
 {
+  (void)mon;
   const XMapRequestEvent *e = &xevent->xmaprequest;
   XWindowAttributes attrs;
   XGetWindowAttributes(core->dpy, e->window, &attrs);
   if (!IS_SET(attrs.your_event_mask, FocusChangeMask))
     XSelectInput(core->dpy, e->window, attrs.your_event_mask | FocusChangeMask);
-  // map request only fires on windows with 'override_redirect' set to false.
-  update_client_list(mon);
+  XChangeProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST],
+                  XA_WINDOW, 32, PropModeAppend, (uint8_t *)&e->window, 1);
+}
+
+static inline void update_client_list(Monitor *mon)
+{
+  XDeleteProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST]);
+  ITER(workspaces)
+  {
+    for (Client *c = mon->wss[it].cl_head; c; c = c->next)
+      XChangeProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST],
+                      XA_WINDOW, 32, PropModeAppend, (uint8_t *)&c->window, 1);
+  }
 }
 
 void ewmh_destroynotify(Monitor *mon, const XEvent *xevent)
 {
   (void)xevent;
+  update_client_list(mon);
+}
+
+void ewmh_clientremove(Monitor *mon, Client *c)
+{
+  (void)c;
   update_client_list(mon);
 }
 

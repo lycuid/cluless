@@ -1,4 +1,5 @@
 #include "scratchpad.h"
+#include <X11/Xatom.h>
 #include <cluless/core/workspace.h>
 #include <config.h>
 #include <stdlib.h>
@@ -46,15 +47,16 @@ void sch_toggle(Monitor *mon, const Arg *arg)
 
 static inline void sch_nullify_local_pointer(Window w)
 {
-  if (revert_focus_to && revert_focus_to->window == w) {
+  if (revert_focus_to && revert_focus_to->window == w)
     revert_focus_to = NULL;
-    return;
-  }
   ITER(sch_clients)
   {
-    if (sch_clients[it] && sch_clients[it]->window == w) {
-      sch_clients[it] = NULL;
-      return;
+    if (sch_clients[it]) {
+      XChangeProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST],
+                      XA_WINDOW, 32, PropModeAppend,
+                      (uint8_t *)&sch_clients[it]->window, 1);
+      if (sch_clients[it]->window == w)
+        sch_clients[it] = NULL;
     }
   }
 }
@@ -75,6 +77,5 @@ void sch_destroynotify(Monitor *mon, const XEvent *xevent)
 void sch_clientremove(Monitor *mon, Client *c)
 {
   (void)mon;
-  if (c)
-    sch_nullify_local_pointer(c->window);
+  sch_nullify_local_pointer(c ? c->window : 0);
 }
