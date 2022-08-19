@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+void core_init(void);
 Window input_focused_window(void);
 Geometry get_screen_rect(void);
 bool send_event(Window, Atom);
@@ -14,6 +15,7 @@ int get_window_property(Window, Atom, int, uint8_t **);
 int get_window_title(Window, XTextProperty *);
 
 static struct Core local = {
+    .init                 = core_init,
     .input_focused_window = input_focused_window,
     .get_screen_rect      = get_screen_rect,
     .send_event           = send_event,

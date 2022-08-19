@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static inline void move_resize_client(Monitor *, State);
+static inline void mouse_move_resize(Monitor *, State);
+static inline void move_resize(Monitor *, int, int, int, int);
 
 void quit(Monitor *mon, const Arg *arg)
 {
@@ -98,6 +99,7 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
   ws_detachclient(from, c);
   if (!ws_getclient(to, c->window))
     ws_attachclient(to, c);
+  // as the client is detached from the 'selws', it wont be destroyed on unmap.
   XUnmapWindow(core->dpy, c->window);
 }
 
@@ -106,6 +108,8 @@ void select_ws(Monitor *mon, const Arg *arg)
   Workspace *from = mon->selws, *to = &mon->wss[arg->i];
   if (!from || !to || from == to)
     return;
+  // we can unmap safely as 'selws' has already been changed (unmapped client
+  // wont be destroyed).
   mon->selws = to;
   Client *c;
   for (c = from->cl_head; c; c = c->next)
@@ -158,13 +162,13 @@ void reset_layout(Monitor *mon, const Arg *arg)
 void mouse_move(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  move_resize_client(mon, ClMoving);
+  mouse_move_resize(mon, ClMoving);
 }
 
 void mouse_resize(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  move_resize_client(mon, ClResizing);
+  mouse_move_resize(mon, ClResizing);
 }
 
 void focus_client(Monitor *mon, const Arg *arg)
@@ -192,7 +196,28 @@ void toggle_border(Monitor *mon, const Arg *arg)
   mon->applylayout();
 }
 
-static inline void move_resize_client(Monitor *mon, State state)
+void move_client_x(Monitor *mon, const Arg *arg)
+{
+  move_resize(mon, arg->i, 0, 0, 0);
+}
+
+void move_client_y(Monitor *mon, const Arg *arg)
+{
+  move_resize(mon, 0, arg->i, 0, 0);
+}
+
+void resize_client_x(Monitor *mon, const Arg *arg)
+{
+  move_resize(mon, 0, 0, arg->i, 0);
+}
+
+void resize_client_y(Monitor *mon, const Arg *arg)
+{
+  move_resize(mon, 0, 0, 0, arg->i);
+}
+
+// {{{ Util functions.
+static inline void mouse_move_resize(Monitor *mon, State state)
 {
   Client *c = mon->grabbed.client;
   if (!c)
@@ -209,3 +234,21 @@ static inline void move_resize_client(Monitor *mon, State state)
   mon->focusclient(c);
   mon->applylayout();
 }
+
+static inline void move_resize(Monitor *mon, int dx, int dy, int dw, int dh)
+{
+  Client *c;
+  if ((dx + dy + dw + dh) == 0 || !(c = ws_find(mon->selws, ClActive)))
+    return;
+  if (!IS_SET(c->state, ClFloating)) {
+    SET(c->state, ClFloating);
+    mon->applylayout();
+  }
+  XWindowAttributes attrs;
+  XGetWindowAttributes(core->dpy, c->window, &attrs);
+  XMoveResizeWindow(core->dpy, c->window, attrs.x + dx, attrs.y + dy,
+                    attrs.width + dw, attrs.height + dh);
+}
+// }}}
+
+// vim:fdm=marker

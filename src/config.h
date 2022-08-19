@@ -74,6 +74,14 @@ static const Binding keys[] = {
     {Mod | ShiftMask,     XK_c,       kill_client,        {0}},
     {Mod | ShiftMask,     XK_j,       shift_client,       {.i = +1}},
     {Mod | ShiftMask,     XK_k,       shift_client,       {.i = -1}},
+    {Mod,                 XK_Down,    move_client_y,      {.i = +15}},
+    {Mod,                 XK_Up,      move_client_y,      {.i = -15}},
+    {Mod,                 XK_Right,   move_client_x,      {.i = +15}},
+    {Mod,                 XK_Left,    move_client_x,      {.i = -15}},
+    {Mod | ShiftMask,     XK_Down,    resize_client_y,    {.i = +15}},
+    {Mod | ShiftMask,     XK_Up,      resize_client_y,    {.i = -15}},
+    {Mod | ShiftMask,     XK_Right,   resize_client_x,    {.i = +15}},
+    {Mod | ShiftMask,     XK_Left,    resize_client_x,    {.i = -15}},
     {Mod,                 XK_j,       shift_focus,        {.i = +1}},
     {Mod,                 XK_k,       shift_focus,        {.i = -1}},
     {Mod,                 XK_t,       tile_client,        {0}},
@@ -96,8 +104,8 @@ static const Binding keys[] = {
 };
 
 static const Binding buttons[] = {
-    {Mod,                 Button1,    mouse_move,        {0}},
-    {Mod,                 Button3,    mouse_resize,      {0}},
+    {Mod,                 Button1,    mouse_move,         {0}},
+    {Mod,                 Button3,    mouse_resize,       {0}},
     {ControlMask,         Button3,    focus_client,       {0}},
 };
 

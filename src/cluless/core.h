@@ -68,13 +68,12 @@ extern const struct Core {
   Atom wmatoms[NullWMAtom], netatoms[NullNetAtom];
   FILE *statuslogger;
 
+  void (*init)(void);
   Window (*input_focused_window)(void);
   Geometry (*get_screen_rect)(void);
   bool (*send_event)(Window, Atom);
   int (*get_window_property)(Window, Atom, int, uint8_t **);
   int (*get_window_title)(Window, XTextProperty *);
 } *const core;
-
-void core_init(void);
 
 #endif

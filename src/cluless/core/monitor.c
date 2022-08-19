@@ -91,7 +91,7 @@ void mon_restack()
 
   int floating = 0, fullscreen = 0, i = 0;
   for (; c; c = c->next, i++) {
-    if (IS_SET(c->state, ClFloating | ClTransient))
+    if (IS_SET(c->state, ClFloating))
       floating++;
     if (IS_SET(c->state, ClFullscreen))
       fullscreen++;
@@ -101,9 +101,9 @@ void mon_restack()
   Window *stack = malloc(i * sizeof(Window));
   fullscreen += floating, i = 0;
 #define AddToStack(c)                                                          \
-  stack[IS_SET(c->state, ClFloating | ClTransient) ? i++                       \
-        : IS_SET(c->state, ClFullscreen)           ? floating++                \
-                                                   : fullscreen++] = c->window;
+  stack[IS_SET(c->state, ClFloating)     ? i++                                 \
+        : IS_SET(c->state, ClFullscreen) ? floating++                          \
+                                         : fullscreen++] = c->window;
   if (active)
     AddToStack(active);
   for (c = mon.selws->cl_head; c; c = c->next)

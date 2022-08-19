@@ -9,9 +9,8 @@
 #define ClFullscreen (1 << 2)
 #define ClMoving     (1 << 3)
 #define ClResizing   (1 << 4)
-#define ClTransient  (1 << 5)
 
-#define CL_UNTILED_STATE ClFloating | ClFullscreen | ClTransient
+#define CL_UNTILED_STATE ClFloating | ClFullscreen
 
 #define cl_neighbour(c) (c ? c->prev ? c->prev : c->next : NULL)
 

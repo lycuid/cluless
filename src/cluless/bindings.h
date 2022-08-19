@@ -32,6 +32,10 @@ void cycle_layout(Monitor *, const Arg *);
 void reset_layout(Monitor *, const Arg *);
 void toggle_gap(Monitor *, const Arg *);
 void toggle_border(Monitor *, const Arg *);
+void move_client_x(Monitor *, const Arg *);
+void move_client_y(Monitor *, const Arg *);
+void resize_client_x(Monitor *, const Arg *);
+void resize_client_y(Monitor *, const Arg *);
 
 // button bindings.
 void mouse_move(Monitor *, const Arg *);

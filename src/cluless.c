@@ -63,7 +63,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
     return;
   Window w;
   if (XGetTransientForHint(core->dpy, c->window, &w))
-    SET(c->state, ClTransient);
+    SET(c->state, ClFloating);
   mon->applylayout();
   XMapWindow(core->dpy, c->window);
 }
@@ -225,7 +225,7 @@ int main(int argc, char const **argv)
 {
   argparse(argc, argv);
 
-  core_init();
+  core->init();
   Monitor *mon = mon_init();
   XSetErrorHandler(xerror_handler);
 
