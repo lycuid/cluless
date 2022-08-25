@@ -26,3 +26,4 @@ bugs:
   - [X] negative resize causes crash.
   - [X] scratchpad dangling pointer, if window gets destroyed while unmapped.
   - [ ] ewmh's `_NET_CLIENT_LIST` doesn't play well with scratchpads.
+  - [X] not checking for transient after window rule.

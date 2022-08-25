@@ -61,9 +61,6 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   // the window if the client is found in selws.
   if (!ws_getclient(mon->selws, c->window))
     return;
-  Window w;
-  if (XGetTransientForHint(core->dpy, c->window, &w))
-    SET(c->state, ClFloating);
   mon->applylayout();
   XMapWindow(core->dpy, c->window);
 }

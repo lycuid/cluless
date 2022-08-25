@@ -43,6 +43,9 @@ void mon_manage_client(Monitor *mon, Client *c)
   XGetWindowAttributes(core->dpy, c->window, &attrs);
   XSelectInput(core->dpy, c->window,
                attrs.your_event_mask | PropertyChangeMask);
+  Window parent;
+  if (XGetTransientForHint(core->dpy, c->window, &parent))
+    SET(c->state, ClFloating);
   window_rule_apply(mon, c);
 }
 
