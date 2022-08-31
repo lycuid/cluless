@@ -12,6 +12,7 @@ todo:
   - [X] windows change size after mapping.
   - [ ] status logging as a seperate module.
   - [X] Other layouts (Fullscreen etc).
+  - [ ] logging and layout functions are called too often (program slows down).
 
 less important todos:
 ---------------------

@@ -62,11 +62,12 @@ ENUM(NetAtom, NET_WM_NAME, NET_WM_WINDOW_TYPE, NET_WM_WINDOW_TYPE_DOCK,
 // These are mainly the values that don't (shouldn't) change throughout the
 // application lifetime.
 extern const struct Core {
+  bool running;
   Display *dpy;
   Window root;
   Cursor cursors[NullCursorType];
   Atom wmatoms[NullWMAtom], netatoms[NullNetAtom];
-  FILE *statuslogger;
+  FILE *logger;
 
   void (*init)(void);
   Window (*input_focused_window)(void);
@@ -74,6 +75,7 @@ extern const struct Core {
   bool (*send_event)(Window, Atom);
   int (*get_window_property)(Window, Atom, int, uint8_t **);
   int (*get_window_title)(Window, XTextProperty *);
+  void (*stop_running)();
 } *const core;
 
 #endif

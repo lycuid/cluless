@@ -9,7 +9,7 @@
     fprintf(sink, __VA_ARGS__);                                                \
     fflush(sink);                                                              \
   }
-#define LOG(...)   __log__(stdout, __VA_ARGS__)
+#define LOG(...)   __log__(stderr, __VA_ARGS__)
 #define ERROR(...) __log__(stderr, __VA_ARGS__)
 
 #define REPR(x) [x] = #x

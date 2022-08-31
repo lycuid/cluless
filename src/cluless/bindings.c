@@ -12,8 +12,9 @@ static inline void move_resize(Monitor *, int, int, int, int);
 
 void quit(Monitor *mon, const Arg *arg)
 {
+  (void)mon;
   (void)arg;
-  mon->running = false;
+  core->stop_running();
 }
 
 void spawn(Monitor *mon, const Arg *arg)
@@ -36,7 +37,7 @@ void swap_master(Monitor *mon, const Arg *arg)
     return;
   ws_detachclient(mon->selws, c);
   ws_attachclient(mon->selws, c);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void kill_client(Monitor *mon, const Arg *arg)
@@ -61,7 +62,7 @@ void shift_client(Monitor *mon, const Arg *arg)
   else
     while (-offset++)
       ws_clmoveup(mon->selws, c);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void shift_focus(Monitor *mon, const Arg *arg)
@@ -79,7 +80,7 @@ void shift_focus(Monitor *mon, const Arg *arg)
     while (-offset++)
       c = c->prev ? c->prev : cl_last(c);
 LAYOUT_AND_EXIT:
-  mon->focusclient(c);
+  mon_focusclient(mon, c);
 }
 
 void move_client_to_ws(Monitor *mon, const Arg *arg)
@@ -92,9 +93,9 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
   // focused.
   Client *neighbour = cl_neighbour(c),
          *focused   = ws_getclient(mon->selws, core->input_focused_window());
-  mon->focusclient(focused && focused != c ? focused
-                   : neighbour             ? neighbour
-                                           : from->cl_head);
+  mon_focusclient(mon, focused && focused != c ? focused
+                       : neighbour             ? neighbour
+                                               : from->cl_head);
   // to avoid attaching same client multiple times.
   ws_detachclient(from, c);
   if (!ws_getclient(to, c->window))
@@ -119,7 +120,7 @@ void select_ws(Monitor *mon, const Arg *arg)
   // If any client with 'ClActive' state exists, then it will be focused by
   // event handlers, otherwise we need to focus some client manually.
   if (!ws_find(to, ClActive))
-    mon->focusclient(to->cl_head);
+    mon_focusclient(mon, to->cl_head);
 }
 
 void tile_client(Monitor *mon, const Arg *arg)
@@ -129,7 +130,7 @@ void tile_client(Monitor *mon, const Arg *arg)
   if (!c)
     return;
   UNSET(c->state, CL_UNTILED_STATE);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void float_client(Monitor *mon, const Arg *arg)
@@ -139,14 +140,14 @@ void float_client(Monitor *mon, const Arg *arg)
   if (!c)
     return;
   SET(c->state, ClFloating);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void cycle_layout(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   lm_nextlayout(&mon->selws->layout_manager);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void reset_layout(Monitor *mon, const Arg *arg)
@@ -156,7 +157,7 @@ void reset_layout(Monitor *mon, const Arg *arg)
   lm_reset(lm);
   for (Client *c = mon->selws->cl_head; c; c = c->next)
     lm_decorate_client(lm, c);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void mouse_move(Monitor *mon, const Arg *arg)
@@ -174,7 +175,7 @@ void mouse_resize(Monitor *mon, const Arg *arg)
 void focus_client(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  mon->focusclient(mon->grabbed.client);
+  mon_focusclient(mon, mon->grabbed.client);
 }
 
 void toggle_gap(Monitor *mon, const Arg *arg)
@@ -183,7 +184,7 @@ void toggle_gap(Monitor *mon, const Arg *arg)
   LayoutManager *lm = &mon->selws->layout_manager;
   lm->window_gappx  = lm->window_gappx == 0 ? WindowGapPX : 0;
   lm->screen_gappx  = lm->screen_gappx == 0 ? ScreenGapPX : 0;
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void toggle_border(Monitor *mon, const Arg *arg)
@@ -193,7 +194,7 @@ void toggle_border(Monitor *mon, const Arg *arg)
   lm->borderpx      = lm->borderpx == 0 ? BorderPX : 0;
   for (Client *c = mon->selws->cl_head; c; c = c->next)
     XSetWindowBorderWidth(core->dpy, c->window, lm->borderpx);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void move_client_x(Monitor *mon, const Arg *arg)
@@ -231,8 +232,8 @@ static inline void mouse_move_resize(Monitor *mon, State state)
     SET(state, ClFloating);
   // update client state.
   SET(c->state, state);
-  mon->focusclient(c);
-  mon->applylayout();
+  mon_focusclient(mon, c);
+  mon_applylayout(mon);
 }
 
 static inline void move_resize(Monitor *mon, int dx, int dy, int dw, int dh)
@@ -242,7 +243,7 @@ static inline void move_resize(Monitor *mon, int dx, int dy, int dw, int dh)
     return;
   if (!IS_SET(c->state, ClFloating)) {
     SET(c->state, ClFloating);
-    mon->applylayout();
+    mon_applylayout(mon);
   }
   XWindowAttributes attrs;
   XGetWindowAttributes(core->dpy, c->window, &attrs);

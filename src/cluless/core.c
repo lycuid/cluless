@@ -15,6 +15,7 @@ int get_window_property(Window, Atom, int, uint8_t **);
 int get_window_title(Window, XTextProperty *);
 
 static struct Core local = {
+    .running              = true,
     .init                 = core_init,
     .input_focused_window = input_focused_window,
     .get_screen_rect      = get_screen_rect,
@@ -24,24 +25,15 @@ static struct Core local = {
 };
 const struct Core *const core = &local;
 
-static void stop_status_logging(int _)
-{
-  (void)_;
-  local.statuslogger = NULL;
-}
-static void start_status_logging()
-{
-  // [Broken Pipe] piped program crashes/stops, nullify the pointer.
-  signal(SIGPIPE, stop_status_logging);
-  local.statuslogger = statusbar[0] ? popen(statusbar[0], "w") : NULL;
-}
+static void NOOP(__attribute__((unused)) int _) {}
 
 void core_init(void)
 {
   if ((local.dpy = XOpenDisplay(NULL)) == NULL)
     die("Cannot open display.\n");
-  local.root = DefaultRootWindow(local.dpy);
-  start_status_logging();
+  local.root   = DefaultRootWindow(local.dpy);
+  local.logger = stdout;
+  signal(SIGPIPE, NOOP);
 
   local.cursors[CurNormal] = XCreateFontCursor(local.dpy, XC_left_ptr);
   local.cursors[CurResize] = XCreateFontCursor(local.dpy, XC_sizing);
@@ -145,3 +137,5 @@ int get_window_title(Window window, XTextProperty *wm_name)
                : XGetTextProperty(local.dpy, window, wm_name,
                                   local.wmatoms[WM_NAME]);
 }
+
+void stop_running() { local.running = false; }

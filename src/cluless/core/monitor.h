@@ -4,7 +4,6 @@
 #include <cluless/core.h>
 #include <cluless/core/client.h>
 #include <cluless/core/workspace.h>
-#include <stdbool.h>
 
 typedef struct {
   Client *client;
@@ -14,21 +13,19 @@ typedef struct {
 } PointerGrab;
 
 typedef struct {
-  bool running : 1;
   Workspace *wss, *selws;
   Geometry screen;
   PointerGrab grabbed;
-
-  void (*focusclient)(Client *);
-  void (*restack)(void);
-  void (*applylayout)(void);
-  Workspace *(*get_client_ws)(Client *);
-  void (*statuslog)(void);
 } Monitor;
 
-Monitor *mon_init();
+void mon_init(Monitor *);
 void mon_manage_client(Monitor *, Client *);
 void mon_unmanage_client(Monitor *, Client *);
+void mon_focusclient(Monitor *, Client *);
+void mon_restack(Monitor *);
+void mon_applylayout(Monitor *);
+Workspace *mon_get_client_ws(Monitor *, Client *);
+void mon_statuslog(Monitor *);
 
 // hooks are only called on clients which are attached to the workspaces managed
 // my the monitor.

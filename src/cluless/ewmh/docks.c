@@ -96,7 +96,7 @@ void manage_dock(Monitor *mon, Window window)
   XFree(strut);
 
   update_screen_geometry(mon);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void dock_mapnotify(Monitor *mon, const XEvent *xevent)
@@ -124,7 +124,7 @@ void dock_destroynotify(Monitor *mon, const XEvent *xevent)
     return;
   free(cache);
   update_screen_geometry(mon);
-  mon->applylayout();
+  mon_applylayout(mon);
 }
 
 void dock_toggle(Monitor *mon, const Arg *arg)
@@ -132,5 +132,5 @@ void dock_toggle(Monitor *mon, const Arg *arg)
   (void)arg;
   dock.visible = !dock.visible;
   update_screen_geometry(mon);
-  mon->applylayout();
+  mon_applylayout(mon);
 }

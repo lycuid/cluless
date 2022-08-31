@@ -45,6 +45,9 @@ static const EventHandler default_event_handlers[LASTEvent] = {
 
 static inline void ManageClientHook(HookType type, Monitor *mon, Client *c)
 {
+  // As we are doing significant 'malloc'/'free' in this, we need to make sure
+  // to sync all events before that, to avoid memory leaks, segv etc.
+  XSync(core->dpy, False);
   CALL(default_client_hooks[type], mon, c);
   CALL(sch_client_hooks[type], mon, c);
   if (type == ClientRemove && c)
@@ -61,7 +64,6 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   // the window if the client is found in selws.
   if (!ws_getclient(mon->selws, c->window))
     return;
-  mon->applylayout();
   XMapWindow(core->dpy, c->window);
 }
 
@@ -70,7 +72,7 @@ void onMapNotify(Monitor *mon, const XEvent *xevent)
   const XMapEvent *e = &xevent->xmap;
   Client *c;
   if ((c = ws_getclient(mon->selws, e->window)) && IS_SET(c->state, ClActive))
-    mon->focusclient(c);
+    mon_focusclient(mon, c);
 }
 
 void onUnmapNotify(Monitor *mon, const XEvent *xevent)
@@ -105,7 +107,7 @@ void onPropertyNotify(Monitor *mon, const XEvent *xevent)
     return;
   if (e->atom == core->netatoms[NET_WM_NAME] ||
       e->atom == core->wmatoms[WM_NAME])
-    mon->statuslog();
+    mon_statuslog(mon);
 }
 
 void onKeyPress(Monitor *mon, const XEvent *xevent)
@@ -223,23 +225,24 @@ int main(int argc, char const **argv)
   argparse(argc, argv);
 
   core->init();
-  Monitor *mon = mon_init();
+  Monitor mon;
+  mon_init(&mon);
   XSetErrorHandler(xerror_handler);
 
   XEvent e;
-  while (mon->running && !XNextEvent(core->dpy, &e)) {
+  while (core->running && !XNextEvent(core->dpy, &e)) {
     if (EventRepr[e.type] && e.type != MotionNotify)
       LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
-    CALL(default_event_handlers[e.type], mon, &e);
-    CALL(ewmh_event_handlers[e.type], mon, &e);
-    CALL(sch_event_handlers[e.type], mon, &e);
-    CALL(dock_event_handlers[e.type], mon, &e);
+    CALL(default_event_handlers[e.type], &mon, &e);
+    CALL(ewmh_event_handlers[e.type], &mon, &e);
+    CALL(sch_event_handlers[e.type], &mon, &e);
+    CALL(dock_event_handlers[e.type], &mon, &e);
     switch (e.type) {
     case MapNotify:
     case UnmapNotify:
     case FocusIn:
     case ConfigureNotify:
-      mon->applylayout();
+      mon_applylayout(&mon);
     }
   }
 

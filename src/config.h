@@ -29,9 +29,6 @@
 #define BorderInactive  0x252525
 #define TrimTitle       30
 
-// statusbar command e.g {"command", "arg1", "arg2", ..., NULL}.
-static const char *const statusbar[] = {"xdbar", NULL};
-
 static const char *const workspaces[] = {
     CLICKABLE(" 1 ", "super+1"), CLICKABLE(" 2 ", "super+2"),
     CLICKABLE(" 3 ", "super+3"), CLICKABLE(" 4 ", "super+4"),

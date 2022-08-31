@@ -32,9 +32,17 @@ put the following line in the `~/.xinitrc` file, and use any preferred method (e
 ```sh
 exec cluless
 ```
-for logging (used for debugging while development).
+All logs for statusbar are dumped to `stdout`, which can be redirected in any way suitable.
 ```sh
-exec cluless >/tmp/log.txt 2>/tmp/err.txt
+exec cluless | statusbar
+```
+using fifo.
+```sh
+STATUS=/tmp/statusbar${DISPLAY}
+[ ! -p ${STATUS} ] && mkfifo ${STATUS}
+
+statusbar <${STATUS} &
+exec cluless >${STATUS}
 ```
 
 License:

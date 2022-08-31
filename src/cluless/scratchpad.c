@@ -22,20 +22,20 @@ void sch_fromclient(Monitor *mon, const Arg *arg)
 
 static inline void sch_show_hide(Monitor *mon, Client *sch_client)
 {
-  Workspace *from = mon->get_client_ws(sch_client);
+  Workspace *from = mon_get_client_ws(mon, sch_client);
   // detach sch_client, if attached to any workspace.
   if (from)
     ws_detachclient(from, sch_client);
   // if the sch_client was detached from 'selws', that means it was mapped.
   if (from == mon->selws) {
     XUnmapWindow(core->dpy, sch_client->window);
-    mon->focusclient(revert_focus_to ? revert_focus_to : from->cl_head);
+    mon_focusclient(mon, revert_focus_to ? revert_focus_to : from->cl_head);
     return;
   }
   revert_focus_to = ws_find(mon->selws, ClActive);
   ws_attachclient(mon->selws, sch_client);
   XMapWindow(core->dpy, sch_client->window);
-  mon->focusclient(sch_client);
+  mon_focusclient(mon, sch_client);
 }
 
 void sch_toggle(Monitor *mon, const Arg *arg)
