@@ -203,7 +203,6 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
 {
   char error_code[1024];
   XGetErrorText(dpy, e->error_code, error_code, 1024);
-  LOG("[ERROR] Error occurred during event no: %lu.\n", e->serial);
   ERROR("resourceId: %lu.\n", e->resourceid);
   ERROR("serial: %lu.\n", e->serial);
   ERROR("error_code: %s.\n", error_code);
@@ -215,7 +214,7 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
 static inline void argparse(int argc, const char **argv)
 {
   if (argc == 2 && (!strcmp("-v", argv[1]) || !strcmp("--version", argv[1]))) {
-    fprintf(stdout, NAME "-" VERSION "\n");
+    fprintf(stdout, NAME ": v" VERSION "\n");
     exit(EXIT_SUCCESS);
   }
 }
@@ -237,13 +236,6 @@ int main(int argc, char const **argv)
     CALL(ewmh_event_handlers[e.type], &mon, &e);
     CALL(sch_event_handlers[e.type], &mon, &e);
     CALL(dock_event_handlers[e.type], &mon, &e);
-    switch (e.type) {
-    case MapNotify:
-    case UnmapNotify:
-    case FocusIn:
-    case ConfigureNotify:
-      mon_applylayout(&mon);
-    }
   }
 
   XUngrabKey(core->dpy, AnyKey, AnyModifier, core->root);

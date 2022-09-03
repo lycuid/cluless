@@ -45,14 +45,13 @@ void mon_unmanage_client(Monitor *mon, Client *c)
   ws_detachclient(ws, c);
   if (ws == mon->selws && IS_SET(c->state, ClActive))
     mon_focusclient(mon, neighbour);
-  mon_applylayout(mon);
 }
 
 void mon_focusclient(Monitor *mon, Client *c)
 {
   LayoutManager *lm = &mon->selws->layout_manager;
   if (!c)
-    goto LOG_AND_EXIT;
+    goto LAYOUT_AND_EXIT;
   SET(c->state, ClActive);
   XSetWindowBorder(core->dpy, c->window, lm->border_active);
   for (Client *p = c->prev; p; p = p->prev) {
@@ -66,8 +65,8 @@ void mon_focusclient(Monitor *mon, Client *c)
   if (IS_SET(c->state, ClFloating))
     XRaiseWindow(core->dpy, c->window);
   XSetInputFocus(core->dpy, c->window, RevertToParent, CurrentTime);
-LOG_AND_EXIT:
-  mon_statuslog(mon);
+LAYOUT_AND_EXIT:
+  mon_applylayout(mon);
 }
 
 void mon_restack(Monitor *mon)

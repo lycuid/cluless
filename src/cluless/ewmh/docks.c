@@ -7,18 +7,18 @@
 ENUM(Strut, Left, Right, Top, Bottom, LeftStartY, LeftEndY, RightStartY,
      RightEndY, TopStartX, TopEndX, BottomStartX, BottomEndX);
 
+typedef struct DockCache {
+  Window window;
+  int64_t strut[NullStrut];
+  struct DockCache *next;
+} DockCache;
+
 static struct Dock {
   bool visible : 1;
-  struct DockCache {
-    Window windowid;
-    int64_t strut[NullStrut];
-    struct DockCache *next;
-  } * cache;
+  DockCache *cache;
 } dock = {true, NULL};
 
-typedef struct DockCache DockCache;
-
-void update_screen_geometry(Monitor *mon)
+static inline void update_screen_geometry(Monitor *mon)
 {
   // @TODO: '_NET_WM_STRUT_PARTIAL' not implemented (currently unnecessary, for
   // my personal use case, also, I don't understand it completely).
@@ -36,29 +36,29 @@ void update_screen_geometry(Monitor *mon)
   mon->screen.h -= (top + bottom);
 }
 
-void dcache_put(Window wid, int64_t *strut, int nstrut)
+static void dcache_put(Window window, int64_t *strut, int nstrut)
 {
   DockCache *cache = malloc(sizeof(DockCache));
-  cache->windowid  = wid;
+  cache->window    = window;
   memset(cache->strut, 0, sizeof(int64_t) * NullStrut);
   memcpy(cache->strut, strut, sizeof(int64_t) * nstrut);
   cache->next = dock.cache;
   dock.cache  = cache;
 }
 
-DockCache *dcache_get(Window wid)
+static DockCache *dcache_get(Window window)
 {
   DockCache *d = dock.cache;
-  for (; d && d->windowid != wid; d = d->next)
+  for (; d && d->window != window; d = d->next)
     ;
   return d;
 }
 
-DockCache *dcache_remove(Window wid)
+static DockCache *dcache_remove(Window window)
 {
   DockCache *d = dock.cache, *prev = NULL;
   for (; d; prev = d, d = d->next)
-    if (d->windowid == wid) {
+    if (d->window == window) {
       if (prev)
         prev->next = d->next;
       else
@@ -68,7 +68,7 @@ DockCache *dcache_remove(Window wid)
   return d;
 }
 
-void manage_dock(Monitor *mon, Window window)
+static inline void manage_dock(Monitor *mon, Window window)
 {
   if (dcache_get(window))
     return;
@@ -99,6 +99,16 @@ void manage_dock(Monitor *mon, Window window)
   mon_applylayout(mon);
 }
 
+static inline void unmanage_dock(Monitor *mon, Window window)
+{
+  DockCache *cache;
+  if (!(cache = dcache_remove(window)))
+    return;
+  free(cache);
+  update_screen_geometry(mon);
+  mon_applylayout(mon);
+}
+
 void dock_mapnotify(Monitor *mon, const XEvent *xevent)
 {
   const XMapEvent *e = &xevent->xmap;
@@ -113,18 +123,18 @@ void dock_propertynotify(Monitor *mon, const XEvent *xevent)
   if (e->atom != core->netatoms[NET_WM_STRUT] &&
       e->atom != core->netatoms[NET_WM_STRUT_PARTIAL])
     return;
-  manage_dock(mon, e->window);
+  e->state == PropertyNewValue ? manage_dock(mon, e->window)
+                               : unmanage_dock(mon, e->window);
+}
+
+void dock_unmapnotify(Monitor *mon, const XEvent *xevent)
+{
+  unmanage_dock(mon, xevent->xunmap.window);
 }
 
 void dock_destroynotify(Monitor *mon, const XEvent *xevent)
 {
-  const XDestroyWindowEvent *e = &xevent->xdestroywindow;
-  DockCache *cache;
-  if (!(cache = dcache_remove(e->window)))
-    return;
-  free(cache);
-  update_screen_geometry(mon);
-  mon_applylayout(mon);
+  unmanage_dock(mon, xevent->xdestroywindow.window);
 }
 
 void dock_toggle(Monitor *mon, const Arg *arg)

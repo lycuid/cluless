@@ -48,6 +48,7 @@ void kill_client(Monitor *mon, const Arg *arg)
     return;
   if (!core->send_event(c->window, core->wmatoms[WM_DELETE_WINDOW]))
     XKillClient(core->dpy, c->window);
+  mon_applylayout(mon);
 }
 
 void shift_client(Monitor *mon, const Arg *arg)
@@ -102,6 +103,7 @@ void move_client_to_ws(Monitor *mon, const Arg *arg)
     ws_attachclient(to, c);
   // as the client is detached from the 'selws', it wont be destroyed on unmap.
   XUnmapWindow(core->dpy, c->window);
+  mon_applylayout(mon);
 }
 
 void select_ws(Monitor *mon, const Arg *arg)
@@ -233,7 +235,6 @@ static inline void mouse_move_resize(Monitor *mon, State state)
   // update client state.
   SET(c->state, state);
   mon_focusclient(mon, c);
-  mon_applylayout(mon);
 }
 
 static inline void move_resize(Monitor *mon, int dx, int dy, int dw, int dh)
