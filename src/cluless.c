@@ -12,7 +12,7 @@
 
 #define CALL(f, ...) f ? f(__VA_ARGS__) : (void)0
 
-static inline void ManageClientHook(HookType, Monitor *, Client *);
+static inline void Broadcast(HookType, Monitor *, Client *);
 
 void onMapRequest(Monitor *, const XEvent *);
 void onMapNotify(Monitor *, const XEvent *);
@@ -43,15 +43,18 @@ static const EventHandler default_event_handlers[LASTEvent] = {
     [DestroyNotify]    = onDestroyNotify,
 };
 
-static inline void ManageClientHook(HookType type, Monitor *mon, Client *c)
+static inline void Broadcast(HookType type, Monitor *mon, Client *c)
 {
   // As we are doing significant 'malloc'/'free' in this, we need to make sure
   // to sync all events before that, to avoid memory leaks, segv etc.
   XSync(core->dpy, False);
   CALL(default_client_hooks[type], mon, c);
   CALL(sch_client_hooks[type], mon, c);
+  CALL(ewmh_client_hooks[type], mon, c);
   if (type == ClientRemove && c)
     free(c);
+  XSync(core->dpy, False);
+  mon_applylayout(mon);
 }
 
 void onMapRequest(Monitor *mon, const XEvent *xevent)
@@ -59,7 +62,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   const XMapRequestEvent *e = &xevent->xmaprequest;
   Client *c;
   if (!(c = ws_getclient(mon->selws, e->window)))
-    ManageClientHook(ClientAdd, mon, (c = cl_create(e->window)));
+    Broadcast(ClientAdd, mon, (c = cl_create(e->window)));
   // client might be moved to another workspace by a WindowRule, so we only map
   // the window if the client is found in selws.
   if (!ws_getclient(mon->selws, c->window))
@@ -80,7 +83,7 @@ void onUnmapNotify(Monitor *mon, const XEvent *xevent)
   const XUnmapEvent *e = &xevent->xunmap;
   Client *c;
   if ((c = ws_getclient(mon->selws, e->window)))
-    ManageClientHook(ClientRemove, mon, c);
+    Broadcast(ClientRemove, mon, c);
 }
 
 void onConfigureRequest(Monitor *mon, const XEvent *xevent)
@@ -117,7 +120,7 @@ void onKeyPress(Monitor *mon, const XEvent *xevent)
   {
     if (e->keycode == XKeysymToKeycode(core->dpy, key->sym) &&
         e->state == key->mask)
-      key->func(mon, &key->arg);
+      key->action(mon, &key->arg);
   }
 }
 
@@ -151,7 +154,7 @@ void onButtonPress(Monitor *mon, const XEvent *xevent)
   FOREACH(const Binding *button, buttons)
   {
     if (e->button == button->sym && e->state == button->mask)
-      button->func(mon, &button->arg);
+      button->action(mon, &button->arg);
   }
 }
 
@@ -193,7 +196,7 @@ void onDestroyNotify(Monitor *mon, const XEvent *xevent)
   {
     Client *c = ws_getclient(&mon->wss[it], e->window);
     if (c) {
-      ManageClientHook(ClientRemove, mon, c);
+      Broadcast(ClientRemove, mon, c);
       break;
     }
   }

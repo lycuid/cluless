@@ -8,7 +8,7 @@ static inline bool TryApplyWindowRule(Monitor *mon, const WindowRule *rule,
 {
   bool value_matches = strcmp(val, rule->value) == 0;
   if (value_matches)
-    rule->func(mon, &rule->arg);
+    rule->action(mon, &rule->arg);
   return value_matches;
 }
 

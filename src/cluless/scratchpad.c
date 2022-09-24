@@ -45,37 +45,26 @@ void sch_toggle(Monitor *mon, const Arg *arg)
              : spawn(mon, &(Arg){.cmd = &arg->cmd[1]});
 }
 
-static inline void sch_nullify_local_pointer(Window w)
+static inline void sch_forget(Window w)
 {
   if (revert_focus_to && revert_focus_to->window == w)
     revert_focus_to = NULL;
-  ITER(sch_clients)
+  FOREACH(Client * *sch, sch_clients)
   {
-    if (sch_clients[it]) {
-      XChangeProperty(core->dpy, core->root, core->netatoms[NET_CLIENT_LIST],
-                      XA_WINDOW, 32, PropModeAppend,
-                      (uint8_t *)&sch_clients[it]->window, 1);
-      if (sch_clients[it]->window == w)
-        sch_clients[it] = NULL;
-    }
+    if (*sch && (*sch)->window == w && !(*sch = NULL))
+      break;
   }
 }
 
-// @NOTE: 'ClientRemove' hook will be called on a client if, and only if, the
-// client is attached to a workspace.
-// If the scratchpad window gets destroyed while not being attached to any
-// workspace, the window will no longer exist, but the corresponding
-// 'sch_client' pointer will (dangling pointer).
-// So we cannot rely on 'ClientRemove' hook alone to nullify the 'sch_client'
-// pointer.
 void sch_destroynotify(Monitor *mon, const XEvent *xevent)
 {
   (void)mon;
-  sch_nullify_local_pointer(xevent->xdestroywindow.window);
+  sch_forget(xevent->xdestroywindow.window);
 }
 
 void sch_clientremove(Monitor *mon, Client *c)
 {
   (void)mon;
-  sch_nullify_local_pointer(c ? c->window : 0);
+  if (c)
+    sch_forget(c->window);
 }

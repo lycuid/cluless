@@ -16,7 +16,7 @@ static const EventHandler ewmh_event_handlers[LASTEvent] = {
     [FocusOut]      = ewmh_focusout,
 };
 
-static const ClientHook ewmh_hooks[NullHookType] = {
+static const ClientHook ewmh_client_hooks[NullHookType] = {
     [ClientRemove] = ewmh_clientremove,
 };
 

@@ -10,7 +10,7 @@ typedef enum { ResInstance, ResClass, ResTitle } ResourceType;
 typedef struct {
   ResourceType res_type;
   char *value;
-  CustomHandler func;
+  Action action;
   Arg arg;
 } WindowRule;
 

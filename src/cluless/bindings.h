@@ -9,11 +9,11 @@ typedef union {
   const char **cmd;
 } Arg;
 
-typedef void (*CustomHandler)(Monitor *, const Arg *);
+typedef void (*Action)(Monitor *, const Arg *);
 
 typedef struct {
   uint64_t mask, sym;
-  CustomHandler func;
+  Action action;
   Arg arg;
 } Binding;
 

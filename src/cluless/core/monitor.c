@@ -38,7 +38,8 @@ void mon_unmanage_client(Monitor *mon, Client *c)
   Workspace *ws = mon_get_client_ws(mon, c);
   if (!ws)
     return;
-  XSetWindowBorderWidth(core->dpy, c->window, 0);
+  // window might be destroyed at this point.
+  /* XSetWindowBorderWidth(core->dpy, c->window, 0); */
   Client *neighbour = cl_neighbour(c);
   // detaching the client before doing anything else, as the corresponding
   // window has already been destroyed (don't want any excitement).

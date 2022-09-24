@@ -52,8 +52,8 @@ static const WindowRule window_rules[] = {
     {ResClass, "Brave-browser", move_client_to_ws,  {.i = 2}},
     {ResClass, "mpv",           float_client,       {0}},
     {ResClass, "vlc",           float_client,       {0}},
-    // every scratchpad must have a unique 'char' id, which is used as reference
-    // for toggling.
+    // every scratchpad must have a unique 'ascii' char id, which is used as
+    // reference for toggling.
     {ResTitle, ScratchTerm,     sch_fromclient,     {.i = 't'}},
     {ResTitle, ScratchFM,       sch_fromclient,     {.i = 'f'}},
     {ResTitle, ScratchNM,       sch_fromclient,     {.i = 'n'}},

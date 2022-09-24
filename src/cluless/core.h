@@ -30,7 +30,7 @@
 #define SET(state, mask)    state |= (mask)
 #define UNSET(state, mask)  state &= ~(mask)
 #define TOGGLE(state, mask) state ^= (mask)
-#define IS_SET(state, mask) ((state & (mask)) > 0)
+#define IS_SET(state, mask) ((state & (mask)) != 0)
 
 #define die(...)                                                               \
   {                                                                            \
