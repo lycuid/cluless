@@ -18,17 +18,16 @@ void window_rule_apply(Monitor *mon, Client *c)
   XTextProperty wm_name;
   FOREACH(const WindowRule *rule, window_rules)
   {
-    // ResTitle.
     if (rule->res_type == ResTitle)
       if (core->get_window_title(c->window, &wm_name) && wm_name.nitems)
         if (TryApplyWindowRule(mon, rule, (char *)wm_name.value))
           break;
 
-    // ResClass | ResInstance.
-    if (XGetClassHint(core->dpy, c->window, &class))
-      if (TryApplyWindowRule(mon, rule,
-                             rule->res_type == ResClass ? class.res_class
-                                                        : class.res_name))
-        break;
+    if (rule->res_type == ResClass || rule->res_type == ResInstance)
+      if (XGetClassHint(core->dpy, c->window, &class))
+        if (TryApplyWindowRule(mon, rule,
+                               rule->res_type == ResClass ? class.res_class
+                                                          : class.res_name))
+          break;
   }
 }

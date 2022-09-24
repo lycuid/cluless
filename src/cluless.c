@@ -45,15 +45,12 @@ static const EventHandler default_event_handlers[LASTEvent] = {
 
 static inline void Broadcast(HookType type, Monitor *mon, Client *c)
 {
-  // As we are doing significant 'malloc'/'free' in this, we need to make sure
-  // to sync all events before that, to avoid memory leaks, segv etc.
   XSync(core->dpy, False);
   CALL(default_client_hooks[type], mon, c);
   CALL(sch_client_hooks[type], mon, c);
   CALL(ewmh_client_hooks[type], mon, c);
   if (type == ClientRemove && c)
-    free(c);
-  XSync(core->dpy, False);
+    cl_free(c);
   mon_applylayout(mon);
 }
 
@@ -62,7 +59,7 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
   const XMapRequestEvent *e = &xevent->xmaprequest;
   Client *c;
   if (!(c = ws_getclient(mon->selws, e->window)))
-    Broadcast(ClientAdd, mon, (c = cl_create(e->window)));
+    Broadcast(ClientAdd, mon, (c = cl_alloc(e->window)));
   // client might be moved to another workspace by a WindowRule, so we only map
   // the window if the client is found in selws.
   if (!ws_getclient(mon->selws, c->window))
@@ -192,10 +189,9 @@ void onButtonRelease(Monitor *mon, const XEvent *xevent)
 void onDestroyNotify(Monitor *mon, const XEvent *xevent)
 {
   const XDestroyWindowEvent *e = &xevent->xdestroywindow;
-  ITER(workspaces)
+  FOREACH_AVAILABLE_CLIENT(Client * c)
   {
-    Client *c = ws_getclient(&mon->wss[it], e->window);
-    if (c) {
+    if (c->window == e->window) {
       Broadcast(ClientRemove, mon, c);
       break;
     }

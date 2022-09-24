@@ -30,12 +30,12 @@ static inline void sch_show_hide(Monitor *mon, Client *sch_client)
   if (from == mon->selws) {
     XUnmapWindow(core->dpy, sch_client->window);
     mon_focusclient(mon, revert_focus_to ? revert_focus_to : from->cl_head);
-    return;
+  } else {
+    revert_focus_to = ws_find(mon->selws, ClActive);
+    ws_attachclient(mon->selws, sch_client);
+    XMapWindow(core->dpy, sch_client->window);
+    mon_focusclient(mon, sch_client);
   }
-  revert_focus_to = ws_find(mon->selws, ClActive);
-  ws_attachclient(mon->selws, sch_client);
-  XMapWindow(core->dpy, sch_client->window);
-  mon_focusclient(mon, sch_client);
 }
 
 void sch_toggle(Monitor *mon, const Arg *arg)
@@ -45,13 +45,13 @@ void sch_toggle(Monitor *mon, const Arg *arg)
              : spawn(mon, &(Arg){.cmd = &arg->cmd[1]});
 }
 
-static inline void sch_forget(Window w)
+static inline void sch_forget(Window window)
 {
-  if (revert_focus_to && revert_focus_to->window == w)
+  if (revert_focus_to && revert_focus_to->window == window)
     revert_focus_to = NULL;
   FOREACH(Client * *sch, sch_clients)
   {
-    if (*sch && (*sch)->window == w && !(*sch = NULL))
+    if (*sch && (*sch)->window == window && !(*sch = NULL))
       break;
   }
 }

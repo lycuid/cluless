@@ -61,7 +61,7 @@ ENUM(NetAtom, NET_WM_NAME, NET_WM_WINDOW_TYPE, NET_WM_WINDOW_TYPE_DOCK,
 
 // These are mainly the values that don't (shouldn't) change throughout the
 // application lifetime.
-extern const struct Core {
+typedef struct Core {
   bool running;
   Display *dpy;
   Window root;
@@ -76,6 +76,7 @@ extern const struct Core {
   int (*get_window_property)(Window, Atom, int, uint8_t **);
   int (*get_window_title)(Window, XTextProperty *);
   void (*stop_running)();
-} *const core;
+} Core;
+extern const Core *const core;
 
 #endif

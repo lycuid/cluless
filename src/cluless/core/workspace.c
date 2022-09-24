@@ -20,7 +20,6 @@ Client *ws_getclient(Workspace *ws, Window w)
   return c;
 }
 
-// needs to be O(1), currently O(n).
 Client *ws_find(Workspace *ws, State flags)
 {
   if (!ws)
@@ -49,10 +48,9 @@ void ws_detachclient(Workspace *ws, Client *c)
     return;
   if (c->next)
     c->next->prev = c->prev;
-  // if 'prev' pointer is null, then the client is on top of the list.
   if (c->prev)
     c->prev->next = c->next;
-  else
+  else // client is on top of the list.
     ws->cl_head = c->next;
   c->next = c->prev = NULL;
 }

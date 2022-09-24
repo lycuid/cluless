@@ -34,6 +34,6 @@ uninstall:
 # misc.
 .PHONY: clean fmt loc
 clean: ; rm -rf $(BUILD)
-fmt: ; @git ls-files | egrep '\.[ch]$$' | xargs clang-format -i
-loc: ; @git ls-files | egrep '\.[ch]$$' | xargs wc -l
+fmt: ; @git ls-files | grep -E '\.[ch]$$' | xargs clang-format -i
+loc: ; @git ls-files | grep -E '\.[ch]$$' | xargs wc -l
 compile_flags: ; @echo $(CFLAGS) | tr ' ' '\n' > compile_flags.txt

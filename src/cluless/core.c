@@ -14,7 +14,7 @@ bool send_event(Window, Atom);
 int get_window_property(Window, Atom, int, uint8_t **);
 int get_window_title(Window, XTextProperty *);
 
-static struct Core local = {
+static Core local = {
     .running              = true,
     .init                 = core_init,
     .input_focused_window = input_focused_window,
@@ -23,7 +23,7 @@ static struct Core local = {
     .get_window_property  = get_window_property,
     .get_window_title     = get_window_title,
 };
-const struct Core *const core = &local;
+const Core *const core = &local;
 
 static void NOOP(__attribute__((unused)) int _) {}
 
@@ -40,13 +40,13 @@ void core_init(void)
   local.cursors[CurMove]   = XCreateFontCursor(local.dpy, XC_fleur);
 
   // ICCC Atoms.
-#define ATOM_REPR(atom)                                                        \
+#define WM_ATOM_REPR(atom)                                                     \
   local.wmatoms[atom] = XInternAtom(local.dpy, #atom, False)
-  ATOM_REPR(WM_PROTOCOLS);
-  ATOM_REPR(WM_NAME);
-  ATOM_REPR(WM_DELETE_WINDOW);
-  ATOM_REPR(WM_TRANSIENT_FOR);
-#undef ATOM_REPR
+  WM_ATOM_REPR(WM_PROTOCOLS);
+  WM_ATOM_REPR(WM_NAME);
+  WM_ATOM_REPR(WM_DELETE_WINDOW);
+  WM_ATOM_REPR(WM_TRANSIENT_FOR);
+#undef WM_ATOM_REPR
 
   // EWMH Atoms.
 #define NET_ATOM_REPR(atom)                                                    \

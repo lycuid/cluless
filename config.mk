@@ -1,5 +1,5 @@
 NAME=cluless
-VERSION=0.4.7
+VERSION=0.4.8
 BUILD=.build
 IDIR=src
 ODIR=$(BUILD)/cache
@@ -10,9 +10,9 @@ BINPREFIX=$(PREFIX)/bin
 SRC=$(IDIR)/$(NAME).c                 \
     $(IDIR)/$(NAME)/bindings.c        \
     $(IDIR)/$(NAME)/core.c            \
+    $(IDIR)/$(NAME)/core/client.c     \
     $(IDIR)/$(NAME)/core/monitor.c    \
     $(IDIR)/$(NAME)/core/workspace.c  \
-    $(IDIR)/$(NAME)/core/client.c     \
     $(IDIR)/$(NAME)/ewmh.c            \
     $(IDIR)/$(NAME)/ewmh/docks.c      \
     $(IDIR)/$(NAME)/layout.c          \
