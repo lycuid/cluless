@@ -58,13 +58,17 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
 {
   const XMapRequestEvent *e = &xevent->xmaprequest;
   Client *c;
-  if (!(c = ws_getclient(mon->selws, e->window)))
-    Broadcast(ClientAdd, mon, (c = cl_alloc(e->window)));
+  FOREACH_AVAILABLE_CLIENT(c)
+  {
+    // Ignore multiple map requests from already allocated clients.
+    if (c->window == e->window)
+      return;
+  }
+  Broadcast(ClientAdd, mon, (c = cl_alloc(e->window)));
   // client might be moved to another workspace by a WindowRule, so we only map
   // the window if the client is found in selws.
-  if (!ws_getclient(mon->selws, c->window))
-    return;
-  XMapWindow(core->dpy, c->window);
+  if (ws_getclient(mon->selws, c->window))
+    XMapWindow(core->dpy, c->window);
 }
 
 void onMapNotify(Monitor *mon, const XEvent *xevent)

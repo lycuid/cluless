@@ -3,21 +3,21 @@
 #include <stdlib.h>
 
 #define vec_grow(v)                                                            \
-  (v)->pool =                                                                  \
-      realloc((v)->pool, ((v)->capacity += (1 << 5)) * sizeof(struct Cell));
+  (v)->inner =                                                                 \
+      realloc((v)->inner, ((v)->capacity += (1 << 5)) * sizeof(struct Cell));
 
 #define vec_append(v, c)                                                       \
   do {                                                                         \
     if ((v)->size == (v)->capacity)                                            \
       vec_grow((v));                                                           \
-    (v)->pool[(v)->size++].client = c;                                         \
+    (v)->inner[(v)->size++].client = c;                                        \
   } while (0);
 
 #define vec_remove(v, c)                                                       \
   do {                                                                         \
     for (size_t i = 0, size = (v)->size; size == (v)->size && i < size; ++i)   \
-      if ((v)->pool[i].client == c)                                            \
-        (v)->pool[i] = (v)->pool[--(v)->size];                                 \
+      if ((v)->inner[i].client == c)                                           \
+        (v)->inner[i] = (v)->inner[--(v)->size];                               \
   } while (0);
 
 static ClientArray cl_array;

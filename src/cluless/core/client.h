@@ -15,7 +15,7 @@
 #define FOREACH_AVAILABLE_CLIENT(c)                                            \
   for (int keep = 1, it = 0, size = cl_register->size; keep && it < size;      \
        keep = !keep, ++it)                                                     \
-    for (c = cl_register->pool[it].client; keep; keep = !keep)
+    for (c = cl_register->inner[it].client; keep; keep = !keep)
 
 #define cl_neighbour(c) ((c) ? (c)->prev ? (c)->prev : (c)->next : NULL)
 
@@ -29,7 +29,7 @@ typedef struct Client {
 typedef struct ClientArray {
   struct Cell {
     Client *client;
-  } * pool;
+  } * inner;
   size_t size, capacity;
 } ClientArray;
 extern const ClientArray *const cl_register;

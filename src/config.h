@@ -48,10 +48,8 @@ static const char *const LogFormat[FmtOptionsCount] = {
 };
 
 static const WindowRule window_rules[] = {
-    {ResClass, "librewolf",     move_client_to_ws,  {.i = 2}},
     {ResClass, "Brave-browser", move_client_to_ws,  {.i = 2}},
     {ResClass, "mpv",           float_client,       {0}},
-    {ResClass, "vlc",           float_client,       {0}},
     // every scratchpad must have a unique 'ascii' char id, which is used as
     // reference for toggling.
     {ResTitle, ScratchTerm,     sch_fromclient,     {.i = 't'}},

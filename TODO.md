@@ -10,15 +10,17 @@ todo:
   - [X] process starts but cannot write to pipe.
   - [ ] simple left click to focus.
   - [X] windows change size after mapping.
-  - [ ] status logging as a seperate module.
   - [X] Other layouts (Fullscreen etc).
   - [ ] logging and layout functions are called too often (program slows down).
+  - [ ] handle clients with urgent state.
+  - [X] ignore multiple `MapRequest` event for allocated client.
 
 less important todos:
 ---------------------
   - [ ] a parent (frame) window for the clients, to possibly support titlebar,
         close button, window move etc.
   - [ ] workspace related apis (e.g. `ws_getclient`) in constant time.
+  - [ ] status logging as a seperate module.
 
 bugs:
 -----
