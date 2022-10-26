@@ -1,5 +1,5 @@
 NAME=cluless
-VERSION=0.4.8
+VERSION=0.4.9
 BUILD=.build
 IDIR=src
 ODIR=$(BUILD)/cache
@@ -7,7 +7,7 @@ BIN=$(BUILD)/bin/$(NAME)
 PREFIX=/usr/local
 BINPREFIX=$(PREFIX)/bin
 
-SRC=$(IDIR)/$(NAME).c                 \
+SRCS=$(IDIR)/$(NAME).c                 \
     $(IDIR)/$(NAME)/bindings.c        \
     $(IDIR)/$(NAME)/core.c            \
     $(IDIR)/$(NAME)/core/client.c     \
@@ -21,7 +21,7 @@ SRC=$(IDIR)/$(NAME).c                 \
     $(IDIR)/$(NAME)/scratchpad.c      \
     $(IDIR)/$(NAME)/window_rule.c
 
-OBJS=$(SRC:$(IDIR)/%.c=$(ODIR)/%.o)
+OBJS=$(SRCS:$(IDIR)/%.c=$(ODIR)/%.o)
 PKGS=x11
 DEFINE=-D_GNU_SOURCE -DNAME='"$(NAME)"' -DVERSION='"$(VERSION)"'
 FLAGS=-Wall -Wextra -Wvla -pedantic -I$(IDIR) -ggdb -O3

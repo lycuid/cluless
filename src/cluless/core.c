@@ -60,6 +60,7 @@ void core_init(void)
   NET_ATOM_REPR(NET_CLIENT_LIST);
 #undef NET_ATOM_REPR
 
+  XStoreName(local.dpy, local.root, NAME "-" VERSION);
   XChangeProperty(local.dpy, local.root,
                   XInternAtom(local.dpy, "_NET_SUPPORTED", False), XA_ATOM, 32,
                   PropModeReplace, (uint8_t *)local.netatoms,

@@ -15,7 +15,7 @@ options:
 	@echo "$(NAME) build options:"
 	@echo "CC       = $(CC)"
 	@echo "PKGS     = $(PKGS)"
-	@echo "SRC      = $(SRC)"
+	@echo "SRCS     = $(SRCS)"
 	@echo "LDFLAGS  = $(LDFLAGS)"
 	@echo "CFLAGS   = $(CFLAGS)"
 	@echo "----------------------------------"

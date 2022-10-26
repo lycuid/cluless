@@ -29,7 +29,12 @@ static inline void sch_show_hide(Monitor *mon, Client *sch_client)
   // if the sch_client was detached from 'selws', that means it was mapped.
   if (from == mon->selws) {
     XUnmapWindow(core->dpy, sch_client->window);
-    mon_focusclient(mon, revert_focus_to ? revert_focus_to : from->cl_head);
+    // 'mon_focusclient' should not be called, if sch_client wasn't focused
+    // itself before unmapping.
+    if (IS_SET(sch_client->state, ClActive))
+      mon_focusclient(mon,
+                      revert_focus_to ? revert_focus_to : mon->selws->cl_head);
+    revert_focus_to = NULL;
   } else {
     revert_focus_to = ws_find(mon->selws, ClActive);
     ws_attachclient(mon->selws, sch_client);
