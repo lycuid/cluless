@@ -75,6 +75,7 @@ typedef struct Core {
   bool (*send_event)(Window, Atom);
   int (*get_window_property)(Window, Atom, int, uint8_t **);
   int (*get_window_title)(Window, XTextProperty *);
+  uint32_t (*get_window_list)(Window **);
   void (*stop_running)();
 } Core;
 extern const Core *const core;

@@ -214,35 +214,52 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
   return 1;
 }
 
-static inline void argparse(int argc, const char **argv)
+int main(int argc, char const **argv)
 {
   if (argc == 2 && (!strcmp("-v", argv[1]) || !strcmp("--version", argv[1]))) {
     fprintf(stdout, NAME ": v" VERSION "\n");
     exit(EXIT_SUCCESS);
   }
-}
 
-int main(int argc, char const **argv)
-{
-  argparse(argc, argv);
-
-  core->init();
+  // @SETUP.
   Monitor mon;
+  core->init();
   mon_init(&mon);
   XSetErrorHandler(xerror_handler);
+  // Allocating clients for all the windows that are already created before the
+  // window manager started.
+  Window *windows = NULL;
+  XWindowAttributes attrs;
+  for (int i = core->get_window_list(&windows) - 1; i >= 0; i--) {
+    XGetWindowAttributes(core->dpy, windows[i], &attrs);
+    if (attrs.map_state == IsViewable && !attrs.override_redirect)
+      Broadcast(ClientAdd, &mon, cl_alloc(windows[i]));
+  }
+  if (windows)
+    XFree(windows);
+  if (mon.selws->cl_head)
+    mon_focusclient(&mon, mon.selws->cl_head);
 
-  XEvent e;
-  while (core->running && !XNextEvent(core->dpy, &e)) {
-    if (EventRepr[e.type] && e.type != MotionNotify)
-      LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
+  // @EVENTLOOP
+  for (XEvent e; core->running && !XNextEvent(core->dpy, &e);) {
+    EVENT_LOG(e);
     CALL(default_event_handlers[e.type], &mon, &e);
     CALL(ewmh_event_handlers[e.type], &mon, &e);
     CALL(sch_event_handlers[e.type], &mon, &e);
     CALL(dock_event_handlers[e.type], &mon, &e);
   }
 
+  // @CLEANUP.
   XUngrabKey(core->dpy, AnyKey, AnyModifier, core->root);
   XUngrabButton(core->dpy, AnyButton, AnyModifier, core->root);
+  // Cleaning up allocated clients.
+  FOREACH_AVAILABLE_CLIENT(Client * orphan)
+  {
+    if (!core->send_event(orphan->window, core->wmatoms[WM_DELETE_WINDOW]))
+      XKillClient(core->dpy, orphan->window);
+    Broadcast(ClientRemove, &mon, orphan);
+  }
+  XSync(core->dpy, False);
   XCloseDisplay(core->dpy);
 
   return 0;

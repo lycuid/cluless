@@ -13,6 +13,7 @@ Geometry get_screen_rect(void);
 bool send_event(Window, Atom);
 int get_window_property(Window, Atom, int, uint8_t **);
 int get_window_title(Window, XTextProperty *);
+uint32_t get_window_list(Window **);
 
 static Core local = {
     .running              = true,
@@ -22,6 +23,7 @@ static Core local = {
     .send_event           = send_event,
     .get_window_property  = get_window_property,
     .get_window_title     = get_window_title,
+    .get_window_list      = get_window_list,
 };
 const Core *const core = &local;
 
@@ -137,6 +139,14 @@ int get_window_title(Window window, XTextProperty *wm_name)
   return found ? found
                : XGetTextProperty(local.dpy, window, wm_name,
                                   local.wmatoms[WM_NAME]);
+}
+
+uint32_t get_window_list(Window **windows)
+{
+  Window orphan;
+  uint32_t window_cnt;
+  XQueryTree(local.dpy, local.root, &orphan, &orphan, windows, &window_cnt);
+  return window_cnt;
 }
 
 void stop_running() { local.running = false; }

@@ -11,6 +11,9 @@
   }
 #define LOG(...)   __log__(stderr, __VA_ARGS__)
 #define ERROR(...) __log__(stderr, __VA_ARGS__)
+#define EVENT_LOG(e)                                                           \
+  if (EventRepr[e.type] && e.type != MotionNotify)                             \
+    LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
 
 #define REPR(x) [x] = #x
 static const char *const EventRepr[LASTEvent] = {
