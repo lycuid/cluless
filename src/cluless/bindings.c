@@ -174,12 +174,6 @@ void mouse_resize(Monitor *mon, const Arg *arg)
   mouse_move_resize(mon, ClResizing);
 }
 
-void focus_client(Monitor *mon, const Arg *arg)
-{
-  (void)arg;
-  mon_focusclient(mon, mon->grabbed.client);
-}
-
 void toggle_gap(Monitor *mon, const Arg *arg)
 {
   (void)arg;

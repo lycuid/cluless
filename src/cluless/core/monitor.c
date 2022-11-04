@@ -51,16 +51,24 @@ void mon_focusclient(Monitor *mon, Client *c)
   LayoutManager *lm = &mon->selws->layout_manager;
   if (!c)
     goto LAYOUT_AND_EXIT;
+  // set client active.
   SET(c->state, ClActive);
   XSetWindowBorder(core->dpy, c->window, lm->border_active);
-  for (Client *p = c->prev; p; p = p->prev) {
-    UNSET(p->state, ClActive);
-    XSetWindowBorder(core->dpy, p->window, lm->border_inactive);
+  XUngrabButton(core->dpy, Button1, 0, c->window);
+
+#define SetInactive(cl)                                                        \
+  {                                                                            \
+    UNSET(cl->state, ClActive);                                                \
+    XSetWindowBorder(core->dpy, cl->window, lm->border_inactive);              \
+    XGrabButton(core->dpy, ButtonForFocus, 0, cl->window, False, ButtonMasks,  \
+                GrabModeAsync, GrabModeAsync, None, None);                     \
   }
-  for (Client *n = c->next; n; n = n->next) {
-    UNSET(n->state, ClActive);
-    XSetWindowBorder(core->dpy, n->window, lm->border_inactive);
-  }
+  for (Client *p = c->prev; p; p = p->prev)
+    SetInactive(p);
+  for (Client *n = c->next; n; n = n->next)
+    SetInactive(n);
+#undef SetInactive
+
   if (IS_SET(c->state, ClFloating))
     XRaiseWindow(core->dpy, c->window);
   XSetInputFocus(core->dpy, c->window, RevertToParent, CurrentTime);

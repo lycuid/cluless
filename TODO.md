@@ -8,7 +8,7 @@ todo:
   - [X] rules for managing windows (docks, dialogs, statusbar etc).
   - [X] Client init hooks (switch ws, floating etc).
   - [X] process starts but cannot write to pipe.
-  - [ ] simple left click to focus.
+  - [X] simple left click to focus.
   - [X] windows change size after mapping.
   - [X] Other layouts (Fullscreen etc).
   - [ ] logging and layout functions are called too often (program slows down).

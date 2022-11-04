@@ -65,8 +65,8 @@ void onMapRequest(Monitor *mon, const XEvent *xevent)
       return;
   }
   Broadcast(ClientAdd, mon, (c = cl_alloc(e->window)));
-  // client might be moved to another workspace by a WindowRule, so we only map
-  // the window if the client is found in selws.
+  // client might be moved to another workspace by a WindowRule, so we only
+  // map the window if the client is found in selws.
   if (ws_getclient(mon->selws, c->window))
     XMapWindow(core->dpy, c->window);
 }
@@ -128,11 +128,20 @@ void onKeyPress(Monitor *mon, const XEvent *xevent)
 void onButtonPress(Monitor *mon, const XEvent *xevent)
 {
   const XButtonEvent *e = &xevent->xbutton;
-  XGrabPointer(core->dpy, core->root, False, ButtonMasks | PointerMotionMask,
-               GrabModeAsync, GrabModeAsync, None, None, CurrentTime);
   Client *c;
-  memset(&mon->grabbed, 0, sizeof(mon->grabbed));
-  if ((c = ws_getclient(mon->selws, e->subwindow))) {
+  // Grabbing button press for focus on allocated client window, whereas
+  // every other button press events are grabbed on root window. So if
+  // button press event happens on any allocated client window which is not
+  // focused, then just focus it and return. Otherwise if the button press
+  // happens on root window, then just call button press action function on
+  // the subwindow.
+  if ((c = ws_getclient(mon->selws, e->window))) {
+    if (!IS_SET(c->state, ClActive))
+      mon_focusclient(mon, c);
+  } else if ((c = ws_getclient(mon->selws, e->subwindow))) {
+    XGrabPointer(core->dpy, core->root, False, ButtonMasks | PointerMotionMask,
+                 GrabModeAsync, GrabModeAsync, None, None, CurrentTime);
+    memset(&mon->grabbed, 0, sizeof(mon->grabbed));
     int state = e->button == Button1   ? Button1Mask
                 : e->button == Button2 ? Button2Mask
                 : e->button == Button3 ? Button3Mask
@@ -151,11 +160,11 @@ void onButtonPress(Monitor *mon, const XEvent *xevent)
     mon->grabbed.ch     = wa.height;
     mon->grabbed.state  = e->state | state;
     mon->grabbed.at     = e->time;
-  }
-  FOREACH(const Binding *button, buttons)
-  {
-    if (e->button == button->sym && e->state == button->mask)
-      button->action(mon, &button->arg);
+    FOREACH(const Binding *button, buttons)
+    {
+      if (e->button == button->sym && e->state == button->mask)
+        button->action(mon, &button->arg);
+    }
   }
 }
 
@@ -226,8 +235,8 @@ int main(int argc, char const **argv)
   core->init();
   mon_init(&mon);
   XSetErrorHandler(xerror_handler);
-  // Allocating clients for all the windows that are already created before the
-  // window manager started.
+  // Allocating clients for all the windows that are already created before
+  // the window manager started.
   Window *windows = NULL;
   XWindowAttributes attrs;
   for (int i = core->get_window_list(&windows) - 1; i >= 0; i--) {
@@ -240,7 +249,6 @@ int main(int argc, char const **argv)
   if (mon.selws->cl_head)
     mon_focusclient(&mon, mon.selws->cl_head);
 
-  // @EVENTLOOP
   for (XEvent e; core->running && !XNextEvent(core->dpy, &e);) {
     EVENT_LOG(e);
     CALL(default_event_handlers[e.type], &mon, &e);
@@ -252,12 +260,10 @@ int main(int argc, char const **argv)
   // @CLEANUP.
   XUngrabKey(core->dpy, AnyKey, AnyModifier, core->root);
   XUngrabButton(core->dpy, AnyButton, AnyModifier, core->root);
-  // Cleaning up allocated clients.
+  // Force kill all open windows.
   FOREACH_AVAILABLE_CLIENT(Client * orphan)
   {
-    if (!core->send_event(orphan->window, core->wmatoms[WM_DELETE_WINDOW]))
-      XKillClient(core->dpy, orphan->window);
-    Broadcast(ClientRemove, &mon, orphan);
+    XKillClient(core->dpy, orphan->window);
   }
   XSync(core->dpy, False);
   XCloseDisplay(core->dpy);

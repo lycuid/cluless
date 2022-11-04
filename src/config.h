@@ -28,6 +28,7 @@
 #define BorderActive    0x089cac
 #define BorderInactive  0x252525
 #define TrimTitle       30
+#define ButtonForFocus  Button1
 
 static const char *const workspaces[] = {
     CLICKABLE(" 1 ", "super+1"), CLICKABLE(" 2 ", "super+2"),
@@ -101,7 +102,6 @@ static const Binding keys[] = {
 static const Binding buttons[] = {
     {Mod,                 Button1,    mouse_move,         {0}},
     {Mod,                 Button3,    mouse_resize,       {0}},
-    {ControlMask,         Button3,    focus_client,       {0}},
 };
 
 // {{{ 'undef'-ing.

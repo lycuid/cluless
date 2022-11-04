@@ -4,32 +4,31 @@
 #include <X11/Xproto.h>
 #include <stdio.h>
 
-#define __log__(sink, ...)                                                     \
+#define __log__(fptr, ...)                                                     \
   {                                                                            \
-    fprintf(sink, __VA_ARGS__);                                                \
-    fflush(sink);                                                              \
+    fprintf(fptr, __VA_ARGS__);                                                \
+    fflush(fptr);                                                              \
   }
 #define LOG(...)   __log__(stderr, __VA_ARGS__)
 #define ERROR(...) __log__(stderr, __VA_ARGS__)
 #define EVENT_LOG(e)                                                           \
-  if (EventRepr[e.type] && e.type != MotionNotify)                             \
-    LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);
+  if (EventRepr[e.type]) {                                                     \
+    LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window)      \
+  }
 
 #define REPR(x) [x] = #x
 static const char *const EventRepr[LASTEvent] = {
-    REPR(KeyPress),         REPR(KeyRelease),       REPR(ButtonPress),
-    REPR(ButtonRelease),    REPR(MotionNotify),     REPR(EnterNotify),
-    REPR(LeaveNotify),      REPR(FocusIn),          REPR(FocusOut),
-    REPR(KeymapNotify),     REPR(Expose),           REPR(GraphicsExpose),
-    REPR(NoExpose),         REPR(VisibilityNotify), REPR(CreateNotify),
-    REPR(DestroyNotify),    REPR(UnmapNotify),      REPR(MapNotify),
-    REPR(MapRequest),       REPR(ReparentNotify),   REPR(ConfigureNotify),
-    REPR(ConfigureRequest), REPR(GravityNotify),    REPR(ResizeRequest),
-    REPR(CirculateNotify),  REPR(CirculateRequest), REPR(PropertyNotify),
-    REPR(SelectionClear),   REPR(SelectionRequest), REPR(SelectionNotify),
-    REPR(ColormapNotify),   REPR(ClientMessage),    REPR(MappingNotify),
-    REPR(GenericEvent),
-};
+    REPR(KeyPress), REPR(KeyRelease), REPR(ButtonPress), REPR(ButtonRelease),
+    // REPR(MotionNotify),
+    REPR(EnterNotify), REPR(LeaveNotify), REPR(FocusIn), REPR(FocusOut),
+    REPR(KeymapNotify), REPR(Expose), REPR(GraphicsExpose), REPR(NoExpose),
+    REPR(VisibilityNotify), REPR(CreateNotify), REPR(DestroyNotify),
+    REPR(UnmapNotify), REPR(MapNotify), REPR(MapRequest), REPR(ReparentNotify),
+    REPR(ConfigureNotify), REPR(ConfigureRequest), REPR(GravityNotify),
+    REPR(ResizeRequest), REPR(CirculateNotify), REPR(CirculateRequest),
+    REPR(PropertyNotify), REPR(SelectionClear), REPR(SelectionRequest),
+    REPR(SelectionNotify), REPR(ColormapNotify), REPR(ClientMessage),
+    REPR(MappingNotify), REPR(GenericEvent)};
 
 static const char *const RequestCodes[] = {
     REPR(X_CreateWindow),
