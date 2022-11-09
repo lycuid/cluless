@@ -19,6 +19,7 @@ void onMapNotify(Monitor *, const XEvent *);
 void onUnmapNotify(Monitor *, const XEvent *);
 void onConfigureRequest(Monitor *, const XEvent *);
 void onPropertyNotify(Monitor *, const XEvent *);
+void onFocusIn(Monitor *, const XEvent *);
 void onKeyPress(Monitor *, const XEvent *);
 void onButtonPress(Monitor *, const XEvent *);
 void onMotionNotify(Monitor *, const XEvent *);
@@ -36,6 +37,7 @@ static const EventHandler default_event_handlers[LASTEvent] = {
     [UnmapNotify]      = onUnmapNotify,
     [ConfigureRequest] = onConfigureRequest,
     [PropertyNotify]   = onPropertyNotify,
+    [FocusIn]          = onFocusIn,
     [KeyPress]         = onKeyPress,
     [ButtonPress]      = onButtonPress,
     [MotionNotify]     = onMotionNotify,
@@ -82,8 +84,7 @@ void onMapNotify(Monitor *mon, const XEvent *xevent)
 void onUnmapNotify(Monitor *mon, const XEvent *xevent)
 {
   const XUnmapEvent *e = &xevent->xunmap;
-  Client *c;
-  if ((c = ws_getclient(mon->selws, e->window)))
+  for (Client *c = ws_getclient(mon->selws, e->window); c; c = NULL)
     Broadcast(ClientRemove, mon, c);
 }
 
@@ -100,8 +101,13 @@ void onConfigureRequest(Monitor *mon, const XEvent *xevent)
                .sibling      = e->above,
                .stack_mode   = e->detail,
   };
-  XConfigureWindow(core->dpy, e->window, e->value_mask, &changes);
-  XSync(core->dpy, False);
+  // This might restack windows and change focus.
+  if (XConfigureWindow(core->dpy, e->window, e->value_mask, &changes)) {
+    if (ws_getclient(mon->selws, e->window))
+      // 'mon_focusclient' calls 'mon_applylayout', which restacks windows.
+      mon_focusclient(mon, ws_find(mon->selws, ClActive));
+    XSync(core->dpy, False);
+  }
 }
 
 void onPropertyNotify(Monitor *mon, const XEvent *xevent)
@@ -112,6 +118,16 @@ void onPropertyNotify(Monitor *mon, const XEvent *xevent)
   if (e->atom == core->netatoms[NET_WM_NAME] ||
       e->atom == core->wmatoms[WM_NAME])
     mon_statuslog(mon);
+}
+
+void onFocusIn(Monitor *mon, const XEvent *xevent)
+{
+  const XFocusInEvent *e = &xevent->xfocus;
+  // Enforce focus on currently active client, as some applications might change
+  // input focus on their own.
+  for (Client *c = ws_getclient(mon->selws, e->window); c; c = NULL)
+    if (!IS_SET(c->state, ClActive))
+      mon_focusclient(mon, ws_find(mon->selws, ClActive));
 }
 
 void onKeyPress(Monitor *mon, const XEvent *xevent)

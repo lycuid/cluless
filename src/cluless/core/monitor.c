@@ -26,7 +26,7 @@ void mon_manage_client(Monitor *mon, Client *c)
   XWindowAttributes attrs;
   XGetWindowAttributes(core->dpy, c->window, &attrs);
   XSelectInput(core->dpy, c->window,
-               attrs.your_event_mask | PropertyChangeMask);
+               attrs.your_event_mask | PropertyChangeMask | FocusChangeMask);
   Window parent;
   if (XGetTransientForHint(core->dpy, c->window, &parent))
     SET(c->state, ClFloating);
@@ -69,8 +69,6 @@ void mon_focusclient(Monitor *mon, Client *c)
     SetInactive(n);
 #undef SetInactive
 
-  if (IS_SET(c->state, ClFloating))
-    XRaiseWindow(core->dpy, c->window);
   XSetInputFocus(core->dpy, c->window, RevertToParent, CurrentTime);
 LAYOUT_AND_EXIT:
   mon_applylayout(mon);
