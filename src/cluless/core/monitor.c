@@ -1,4 +1,5 @@
 #include "monitor.h"
+#include <cluless/core/logging.h>
 #include <cluless/core/workspace.h>
 #include <cluless/window_rule.h>
 #include <config.h>
@@ -111,7 +112,7 @@ void mon_applylayout(Monitor *mon)
   if (layout->apply)
     layout->apply(mon);
   mon_restack(mon);
-  mon_statuslog(mon);
+  log_statuslog(mon);
 }
 
 Workspace *mon_get_client_ws(Monitor *mon, Client *c)
@@ -125,71 +126,4 @@ Workspace *mon_get_client_ws(Monitor *mon, Client *c)
     }
   }
   return NULL;
-}
-
-// @FIXME: This function is an absolute mess.
-void mon_statuslog(Monitor *mon)
-{
-#define StatusLog(...) fprintf(core->logger, __VA_ARGS__)
-  // workspaces.
-  {
-#define SIZE 1024
-#define FormatWSString(fmt, string)                                            \
-  {                                                                            \
-    if (fmt) {                                                                 \
-      memcpy(tmp, string, SIZE);                                               \
-      sprintf(string, fmt, tmp);                                               \
-    }                                                                          \
-  }
-    Workspace *ws;
-    char buffer[SIZE], tmp[SIZE];
-    memset(buffer, 0, SIZE);
-    ITER(workspaces)
-    {
-      ws = &mon->wss[it];
-      if (it && LogFormat[FmtWsSeperator])
-        StatusLog("%s", LogFormat[FmtWsSeperator]);
-      sprintf(buffer, "%s", ws->id);
-      if (ws == mon->selws) {
-        FormatWSString(LogFormat[FmtWsCurrent], buffer);
-      } else {
-        FormatWSString(ws->cl_head ? LogFormat[FmtWsHidden]
-                                   : LogFormat[FmtWsHiddenEmpty],
-                       buffer);
-      }
-      StatusLog("%s", buffer);
-    }
-    if (LogFormat[FmtSeperator])
-      StatusLog("%s", LogFormat[FmtSeperator]);
-#undef FormatWSString
-#undef SIZE
-  }
-
-  // layout.
-  {
-    const Layout *layout = lm_getlayout(&mon->selws->layout_manager);
-    StatusLog(LogFormat[FmtLayout], layout->symbol);
-    if (LogFormat[FmtSeperator])
-      StatusLog("%s", LogFormat[FmtSeperator]);
-  }
-
-  // window title.
-  {
-    Client *active = ws_find(mon->selws, ClActive);
-    if (active) {
-      XTextProperty wm_name;
-      if (core->get_window_title(active->window, &wm_name) && wm_name.nitems) {
-        char title[TrimTitle + 1];
-        memset(title, '.', sizeof(title));
-        memcpy(title, wm_name.value,
-               wm_name.nitems >= TrimTitle ? TrimTitle - 3 : wm_name.nitems);
-        title[MIN(wm_name.nitems, TrimTitle)] = 0;
-        StatusLog(LogFormat[FmtWindowTitle], title);
-      }
-    }
-  }
-
-  StatusLog("\n");
-#undef StatusLog
-  fflush(core->logger);
 }

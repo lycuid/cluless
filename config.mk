@@ -11,6 +11,7 @@ SRCS=$(IDIR)/$(NAME).c                 \
      $(IDIR)/$(NAME)/bindings.c        \
      $(IDIR)/$(NAME)/core.c            \
      $(IDIR)/$(NAME)/core/client.c     \
+     $(IDIR)/$(NAME)/core/logging.c    \
      $(IDIR)/$(NAME)/core/monitor.c    \
      $(IDIR)/$(NAME)/core/workspace.c  \
      $(IDIR)/$(NAME)/ewmh.c            \

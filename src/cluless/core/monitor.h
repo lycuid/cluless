@@ -25,7 +25,6 @@ void mon_focusclient(Monitor *, Client *);
 void mon_restack(Monitor *);
 void mon_applylayout(Monitor *);
 Workspace *mon_get_client_ws(Monitor *, Client *);
-void mon_statuslog(Monitor *);
 
 // hooks are only called on clients which are attached to the workspaces managed
 // my the monitor.

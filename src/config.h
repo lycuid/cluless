@@ -1,7 +1,7 @@
 // {{{ Includes.
 #include <X11/Xutil.h>
 #include <cluless/bindings.h>
-#include <cluless/core.h>
+#include <cluless/core/logging.h>
 #include <cluless/ewmh/docks.h>
 #include <cluless/layout.h>
 #include <cluless/layout/full.h>

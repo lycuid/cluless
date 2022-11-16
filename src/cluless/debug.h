@@ -9,11 +9,11 @@
     fprintf(fptr, __VA_ARGS__);                                                \
     fflush(fptr);                                                              \
   }
-#define LOG(...)   __log__(stderr, __VA_ARGS__)
-#define ERROR(...) __log__(stderr, __VA_ARGS__)
-#define EVENT_LOG(e)                                                           \
+#define DBG(...) __log__(stderr, __VA_ARGS__)
+#define ERR(...) __log__(stderr, __VA_ARGS__)
+#define EVENT_DBG(e)                                                           \
   if (EventRepr[e.type]) {                                                     \
-    LOG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window)      \
+    DBG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);     \
   }
 
 #define REPR(x) [x] = #x

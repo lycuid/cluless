@@ -2,6 +2,7 @@
 #include <X11/Xlib.h>
 #include <cluless/core.h>
 #include <cluless/core/client.h>
+#include <cluless/core/logging.h>
 #include <cluless/core/monitor.h>
 #include <cluless/core/workspace.h>
 #include <cluless/ewmh.h>
@@ -117,7 +118,7 @@ void onPropertyNotify(Monitor *mon, const XEvent *xevent)
     return;
   if (e->atom == core->netatoms[NET_WM_NAME] ||
       e->atom == core->wmatoms[WM_NAME])
-    mon_statuslog(mon);
+    log_statuslog(mon);
 }
 
 void onFocusIn(Monitor *mon, const XEvent *xevent)
@@ -231,11 +232,11 @@ int xerror_handler(Display *dpy, XErrorEvent *e)
 {
   char error_code[1024];
   XGetErrorText(dpy, e->error_code, error_code, 1024);
-  ERROR("resourceId: %lu.\n", e->resourceid);
-  ERROR("serial: %lu.\n", e->serial);
-  ERROR("error_code: %s.\n", error_code);
-  ERROR("request_code: %s.\n", RequestCodes[e->request_code]);
-  ERROR("minor_code: %u.\n", e->minor_code);
+  ERR("resourceId: %lu.\n", e->resourceid);
+  ERR("serial: %lu.\n", e->serial);
+  ERR("error_code: %s.\n", error_code);
+  ERR("request_code: %s.\n", RequestCodes[e->request_code]);
+  ERR("minor_code: %u.\n", e->minor_code);
   return 1;
 }
 
@@ -266,7 +267,7 @@ int main(int argc, char const **argv)
     mon_focusclient(&mon, mon.selws->cl_head);
 
   for (XEvent e; core->running && !XNextEvent(core->dpy, &e);) {
-    EVENT_LOG(e);
+    EVENT_DBG(e);
     CALL(default_event_handlers[e.type], &mon, &e);
     CALL(ewmh_event_handlers[e.type], &mon, &e);
     CALL(sch_event_handlers[e.type], &mon, &e);

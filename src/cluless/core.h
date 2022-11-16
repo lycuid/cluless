@@ -37,16 +37,6 @@
     fprintf(stderr, __VA_ARGS__);                                              \
     exit(EXIT_FAILURE);                                                        \
   }
-typedef enum {
-  FmtWsCurrent,     // Current workspace (String -> String).
-  FmtWsHidden,      // Hidden workspace (String -> String).
-  FmtWsHiddenEmpty, // Hidden workspace, no windows (String -> String).
-  FmtWsSeperator,   // Workspace seperator (String).
-  FmtLayout,        // Workspace layout (String -> String).
-  FmtSeperator,     // Seperator (String).
-  FmtWindowTitle,   // focused window title (String -> String).
-  FmtOptionsCount
-} Logging;
 
 typedef uint32_t State;
 typedef struct {
