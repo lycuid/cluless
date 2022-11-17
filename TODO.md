@@ -9,11 +9,12 @@ todo:
   - [X] Client init hooks (switch ws, floating etc).
   - [X] process starts but cannot write to pipe.
   - [X] simple left click to focus.
-  - [X] windows change size after mapping.
+  - [X] windows changes size after mapping.
   - [X] Other layouts (Fullscreen etc).
   - [ ] logging and layout functions are called too often (program slows down).
   - [ ] handle clients with urgent state.
   - [X] ignore multiple `MapRequest` event for allocated client.
+  - [X] support for ***companion*** clients.
 
 less important todos:
 ---------------------

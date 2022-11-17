@@ -9,6 +9,7 @@
 #define ClFullscreen (1 << 2)
 #define ClMoving     (1 << 3)
 #define ClResizing   (1 << 4)
+#define ClCompanion  (1 << 5)
 
 #define CL_UNTILED_STATE ClFloating | ClFullscreen
 
@@ -36,6 +37,7 @@ extern const ClientArray *const cl_register;
 
 Client *cl_alloc(Window);
 void cl_free(Client *);
+Client *cl_append(Client *, Client *);
 Client *cl_nexttiled(Client *);
 Client *cl_last(Client *);
 

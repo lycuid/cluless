@@ -19,6 +19,7 @@ SRCS=$(IDIR)/$(NAME).c                 \
      $(IDIR)/$(NAME)/layout.c          \
      $(IDIR)/$(NAME)/layout/full.c     \
      $(IDIR)/$(NAME)/layout/tall.c     \
+     $(IDIR)/$(NAME)/companion.c       \
      $(IDIR)/$(NAME)/scratchpad.c      \
      $(IDIR)/$(NAME)/window_rule.c
 

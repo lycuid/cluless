@@ -10,19 +10,15 @@ typedef struct {
 } Layout;
 
 typedef struct {
-  uint32_t index;
-  uint32_t screen_gappx, window_gappx;
-  uint32_t borderpx, border_active, border_inactive;
+  uint32_t index, screen_gappx, window_gappx, borderpx;
 } LayoutManager;
 
 #define lm_reset(lm)                                                           \
   {                                                                            \
-    (lm)->index           = 0;                                                 \
-    (lm)->screen_gappx    = ScreenGapPX;                                       \
-    (lm)->window_gappx    = WindowGapPX;                                       \
-    (lm)->borderpx        = BorderPX;                                          \
-    (lm)->border_active   = BorderActive;                                      \
-    (lm)->border_inactive = BorderInactive;                                    \
+    (lm)->index        = 0;                                                    \
+    (lm)->screen_gappx = ScreenGapPX;                                          \
+    (lm)->window_gappx = WindowGapPX;                                          \
+    (lm)->borderpx     = BorderPX;                                             \
   }
 
 #define lm_drawregion(lm, region)                                              \

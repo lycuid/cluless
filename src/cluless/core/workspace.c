@@ -9,14 +9,13 @@ void ws_init(Workspace *ws, const char *id)
   lm_reset(&(ws->layout_manager));
 }
 
-// needs to be O(1), currently O(n).
 Client *ws_getclient(Workspace *ws, Window w)
 {
   if (!ws)
     return NULL;
   Client *c = ws->cl_head;
-  for (; c && c->window != w; c = c->next)
-    ;
+  while (c && c->window != w)
+    c = c->next;
   return c;
 }
 
@@ -25,8 +24,8 @@ Client *ws_find(Workspace *ws, State flags)
   if (!ws)
     return NULL;
   Client *c = ws->cl_head;
-  for (; c && !IS_SET(c->state, flags); c = c->next)
-    ;
+  while (c && !IS_SET(c->state, flags))
+    c = c->next;
   return c;
 }
 
@@ -34,12 +33,11 @@ void ws_attachclient(Workspace *ws, Client *c)
 {
   if (!c || !ws)
     return;
-  c->next = ws->cl_head;
-  c->prev = NULL;
+  for (Client *cl = c; cl; cl = cl->next)
+    lm_decorate_client(&ws->layout_manager, cl);
+  ws->cl_head = cl_append(c, ws->cl_head);
   if (ws->cl_head)
-    ws->cl_head->prev = c;
-  ws->cl_head = c;
-  lm_decorate_client(&ws->layout_manager, c);
+    ws->cl_head->prev = NULL;
 }
 
 void ws_detachclient(Workspace *ws, Client *c)

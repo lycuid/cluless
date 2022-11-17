@@ -1,6 +1,7 @@
 // {{{ Includes.
 #include <X11/Xutil.h>
 #include <cluless/bindings.h>
+#include <cluless/companion.h>
 #include <cluless/core/logging.h>
 #include <cluless/ewmh/docks.h>
 #include <cluless/layout.h>
@@ -22,13 +23,15 @@
 #define CMD(...)        ((const char *[]){__VA_ARGS__, NULL})
 // }}}
 
-#define WindowGapPX     5
-#define ScreenGapPX     5
-#define BorderPX        3
-#define BorderActive    0x089cac
-#define BorderInactive  0x252525
-#define TrimTitle       30
-#define ButtonForFocus  Button1
+#define WindowGapPX         5
+#define ScreenGapPX         5
+#define BorderPX            3
+#define BorderActive        0x089cac
+#define BorderInactive      0x252525
+#define CompanionActive     0xff793f
+#define CompanionInactive   0xaaa69d
+#define TrimTitle           30
+#define ButtonForFocus      Button1
 
 static const char *const workspaces[] = {
     CLICKABLE(" 1 ", "super+1"), CLICKABLE(" 2 ", "super+2"),
@@ -64,6 +67,7 @@ static const Binding keys[] = {
     {Mod,                 XK_d,       dock_toggle,        {0}},
     {Mod,                 XK_g,       toggle_gap,         {0}},
     {Mod,                 XK_b,       toggle_border,      {0}},
+    {Mod,                 XK_s,       companion_toggle,   {0}},
     {Mod | ShiftMask,     XK_space,   reset_layout,       {0}},
     {Mod | ShiftMask,     XK_q,       quit,               {0}},
     {Mod | ShiftMask,     XK_Return,  swap_master,        {0}},

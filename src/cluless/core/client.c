@@ -45,17 +45,29 @@ void cl_free(Client *c)
   free(c);
 }
 
+Client *cl_append(Client *source, Client *target)
+{
+  if (!source)
+    return target;
+  Client *last = cl_last(source);
+  if ((last->next = target))
+    target->prev = last;
+  return source;
+}
+
 Client *cl_nexttiled(Client *c)
 {
-  if (c)
-    for (c = c->next; c && IS_SET(c->state, CL_UNTILED_STATE); c = c->next)
-      ;
+  if (c) {
+    do {
+      c = c->next;
+    } while (c && IS_SET(c->state, CL_UNTILED_STATE));
+  }
   return c;
 }
 
 Client *cl_last(Client *c)
 {
-  for (; c && c->next; c = c->next)
-    ;
+  while (c && c->next)
+    c = c->next;
   return c;
 }

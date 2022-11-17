@@ -1,4 +1,5 @@
 #include "bindings.h"
+#include <cluless/companion.h>
 #include <cluless/core.h>
 #include <cluless/core/client.h>
 #include <cluless/core/workspace.h>
@@ -114,15 +115,19 @@ void select_ws(Monitor *mon, const Arg *arg)
   // we can unmap safely as 'selws' has already been changed (unmapped client
   // wont be destroyed).
   mon->selws = to;
-  Client *c;
-  for (c = from->cl_head; c; c = c->next)
-    XUnmapWindow(core->dpy, c->window);
-  for (c = to->cl_head; c; c = c->next)
-    XMapWindow(core->dpy, c->window);
+  WITH_COMPANION_CLIENTS(from, to)
+  {
+    Client *c;
+    for (c = from->cl_head; c; c = c->next)
+      XUnmapWindow(core->dpy, c->window);
+    for (c = to->cl_head; c; c = c->next)
+      XMapWindow(core->dpy, c->window);
+  }
   // If any client with 'ClActive' state exists, then it will be focused by
   // event handlers, otherwise we need to focus some client manually.
   if (!ws_find(to, ClActive))
     mon_focusclient(mon, to->cl_head);
+  mon_applylayout(mon);
 }
 
 void tile_client(Monitor *mon, const Arg *arg)
@@ -187,7 +192,7 @@ void toggle_border(Monitor *mon, const Arg *arg)
 {
   (void)arg;
   LayoutManager *lm = &mon->selws->layout_manager;
-  lm->borderpx      = lm->borderpx == 0 ? BorderPX : 0;
+  lm->borderpx      = BorderPX - lm->borderpx;
   for (Client *c = mon->selws->cl_head; c; c = c->next)
     XSetWindowBorderWidth(core->dpy, c->window, lm->borderpx);
   mon_applylayout(mon);

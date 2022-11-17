@@ -49,18 +49,21 @@ void mon_unmanage_client(Monitor *mon, Client *c)
 
 void mon_focusclient(Monitor *mon, Client *c)
 {
-  LayoutManager *lm = &mon->selws->layout_manager;
   if (!c)
     goto LAYOUT_AND_EXIT;
   // set client active.
   SET(c->state, ClActive);
-  XSetWindowBorder(core->dpy, c->window, lm->border_active);
+  XSetWindowBorder(core->dpy, c->window,
+                   IS_SET(c->state, ClCompanion) ? CompanionActive
+                                                 : BorderActive);
   XUngrabButton(core->dpy, Button1, 0, c->window);
 
 #define SetInactive(cl)                                                        \
   {                                                                            \
     UNSET(cl->state, ClActive);                                                \
-    XSetWindowBorder(core->dpy, cl->window, lm->border_inactive);              \
+    XSetWindowBorder(core->dpy, cl->window,                                    \
+                     IS_SET(cl->state, ClCompanion) ? CompanionInactive        \
+                                                    : BorderInactive);         \
     XGrabButton(core->dpy, ButtonForFocus, 0, cl->window, False, ButtonMasks,  \
                 GrabModeAsync, GrabModeAsync, None, None);                     \
   }

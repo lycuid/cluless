@@ -11,7 +11,7 @@ typedef struct {
 } Workspace;
 
 void ws_init(Workspace *, const char *);
-Client *ws_getclient(Workspace *, Window); // needs to be O(1), currently O(n).
+Client *ws_getclient(Workspace *, Window);
 Client *ws_find(Workspace *, State);
 void ws_attachclient(Workspace *, Client *);
 void ws_detachclient(Workspace *, Client *);
