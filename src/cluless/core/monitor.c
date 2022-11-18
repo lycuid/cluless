@@ -1,7 +1,7 @@
 #include "monitor.h"
 #include <cluless/core/logging.h>
 #include <cluless/core/workspace.h>
-#include <cluless/window_rule.h>
+#include <cluless/misc/window_rule.h>
 #include <config.h>
 #include <stdlib.h>
 #include <string.h>

@@ -11,14 +11,14 @@
     if ((v)->size == (v)->capacity)                                            \
       vec_grow((v));                                                           \
     (v)->inner[(v)->size++].client = c;                                        \
-  } while (0);
+  } while (0)
 
 #define vec_remove(v, c)                                                       \
   do {                                                                         \
     for (size_t i = 0, size = (v)->size; size == (v)->size && i < size; ++i)   \
       if ((v)->inner[i].client == c)                                           \
         (v)->inner[i] = (v)->inner[--(v)->size];                               \
-  } while (0);
+  } while (0)
 
 static ClientArray cl_array;
 const ClientArray *const cl_register = &cl_array;

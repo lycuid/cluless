@@ -1,14 +1,14 @@
 // {{{ Includes.
 #include <X11/Xutil.h>
 #include <cluless/bindings.h>
-#include <cluless/companion.h>
 #include <cluless/core/logging.h>
 #include <cluless/ewmh/docks.h>
 #include <cluless/layout.h>
 #include <cluless/layout/full.h>
 #include <cluless/layout/tall.h>
-#include <cluless/scratchpad.h>
-#include <cluless/window_rule.h>
+#include <cluless/misc/companion.h>
+#include <cluless/misc/scratchpad.h>
+#include <cluless/misc/window_rule.h>
 // clang-format off
 // }}}
 
@@ -67,7 +67,7 @@ static const Binding keys[] = {
     {Mod,                 XK_d,       dock_toggle,        {0}},
     {Mod,                 XK_g,       toggle_gap,         {0}},
     {Mod,                 XK_b,       toggle_border,      {0}},
-    {Mod,                 XK_s,       companion_toggle,   {0}},
+    {Mod,                 XK_c,       companion_toggle,   {0}},
     {Mod | ShiftMask,     XK_space,   reset_layout,       {0}},
     {Mod | ShiftMask,     XK_q,       quit,               {0}},
     {Mod | ShiftMask,     XK_Return,  swap_master,        {0}},

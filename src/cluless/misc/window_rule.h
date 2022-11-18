@@ -1,5 +1,5 @@
-#ifndef __WINDOW_RULE_H__
-#define __WINDOW_RULE_H__
+#ifndef __MISC__WINDOW_RULE_H__
+#define __MISC__WINDOW_RULE_H__
 
 #include <cluless/bindings.h>
 #include <cluless/core/monitor.h>

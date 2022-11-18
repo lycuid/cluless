@@ -7,7 +7,7 @@
 #include <cluless/core/workspace.h>
 #include <cluless/ewmh.h>
 #include <cluless/ewmh/docks.h>
-#include <cluless/scratchpad.h>
+#include <cluless/misc/scratchpad.h>
 #include <stdlib.h>
 #include <string.h>
 

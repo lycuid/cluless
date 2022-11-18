@@ -1,5 +1,5 @@
-#ifndef __SCRATCHPAD_H__
-#define __SCRATCHPAD_H__
+#ifndef __MISC__SCRATCHPAD_H__
+#define __MISC__SCRATCHPAD_H__
 
 #include <cluless/bindings.h>
 #include <cluless/core/monitor.h>

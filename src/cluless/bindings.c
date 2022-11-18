@@ -1,8 +1,8 @@
 #include "bindings.h"
-#include <cluless/companion.h>
 #include <cluless/core.h>
 #include <cluless/core/client.h>
 #include <cluless/core/workspace.h>
+#include <cluless/misc/companion.h>
 #include <config.h>
 #include <stdbool.h>
 #include <stdlib.h>
