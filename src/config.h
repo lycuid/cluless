@@ -14,13 +14,18 @@
 
 // {{{ Macros used only in this file (gets 'undef'-ed later).
 #define Mod             Mod4Mask
-#define Term            "st"
+#define Term            "alacritty"
 #define ScratchTerm     "scratchpad-term"
 #define ScratchFM       "scratchpad-fm"
 #define ScratchNM       "scratchpad-nmtui"
 #define UNDERLINED(s)   "<Box:Bottom=#089CAC:1>" s "</Box>"
 #define CLICKABLE(s, k) "<BtnL=xdotool key " k ">" s "</BtnL>"
 #define CMD(...)        ((const char *[]){__VA_ARGS__, NULL})
+#define SchGeometry                                                             \
+  "-o", "window.dimensions.columns=125",                                        \
+  "-o", "window.dimensions.lines=30",                                           \
+  "-o", "window.position.x=100",                                                \
+  "-o", "window.position.y=50"
 // }}}
 
 #define WindowGapPX         5
@@ -86,7 +91,8 @@ static const Binding keys[] = {
     {Mod,                 XK_k,       shift_focus,        {.i = -1}},
     {Mod,                 XK_t,       tile_client,        {0}},
     // scratchpad ('.cmd' value should be {sch_id, cmd, arg1, arg2, ...}).
-#define SchWindow Term, "-g", "125x30+100+50", "-t"
+#define SchWindow Term, SchGeometry, "-t"
+#define SchWindow Term, SchGeometry, "-t"
     {Mod | ControlMask,   XK_Return,  sch_toggle,         {.cmd = CMD("t", SchWindow, ScratchTerm)}},
     {Mod | ControlMask,   XK_f,       sch_toggle,         {.cmd = CMD("f", SchWindow, ScratchFM, "-e", "vifm")}},
     {Mod | ControlMask,   XK_n,       sch_toggle,         {.cmd = CMD("n", SchWindow, ScratchNM, "-e", "nmtui")}},

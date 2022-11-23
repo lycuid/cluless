@@ -40,8 +40,7 @@
 
 typedef uint32_t State;
 typedef struct {
-  int x, y;
-  uint32_t w, h;
+  int x, y, w, h;
 } Geometry;
 
 ENUM(CursorType, CurNormal, CurResize, CurMove);

@@ -49,15 +49,15 @@ static void dcache_put(Window window, int64_t *strut, int nstrut)
 static DockCache *dcache_get(Window window)
 {
   DockCache *d = dock.cache;
-  for (; d && d->window != window; d = d->next)
-    ;
+  while (d && d->window != window)
+    d = d->next;
   return d;
 }
 
 static DockCache *dcache_remove(Window window)
 {
   DockCache *d = dock.cache, *prev = NULL;
-  for (; d; prev = d, d = d->next)
+  for (; d; prev = d, d = d->next) {
     if (d->window == window) {
       if (prev)
         prev->next = d->next;
@@ -65,6 +65,7 @@ static DockCache *dcache_remove(Window window)
         dock.cache = d->next;
       break;
     }
+  }
   return d;
 }
 

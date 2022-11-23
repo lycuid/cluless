@@ -168,15 +168,15 @@ void onButtonPress(Monitor *mon, const XEvent *xevent)
 
     XWindowAttributes wa;
     XGetWindowAttributes(core->dpy, c->window, &wa);
-    mon->grabbed.client = c;
-    mon->grabbed.x      = e->x_root;
-    mon->grabbed.y      = e->y_root;
-    mon->grabbed.cx     = wa.x;
-    mon->grabbed.cy     = wa.y;
-    mon->grabbed.cw     = wa.width;
-    mon->grabbed.ch     = wa.height;
-    mon->grabbed.state  = e->state | state;
-    mon->grabbed.at     = e->time;
+    mon->grabbed.client        = c;
+    mon->grabbed.x             = e->x_root;
+    mon->grabbed.y             = e->y_root;
+    mon->grabbed.cl_geometry.x = wa.x;
+    mon->grabbed.cl_geometry.y = wa.y;
+    mon->grabbed.cl_geometry.w = wa.width;
+    mon->grabbed.cl_geometry.h = wa.height;
+    mon->grabbed.state         = e->state | state;
+    mon->grabbed.at            = e->time;
     FOREACH(const Binding *button, buttons)
     {
       if (e->button == button->sym && e->state == button->mask)
@@ -193,12 +193,13 @@ void onMotionNotify(Monitor *mon, const XEvent *xevent)
   if (!c || e->state != grabbed->state || (e->time - grabbed->at) < (1000 / 60))
     return;
 
+  Geometry *cg = &grabbed->cl_geometry;
   int dx = e->x - grabbed->x, dy = e->y - grabbed->y;
   if (IS_SET(c->state, ClMoving))
-    XMoveWindow(core->dpy, c->window, grabbed->cx + dx, grabbed->cy + dy);
+    XMoveWindow(core->dpy, c->window, cg->x + dx, cg->y + dy);
   else if (IS_SET(c->state, ClResizing))
-    XResizeWindow(core->dpy, c->window, MAX(grabbed->cw + dx, c->minw),
-                  MAX(grabbed->ch + dy, c->minh));
+    XResizeWindow(core->dpy, c->window, MAX(cg->w + dx, c->minw),
+                  MAX(cg->h + dy, c->minh));
   grabbed->at = e->time;
 }
 

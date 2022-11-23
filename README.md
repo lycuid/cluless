@@ -16,9 +16,10 @@ Layouts
 
 Requirements
 ------------
+  - *free* and *open-source* Operating System (currently doesn't support \*BSD).
+  - gnu make
   - libx11
-  - gnu make (optional)
-  - pkg-config (optional)
+  - pkg-config (optional, changes would be required in Makefile)
 
 Build and Install
 -----------------
@@ -32,7 +33,7 @@ put the following line in the `~/.xinitrc` file, and use any preferred method (e
 ```sh
 exec cluless
 ```
-All logs for statusbar are dumped to `stdout`, which can be redirected in any way suitable.
+Status logs for statusbar are dumped to `stdout`, which can be redirected in any way suitable.
 ```sh
 exec cluless | statusbar
 ```
@@ -44,6 +45,7 @@ STATUS=/tmp/statusbar${DISPLAY}
 statusbar <${STATUS} &
 exec cluless >${STATUS}
 ```
+using a fifo might be slower compared to other methods, but also can be very convenient as the statusbar program will run independent of the window manager (i.e statusbar can be killed, restarted etc. without killing the window manager process).
 
 License:
 --------

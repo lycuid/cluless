@@ -2,26 +2,8 @@
 #include <cluless/core.h>
 #include <stdlib.h>
 
-#define vec_grow(v)                                                            \
-  (v)->inner =                                                                 \
-      realloc((v)->inner, ((v)->capacity += (1 << 5)) * sizeof(struct Cell));
-
-#define vec_append(v, c)                                                       \
-  do {                                                                         \
-    if ((v)->size == (v)->capacity)                                            \
-      vec_grow((v));                                                           \
-    (v)->inner[(v)->size++].client = c;                                        \
-  } while (0)
-
-#define vec_remove(v, c)                                                       \
-  do {                                                                         \
-    for (size_t i = 0, size = (v)->size; size == (v)->size && i < size; ++i)   \
-      if ((v)->inner[i].client == c)                                           \
-        (v)->inner[i] = (v)->inner[--(v)->size];                               \
-  } while (0)
-
-static ClientArray cl_array;
-const ClientArray *const cl_register = &cl_array;
+static ClientVector cl_vector;
+const ClientVector *const cl_register = &cl_vector;
 
 Client *cl_alloc(Window w)
 {
@@ -29,7 +11,7 @@ Client *cl_alloc(Window w)
   long flags;
   XGetWMNormalHints(core->dpy, w, &size, &flags);
   Client *c = malloc(sizeof(Client));
-  vec_append(&cl_array, c);
+  vec_append(&cl_vector, c);
   c->state  = 0x0;
   c->window = w;
   c->prev   = NULL;
@@ -41,7 +23,7 @@ Client *cl_alloc(Window w)
 
 void cl_free(Client *c)
 {
-  vec_remove(&cl_array, c);
+  vec_remove(&cl_vector, c);
   free(c);
 }
 

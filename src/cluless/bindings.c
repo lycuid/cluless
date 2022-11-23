@@ -25,6 +25,10 @@ void spawn(Monitor *mon, const Arg *arg)
     return;
   if (core->dpy)
     close(ConnectionNumber(core->dpy));
+  // 'stdout' maybe redirected to statusbar program, or such, so the only thing
+  // we must dump to 'stdout', is status logs.
+  close(fileno(stdout));
+  close(fileno(stderr));
   setsid();
   execvp(arg->cmd[0], (char **)arg->cmd);
   exit(EXIT_SUCCESS);

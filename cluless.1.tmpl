@@ -1,0 +1,116 @@
+.TH APPNAME 1 APPNAME-APPVERSION
+
+.SH
+APPNAME
+.PP
+APPNAME \- A Fantasy Motivated, Customizable, Dynamic Tiling Window Manager.
+
+.SH
+\fBUSAGE:\fR
+.PP
+The following line could be put in \fI~/.xinitrc\fR file, and use any preferred method (e.g startx, xinit) to execute it.
+.PP
+.RS 4
+\fBexec\fR APPNAME
+.RE
+.PP
+Status logs are dumped to \fIstdout\fR, which could be redirected in any way:\fR
+.PP
+.RS 4
+\fBexec\fR APPNAME | statusbar
+.RE
+.PP
+.br
+Using \fIfifo\fR (ability to restart/change statusbar program).
+.PP
+.RS 4
+statusbar </path/to/fifo
+.br
+\fBexec\fR APPNAME >/path/to/fifo
+.RE
+
+.SH
+DESCRIPTION
+.PP
+APPNAME is a fantasy motivated, (mildly opinionated) and customizable dynamic tiling window manager. The development was motivated by the author's fantasy of having the feeling of being inside the \fBgrid\fR, while using his computer. The design and structure was motivated by the author's previously, daily driven, window managers: \fBxmonad\fR and \fBdwm\fR.
+
+.SH
+OPTIONS
+
+.PP
+\fB\-v, \-\-version\fR
+.RS
+Print version and exit.
+.RE
+
+.SH
+DEFAULT KEYBINDINGS
+\fBMod+Return\fR:         spawn terminal
+.br
+\fBMod+space\fR:          Cycle to next layout.
+.br
+\fBMod+d\fR:              Toggle dock type window (if any, mainly statusbar).
+.br
+\fBMod+g\fR:              Toggle window gap.
+.br
+\fBMod+b\fR:              Toggle window border.
+.br
+\fBMod+c\fR:              Toggle window's companion state.
+.br
+\fBMod+Shift+space\fR:    Reset layout to default (layout, border, gap).
+.br
+\fBMod+Shift+q\fR:        Quit program.
+.br
+\fBMod+Shift+Return\fR:   Swap window with Master window.
+.br
+\fBMod+Shift+c\fR:        Kill window.
+.br
+\fBMod+Shift+j\fR:        Shift window down the window stack.
+.br
+\fBMod+Shift+k\fR:        Shift window up the window stack.
+.br
+\fBMod+Down\fR:           Move window down.
+.br
+\fBMod+Up\fR:             Move window up.
+.br
+\fBMod+Right\fR:          Move window right.
+.br
+\fBMod+Left\fR:           Move window left.
+.br
+\fBMod+Shift+Down\fR:     Increase height of the window.
+.br
+\fBMod+Shift+Up\fR:       Decrease height of the window.
+.br
+\fBMod+Shift+Right\fR:    Increase width of the window.
+.br
+\fBMod+Shift+Left\fR:     Decrease width of the window.
+.br
+\fBMod+j\fR:              Shift focus to next window in the window stack.
+.br
+\fBMod+k\fR:              Shift focus to previous window in the window stack.
+.br
+\fBMod+t\fR:              Add untiled window to tiled state.
+.br
+\fBMod+[n]\fR:            Select workspace \fBn\fR.
+.br
+\fBMod+Shift+[n]\fR:      Move window to workspace \fBn\fR.
+.br
+\fBMod+MouseLeft\fR:      Move window with mouse.
+.br
+\fBMod+MouseRight\fR:     Resize window with mouse.
+.br
+
+.SH
+AUTHOR
+.PP
+Written by Abhishek Kadam <lycuid@gmail.com>
+
+.SH
+BUGS
+.PP
+Submit issues at <\fIhttps://github.com/lycuid/APPNAME/issues/\fR>
+
+.SH
+COPYRIGHT
+.PP
+License GPLv3 <\fIhttps://gnu.org/licenses/gpl.html\fR>.

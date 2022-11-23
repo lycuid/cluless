@@ -3,6 +3,7 @@
 
 #include <X11/Xlib.h>
 #include <cluless/core.h>
+#include <cluless/core/vector.h>
 
 #define ClActive     (1 << 0)
 #define ClFloating   (1 << 1)
@@ -13,11 +14,6 @@
 
 #define CL_UNTILED_STATE ClFloating | ClFullscreen
 
-#define FOREACH_AVAILABLE_CLIENT(c)                                            \
-  for (int keep = 1, it = 0, size = cl_register->size; keep && it < size;      \
-       keep = !keep, ++it)                                                     \
-    for (c = cl_register->inner[it].client; keep; keep = !keep)
-
 #define cl_neighbour(c) ((c) ? (c)->prev ? (c)->prev : (c)->next : NULL)
 
 typedef struct Client {
@@ -27,13 +23,9 @@ typedef struct Client {
   struct Client *prev, *next;
 } Client;
 
-typedef struct ClientArray {
-  struct Cell {
-    Client *client;
-  } * inner;
-  size_t size, capacity;
-} ClientArray;
-extern const ClientArray *const cl_register;
+typedef Vector(Client *) ClientVector;
+extern const ClientVector *const cl_register;
+#define FOREACH_AVAILABLE_CLIENT(c) VEC_FOREACH(c, cl_register)
 
 Client *cl_alloc(Window);
 void cl_free(Client *);

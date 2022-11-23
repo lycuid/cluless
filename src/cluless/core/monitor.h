@@ -6,8 +6,9 @@
 #include <cluless/core/workspace.h>
 
 typedef struct {
+  int x, y;
   Client *client;
-  int x, y, cx, cy, cw, ch;
+  Geometry cl_geometry;
   State state;
   Time at;
 } PointerGrab;

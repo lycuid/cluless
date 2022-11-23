@@ -23,8 +23,12 @@ options:
 .PHONY: install
 install: options $(BIN)
 	strip --strip-all $(BIN)
-	cp -f $(BIN) $(BINPREFIX)/$(NAME)
-	chmod 755 $(BINPREFIX)/$(NAME)
+	cp -f $(BIN) $(DESTDIR)$(BINPREFIX)/$(NAME)
+	sed -e 's/APPNAME/$(NAME)/g' -e 's/APPVERSION/$(VERSION)/g' $(NAME).1.tmpl \
+		| gzip > $(DESTDIR)$(MANPREFIX)/$(NAME).1.gz
+	chmod 755 $(DESTDIR)$(BINPREFIX)/$(NAME)
+	chmod 644 $(DESTDIR)$(MANPREFIX)/$(NAME).1.gz
+
 
 .PHONY: uninstall
 uninstall:
