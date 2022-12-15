@@ -11,8 +11,9 @@
 #define ClMoving     (1 << 3)
 #define ClResizing   (1 << 4)
 #define ClCompanion  (1 << 5)
+#define ClBypassed   (1 << 6)
 
-#define CL_UNTILED_STATE ClFloating | ClFullscreen
+#define CL_UNTILED_STATE ClFloating | ClFullscreen | ClBypassed
 
 #define cl_neighbour(c) ((c) ? (c)->prev ? (c)->prev : (c)->next : NULL)
 

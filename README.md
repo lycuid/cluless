@@ -8,15 +8,13 @@
 
 Layouts
 -------
-#### Tall (master/stack)
-![tall](https://raw.githubusercontent.com/lycuid/cluless/master/screenshots/tall.png)
-
-#### Full (fullscreen)
-![full](https://raw.githubusercontent.com/lycuid/cluless/master/screenshots/full.png)
+|Tall (master/stack) | Full (fullscreen) |
+|--------------------|-------------------|
+|![tall](https://raw.githubusercontent.com/lycuid/cluless/master/screenshots/tall.png) | ![full](https://raw.githubusercontent.com/lycuid/cluless/master/screenshots/full.png) |
 
 Requirements
 ------------
-  - *free* and *open-source* Operating System (currently doesn't support \*BSD).
+  - ***free***, ***libre*** and ***open-source*** Operating System (currently doesn't support \*BSD).
   - gnu make
   - libx11
   - pkg-config (optional, changes would be required in Makefile)
@@ -46,6 +44,12 @@ statusbar <${STATUS} &
 exec cluless >${STATUS}
 ```
 using a fifo might be slower compared to other methods, but also can be very convenient as the statusbar program will run independent of the window manager (i.e statusbar can be killed, restarted etc. without killing the window manager process).
+
+Features
+--------
+  - ***scratchpads***: togglable windows.
+  - ***window rule***: hooks for newly created windows (make window floating, or move to different workspace etc).
+  - ***companions***: window follows the user across workspaces. (best used with floating windows, as it might mess up the tiling).
 
 License:
 --------

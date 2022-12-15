@@ -53,13 +53,14 @@ void core_init(void)
   // EWMH Atoms.
 #define NET_ATOM_REPR(atom)                                                    \
   local.netatoms[atom] = XInternAtom(local.dpy, "_" #atom, False)
-  NET_ATOM_REPR(NET_WM_NAME);
-  NET_ATOM_REPR(NET_WM_WINDOW_TYPE);
-  NET_ATOM_REPR(NET_WM_WINDOW_TYPE_DOCK);
-  NET_ATOM_REPR(NET_WM_STRUT);
-  NET_ATOM_REPR(NET_WM_STRUT_PARTIAL);
   NET_ATOM_REPR(NET_ACTIVE_WINDOW);
   NET_ATOM_REPR(NET_CLIENT_LIST);
+  NET_ATOM_REPR(NET_WM_BYPASS_COMPOSITOR);
+  NET_ATOM_REPR(NET_WM_NAME);
+  NET_ATOM_REPR(NET_WM_STRUT);
+  NET_ATOM_REPR(NET_WM_STRUT_PARTIAL);
+  NET_ATOM_REPR(NET_WM_WINDOW_TYPE);
+  NET_ATOM_REPR(NET_WM_WINDOW_TYPE_DOCK);
 #undef NET_ATOM_REPR
 
   XStoreName(local.dpy, local.root, NAME "-" VERSION);

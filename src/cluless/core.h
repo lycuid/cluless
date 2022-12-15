@@ -45,8 +45,9 @@ typedef struct {
 
 ENUM(CursorType, CurNormal, CurResize, CurMove);
 ENUM(WMAtom, WM_PROTOCOLS, WM_NAME, WM_DELETE_WINDOW, WM_TRANSIENT_FOR);
-ENUM(NetAtom, NET_WM_NAME, NET_WM_WINDOW_TYPE, NET_WM_WINDOW_TYPE_DOCK,
-     NET_WM_STRUT, NET_WM_STRUT_PARTIAL, NET_ACTIVE_WINDOW, NET_CLIENT_LIST);
+ENUM(NetAtom, NET_ACTIVE_WINDOW, NET_CLIENT_LIST, NET_WM_BYPASS_COMPOSITOR,
+     NET_WM_NAME, NET_WM_STRUT, NET_WM_STRUT_PARTIAL, NET_WM_WINDOW_TYPE,
+     NET_WM_WINDOW_TYPE_DOCK);
 
 // These are mainly the values that don't (shouldn't) change throughout the
 // application lifetime.

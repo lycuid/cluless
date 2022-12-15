@@ -15,6 +15,7 @@ todo:
   - [ ] handle clients with urgent state.
   - [X] ignore multiple `MapRequest` event for allocated client.
   - [X] support for ***companion*** clients.
+  - [ ] apply multiple `window_rule`s to a single window.
 
 less important todos:
 ---------------------

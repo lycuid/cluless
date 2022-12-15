@@ -34,5 +34,6 @@ typedef struct {
 #define lm_getlayout(lm)  (&layouts[(lm)->index % LENGTH(layouts)])
 
 void lm_decorate_client(LayoutManager *, Client *);
+void lm_undecorate_client(LayoutManager *, Client *);
 
 #endif

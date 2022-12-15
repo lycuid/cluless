@@ -60,7 +60,7 @@ static inline void Broadcast(HookType type, Monitor *mon, Client *c)
 void onMapRequest(Monitor *mon, const XEvent *xevent)
 {
   const XMapRequestEvent *e = &xevent->xmaprequest;
-  Client *c;
+  Client *c                 = NULL;
   FOREACH_AVAILABLE_CLIENT(c)
   {
     // Ignore multiple map requests from already allocated clients.
