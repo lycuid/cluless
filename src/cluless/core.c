@@ -27,15 +27,13 @@ static Core local = {
 };
 const Core *const core = &local;
 
-static void NOOP(__attribute__((unused)) int _) {}
-
 void core_init(void)
 {
   if ((local.dpy = XOpenDisplay(NULL)) == NULL)
     die("Cannot open display.\n");
   local.root   = DefaultRootWindow(local.dpy);
   local.logger = stdout;
-  signal(SIGPIPE, NOOP);
+  signal(SIGPIPE, SIG_IGN);
 
   local.cursors[CurNormal] = XCreateFontCursor(local.dpy, XC_left_ptr);
   local.cursors[CurResize] = XCreateFontCursor(local.dpy, XC_sizing);
@@ -85,7 +83,7 @@ void core_init(void)
   }
 }
 
-Window input_focused_window()
+Window input_focused_window(void)
 {
   int t;
   Window window;
@@ -93,7 +91,7 @@ Window input_focused_window()
   return window;
 }
 
-Geometry get_screen_rect()
+Geometry get_screen_rect(void)
 {
   return (Geometry){
       .x = 0,
@@ -150,4 +148,4 @@ uint32_t get_window_list(Window **windows)
   return window_cnt;
 }
 
-void stop_running() { local.running = false; }
+void stop_running(void) { local.running = false; }

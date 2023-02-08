@@ -34,7 +34,8 @@ void ws_attachclient(Workspace *ws, Client *c)
   if (!c || !ws)
     return;
   for (Client *cl = c; cl; cl = cl->next)
-    lm_decorate_client(&ws->layout_manager, cl);
+    if (!IS_SET(c->state, ClBypassed))
+      lm_decorate_client(&ws->layout_manager, cl);
   ws->cl_head = cl_append(c, ws->cl_head);
   if (ws->cl_head)
     ws->cl_head->prev = NULL;

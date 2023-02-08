@@ -32,3 +32,4 @@ bugs:
   - [X] scratchpad dangling pointer, if window gets destroyed while unmapped.
   - [X] ewmh's `_NET_CLIENT_LIST` doesn't play well with scratchpads.
   - [X] not checking for transient after window rule.
+  - [ ] cyclic dependency in monitor/layout modules.

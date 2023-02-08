@@ -4,7 +4,6 @@
 Client *companion_remove(Workspace *from)
 {
   Client *companion = NULL;
-  // detach all companion clients before unmapping.
   for (Client *c; (c = ws_find(from, ClCompanion)); companion = c)
     if (ws_detachclient(from, c), companion)
       cl_append(companion, c);

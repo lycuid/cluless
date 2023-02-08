@@ -11,8 +11,8 @@
 #define ButtonMasks          (ButtonPressMask | ButtonReleaseMask)
 
 #define LENGTH(s) (sizeof(s) / sizeof(s[0]))
-#define MAX(x, y) (x) > (y) ? (x) : (y)
-#define MIN(x, y) (x) < (y) ? (x) : (y)
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
 
 #define ENUM(identifier, ...) /* 'NULL' terminated enum values. */             \
   typedef enum { __VA_ARGS__, Null##identifier } identifier
@@ -66,7 +66,7 @@ typedef struct Core {
   int (*get_window_property)(Window, Atom, int, uint8_t **);
   int (*get_window_title)(Window, XTextProperty *);
   uint32_t (*get_window_list)(Window **);
-  void (*stop_running)();
+  void (*stop_running)(void);
 } Core;
 extern const Core *const core;
 

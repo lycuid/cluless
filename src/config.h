@@ -14,18 +14,14 @@
 
 // {{{ Macros used only in this file (gets 'undef'-ed later).
 #define Mod             Mod4Mask
-#define Term            "alacritty"
+#define Term            "st"
 #define ScratchTerm     "scratchpad-term"
 #define ScratchFM       "scratchpad-fm"
 #define ScratchNM       "scratchpad-nmtui"
+#define SchGeometry     "-g", "125x30+100+50"
 #define UNDERLINED(s)   "<Box:Bottom=#089CAC:1>" s "</Box>"
 #define CLICKABLE(s, k) "<BtnL=xdotool key " k ">" s "</BtnL>"
 #define CMD(...)        ((const char *[]){__VA_ARGS__, NULL})
-#define SchGeometry                                                             \
-  "-o", "window.dimensions.columns=125",                                        \
-  "-o", "window.dimensions.lines=30",                                           \
-  "-o", "window.position.x=100",                                                \
-  "-o", "window.position.y=50"
 // }}}
 
 #define WindowGapPX         5
