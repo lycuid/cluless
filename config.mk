@@ -1,11 +1,12 @@
 NAME=cluless
-VERSION=0.4.11
+VERSION=0.4.12
 BUILD=.build
 IDIR=src
 ODIR=$(BUILD)/cache
 BIN=$(BUILD)/bin/$(NAME)
 PREFIX=/usr/local
 BINPREFIX=$(PREFIX)/bin
+MANPREFIX=$(PREFIX)/man/man1
 
 SRCS=$(IDIR)/$(NAME).c                      \
      $(IDIR)/$(NAME)/bindings.c             \
@@ -20,6 +21,7 @@ SRCS=$(IDIR)/$(NAME).c                      \
      $(IDIR)/$(NAME)/layout/full.c          \
      $(IDIR)/$(NAME)/layout/tall.c          \
      $(IDIR)/$(NAME)/misc/companion.c       \
+     $(IDIR)/$(NAME)/misc/magnify.c         \
      $(IDIR)/$(NAME)/misc/scratchpad.c      \
      $(IDIR)/$(NAME)/misc/window_rule.c
 

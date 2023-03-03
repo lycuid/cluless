@@ -77,7 +77,7 @@ void ewmh_clientremove(Monitor *mon, Client *c)
 
 void ewmh_focusin(Monitor *mon, const XEvent *xevent)
 {
-  const XFocusOutEvent *e = &xevent->xfocus;
+  const XFocusInEvent *e = &xevent->xfocus;
   Client *c;
   if (!(c = ws_getclient(mon->selws, e->window)))
     return;

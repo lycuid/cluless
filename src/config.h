@@ -7,6 +7,7 @@
 #include <cluless/layout/full.h>
 #include <cluless/layout/tall.h>
 #include <cluless/misc/companion.h>
+#include <cluless/misc/magnify.h>
 #include <cluless/misc/scratchpad.h>
 #include <cluless/misc/window_rule.h>
 // clang-format off
@@ -68,6 +69,7 @@ static const Binding keys[] = {
     {Mod,                 XK_d,       dock_toggle,        {0}},
     {Mod,                 XK_g,       toggle_gap,         {0}},
     {Mod,                 XK_b,       toggle_border,      {0}},
+    {Mod,                 XK_m,       magnify_toggle,     {0}},
     {Mod,                 XK_c,       companion_toggle,   {0}},
     {Mod | ShiftMask,     XK_space,   reset_layout,       {0}},
     {Mod | ShiftMask,     XK_q,       quit,               {0}},

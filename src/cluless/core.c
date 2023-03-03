@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 
 void core_init(void);
 Window input_focused_window(void);
@@ -27,12 +28,23 @@ static Core local = {
 };
 const Core *const core = &local;
 
+static void sighandler(int sig)
+{ // clang-format off
+  if (signal(sig, sighandler) == sighandler) {
+    switch (sig) {
+      case SIGCHLD: { wait(NULL); } break;
+      default: break;
+    }
+  }
+} // clang-format on
+
 void core_init(void)
 {
   if ((local.dpy = XOpenDisplay(NULL)) == NULL)
     die("Cannot open display.\n");
   local.root   = DefaultRootWindow(local.dpy);
   local.logger = stdout;
+  sighandler(SIGCHLD);
   signal(SIGPIPE, SIG_IGN);
 
   local.cursors[CurNormal] = XCreateFontCursor(local.dpy, XC_left_ptr);

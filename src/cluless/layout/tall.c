@@ -1,5 +1,6 @@
 #include "tall.h"
 #include <X11/Xlib.h>
+#include <cluless/misc/magnify.h>
 
 void tall(Monitor *mon)
 {
@@ -8,28 +9,26 @@ void tall(Monitor *mon)
     nstack += !IS_SET(c->state, CL_UNTILED_STATE);
   if (nstack == -1)
     return;
-  LayoutManager *lm    = &mon->selws->layout_manager;
-  Geometry draw_region = lm_drawregion(lm, &mon->screen);
+  const LayoutManager *lm = &mon->selws->layout_manager;
+  Geometry draw_region    = lm_drawregion(lm, &mon->screen);
+  const int top = lm_top(lm, &draw_region), left = lm_left(lm, &draw_region),
+            offset = lm_offset(lm);
 
-  // arrange 'Master' window.
+#define mid (draw_region.w / 2)
   Client *master = mon->selws->cl_head, *stack;
   if (IS_SET(master->state, CL_UNTILED_STATE))
     master = cl_nexttiled(master);
-  int mx = draw_region.x + lm->window_gappx,
-      my = draw_region.y + lm->window_gappx,
-      mw = (nstack ? (draw_region.w / 2) : draw_region.w) -
-           ((lm->borderpx + lm->window_gappx) * 2),
-      mh = draw_region.h - ((lm->borderpx + lm->window_gappx) * 2);
-  XMoveResizeWindow(core->dpy, master->window, mx, my, mw, mh);
+  int x = left, y = top, w = (nstack ? mid : draw_region.w) - offset,
+      h = draw_region.h - offset;
+  if (!IS_SET(master->state, ClActive) || !magnify(mon, master, x, y, w, h))
+    XMoveResizeWindow(core->dpy, master->window, x, y, w, h);
 
-  // arrange 'Stack' windows.
   if (nstack && (stack = cl_nexttiled(master))) {
-    int sx = draw_region.x + (draw_region.w / 2) + lm->window_gappx,
-        sy = draw_region.y + lm->window_gappx,
-        sw = (draw_region.w / 2) - ((lm->borderpx + lm->window_gappx) * 2),
-        sh = (draw_region.h / nstack) - ((lm->borderpx + lm->window_gappx) * 2);
-    for (; stack; sy += sh + ((lm->borderpx + lm->window_gappx) * 2),
-                  stack = cl_nexttiled(stack))
-      XMoveResizeWindow(core->dpy, stack->window, sx, sy, sw, sh);
+    x = left + mid, y = top, w = mid - offset,
+    h = (draw_region.h / nstack) - offset;
+    for (; stack; y += h + offset, stack = cl_nexttiled(stack)) {
+      if (!IS_SET(stack->state, ClActive) || !magnify(mon, stack, x, y, w, h))
+        XMoveResizeWindow(core->dpy, stack->window, x, y, w, h);
+    }
   }
 }

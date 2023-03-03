@@ -119,19 +119,17 @@ void select_ws(Monitor *mon, const Arg *arg)
   // we can unmap safely as 'selws' has already been changed (unmapped client
   // wont be destroyed).
   mon->selws = to;
-  WITH_COMPANION_CLIENTS(from, to)
-  {
-    Client *c;
-    for (c = from->cl_head; c; c = c->next)
-      XUnmapWindow(core->dpy, c->window);
-    for (c = to->cl_head; c; c = c->next)
-      XMapWindow(core->dpy, c->window);
-  }
+  companion_insert(companion_remove(from), to);
+  Client *c;
+  for (c = from->cl_head; c; c = c->next)
+    XUnmapWindow(core->dpy, c->window);
+  mon_applylayout(mon); // to avoid layout glitches.
+  for (c = to->cl_head; c; c = c->next)
+    XMapWindow(core->dpy, c->window);
   // If any client with 'ClActive' state exists, then it will be focused by
   // event handlers, otherwise we need to focus some client manually.
   if (!ws_find(to, ClActive))
     mon_focusclient(mon, to->cl_head);
-  mon_applylayout(mon);
 }
 
 void tile_client(Monitor *mon, const Arg *arg)

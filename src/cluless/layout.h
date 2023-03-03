@@ -33,6 +33,10 @@ typedef struct {
 #define lm_nextlayout(lm) ((lm)->index = ((lm)->index + 1) % LENGTH(layouts))
 #define lm_getlayout(lm)  (&layouts[(lm)->index % LENGTH(layouts)])
 
+#define lm_top(lm, region)  ((region)->x + (lm)->screen_gappx)
+#define lm_left(lm, region) ((region)->y + (lm)->screen_gappx)
+#define lm_offset(lm)       (((lm)->borderpx + (lm)->screen_gappx) * 2)
+
 void lm_decorate_client(LayoutManager *, Client *);
 void lm_undecorate_client(LayoutManager *, Client *);
 
