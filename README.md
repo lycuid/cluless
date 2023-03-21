@@ -50,6 +50,7 @@ Features
   - ***scratchpads***: togglable windows.
   - ***window rule***: hooks for newly created windows (make window floating, or move to different workspace etc).
   - ***companions***: window follows the user across workspaces. (best used with floating windows, as it might mess up the tiling).
+  - ***magnify***: magnify focused window (useful in case of many tiled windows).
 
 License:
 --------

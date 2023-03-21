@@ -1,35 +1,34 @@
 #include "magnify.h"
 #include <cluless/core/client.h>
 #include <cluless/core/workspace.h>
-#include <stdbool.h>
-
-static bool Magnify = false;
+#include <config.h>
 
 static inline int clamp(int x, int l, int h)
 {
   return x < l ? l : x > h ? h : x;
 }
 
-bool magnify(Monitor *mon, Client *c, int cx, int cy, int cw, int ch)
+void magnify(Window window, const LayoutManager *lm, const Geometry *wg,
+             const Geometry *draw_region)
 {
-  if (!Magnify || !c || IS_SET(c->state, CL_UNTILED_STATE))
-    return false;
-  const LayoutManager *lm = &mon->selws->layout_manager;
-  Geometry draw_region    = lm_drawregion(lm, &mon->screen);
-  const int top = lm_top(lm, &draw_region), left = lm_left(lm, &draw_region),
-            offset = lm_offset(lm);
-  int x = cx, y = cy,
-      w = clamp(cw * 1.2, (draw_region.w - offset) / 3, draw_region.w - offset),
-      h = clamp(ch * 1.2, (draw_region.h - offset) / 3, draw_region.h - offset);
+  if (!lm || !wg || !draw_region)
+    return;
+  const int top = lm_top(lm, draw_region), left = lm_left(lm, draw_region),
+            off = lm_offset(lm);
+  int x = wg->x, y = wg->y,
+      w = clamp(wg->w * MagnifyW, (draw_region->w - off) / 3,
+                draw_region->w - off),
+      h = clamp(wg->h * MagnifyH, (draw_region->h - off) / 3,
+                draw_region->h - off);
 
-  x = clamp(x - (w - cw) / 2, left, left + draw_region.w - offset - w),
-  y = clamp(y - (h - ch) / 2, top, top + draw_region.h - offset - h);
-  return XMoveResizeWindow(core->dpy, c->window, x, y, w, h);
+  x = clamp(x - (w - wg->w) / 2, left, left + draw_region->w - off - w),
+  y = clamp(y - (h - wg->h) / 2, top, top + draw_region->h - off - h);
+  XMoveResizeWindow(core->dpy, window, x, y, w, h);
 }
 
 void magnify_toggle(Monitor *mon, const Arg *arg)
 {
   (void)arg;
-  Magnify = !Magnify;
+  mon->selws->layout_manager.magnify = !mon->selws->layout_manager.magnify;
   mon_applylayout(mon);
 }

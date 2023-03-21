@@ -34,6 +34,8 @@
 #define CompanionInactive   0xaaa69d
 #define TrimTitle           30
 #define ButtonForFocus      Button1
+#define MagnifyW            1.2
+#define MagnifyH            1.2
 
 static const char *const workspaces[] = {
     CLICKABLE(" 1 ", "super+1"), CLICKABLE(" 2 ", "super+2"),

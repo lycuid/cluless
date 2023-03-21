@@ -4,9 +4,9 @@
 #include <cluless/bindings.h>
 #include <cluless/core/client.h>
 #include <cluless/core/monitor.h>
-#include <stdbool.h>
+#include <cluless/layout.h>
 
-bool magnify(Monitor *, Client *c, int, int, int, int);
+void magnify(Window, const LayoutManager *, const Geometry *, const Geometry *);
 void magnify_toggle(Monitor *, const Arg *);
 
 #endif

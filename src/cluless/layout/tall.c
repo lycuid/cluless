@@ -1,5 +1,6 @@
 #include "tall.h"
 #include <X11/Xlib.h>
+#include <cluless/layout.h>
 #include <cluless/misc/magnify.h>
 
 void tall(Monitor *mon)
@@ -9,8 +10,8 @@ void tall(Monitor *mon)
     nstack += !IS_SET(c->state, CL_UNTILED_STATE);
   if (nstack == -1)
     return;
-  const LayoutManager *lm = &mon->selws->layout_manager;
-  Geometry draw_region    = lm_drawregion(lm, &mon->screen);
+  const LayoutManager *lm    = &mon->selws->layout_manager;
+  const Geometry draw_region = lm_drawregion(lm, &mon->screen);
   const int top = lm_top(lm, &draw_region), left = lm_left(lm, &draw_region),
             offset = lm_offset(lm);
 
@@ -20,15 +21,12 @@ void tall(Monitor *mon)
     master = cl_nexttiled(master);
   int x = left, y = top, w = (nstack ? mid : draw_region.w) - offset,
       h = draw_region.h - offset;
-  if (!IS_SET(master->state, ClActive) || !magnify(mon, master, x, y, w, h))
-    XMoveResizeWindow(core->dpy, master->window, x, y, w, h);
+  lm_resize_client(lm, master, &GEOMETRY(x, y, w, h), &draw_region);
 
   if (nstack && (stack = cl_nexttiled(master))) {
     x = left + mid, y = top, w = mid - offset,
     h = (draw_region.h / nstack) - offset;
-    for (; stack; y += h + offset, stack = cl_nexttiled(stack)) {
-      if (!IS_SET(stack->state, ClActive) || !magnify(mon, stack, x, y, w, h))
-        XMoveResizeWindow(core->dpy, stack->window, x, y, w, h);
-    }
+    for (; stack; y += h + offset, stack = cl_nexttiled(stack))
+      lm_resize_client(lm, stack, &GEOMETRY(x, y, w, h), &draw_region);
   }
 }

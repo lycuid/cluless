@@ -43,6 +43,10 @@ typedef struct {
   int x, y, w, h;
 } Geometry;
 
+// clang-format off
+#define GEOMETRY(...) ((Geometry){__VA_ARGS__})
+// clang-format on
+
 ENUM(CursorType, CurNormal, CurResize, CurMove);
 ENUM(WMAtom, WM_PROTOCOLS, WM_NAME, WM_DELETE_WINDOW, WM_TRANSIENT_FOR);
 ENUM(NetAtom, NET_ACTIVE_WINDOW, NET_CLIENT_LIST, NET_WM_BYPASS_COMPOSITOR,
