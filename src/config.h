@@ -38,9 +38,8 @@
 #define MagnifyH            1.2
 
 static const char *const workspaces[] = {
-    CLICKABLE(" 1 ", "super+1"), CLICKABLE(" 2 ", "super+2"),
-    CLICKABLE(" 3 ", "super+3"), CLICKABLE(" 4 ", "super+4"),
-    CLICKABLE(" 5 ", "super+5"),
+    CLICKABLE(" 1 ", "super+1"), CLICKABLE(" 2 ", "super+2"), CLICKABLE(" 3 ", "super+3"),
+    CLICKABLE(" 4 ", "super+4"), CLICKABLE(" 5 ", "super+5"),
 };
 
 static const Layout layouts[] = {{"[]=", tall}, {"[M]", full}, {"<><", NULL}};
@@ -56,13 +55,13 @@ static const char *const LogFormat[FmtOptionsCount] = {
 };
 
 static const WindowRule window_rules[] = {
-    {ResClass, "Brave-browser", move_client_to_ws,  {.i = 2}},
-    {ResClass, "mpv",           float_client,       {0}},
+    {ResWindowRole, "browser",      move_client_to_ws,  {.i = 2}},
+    {ResClass,      "mpv",          float_client,       {0}},
     // every scratchpad must have a unique 'ascii' char id, which is used as
     // reference for toggling.
-    {ResTitle, ScratchTerm,     sch_fromclient,     {.i = 't'}},
-    {ResTitle, ScratchFM,       sch_fromclient,     {.i = 'f'}},
-    {ResTitle, ScratchNM,       sch_fromclient,     {.i = 'n'}},
+    {ResTitle,      ScratchTerm,    sch_fromclient,     {.i = 't'}},
+    {ResTitle,      ScratchFM,      sch_fromclient,     {.i = 'f'}},
+    {ResTitle,      ScratchNM,      sch_fromclient,     {.i = 'n'}},
 };
 
 static const Binding keys[] = {
@@ -98,8 +97,8 @@ static const Binding keys[] = {
     {Mod | ControlMask,   XK_n,       sch_toggle,         {.cmd = CMD("n", SchWindow, ScratchNM, "-e", "nmtui")}},
 #undef SchWindow
     // workspace.
-#define WS_KEYS(key, arg)                                                      \
-    {Mod,                 key,        select_ws,          arg},                \
+#define WS_KEYS(key, arg)                                                                      \
+    {Mod,                 key,        select_ws,          arg},                                \
     {Mod | ShiftMask,     key,        move_client_to_ws,  arg}
     WS_KEYS(              XK_1,                           {.i = 0}),
     WS_KEYS(              XK_2,                           {.i = 1}),

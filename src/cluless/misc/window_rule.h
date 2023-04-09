@@ -4,9 +4,10 @@
 #include <cluless/bindings.h>
 #include <cluless/core/monitor.h>
 
-// WM_CLASS(STRING) = ResInstance, ResClass
-// WM_NAME(STRING)  = ResTitle
-typedef enum { ResInstance, ResClass, ResTitle } ResourceType;
+// WM_CLASS(STRING)         = ResInstance, ResClass
+// WM_NAME(STRING)          = ResTitle
+// WM_WINDOW_ROLE(STRING)   = ResWindowRole
+typedef enum { ResInstance, ResClass, ResTitle, ResWindowRole } ResourceType;
 typedef struct {
   ResourceType res_type;
   char *value;

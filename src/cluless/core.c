@@ -32,8 +32,8 @@ static void sighandler(int sig)
 { // clang-format off
   if (signal(sig, sighandler) == sighandler) {
     switch (sig) {
-      case SIGCHLD: { wait(NULL); } break;
-      default: break;
+    case SIGCHLD: { wait(NULL); } break;
+    default: break;
     }
   }
 } // clang-format on
@@ -58,6 +58,7 @@ void core_init(void)
   WM_ATOM_REPR(WM_NAME);
   WM_ATOM_REPR(WM_DELETE_WINDOW);
   WM_ATOM_REPR(WM_TRANSIENT_FOR);
+  WM_ATOM_REPR(WM_WINDOW_ROLE);
 #undef WM_ATOM_REPR
 
   // EWMH Atoms.
