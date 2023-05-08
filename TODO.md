@@ -33,3 +33,4 @@ bugs:
   - [X] ewmh's `_NET_CLIENT_LIST` doesn't play well with scratchpads.
   - [X] not checking for transient after window rule.
   - [ ] cyclic dependency in monitor/layout modules.
+  - [ ] cannot have lots of windows open. (layout resize windows...approaches zero).

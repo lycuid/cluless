@@ -3,10 +3,9 @@
 
 #include <cluless/bindings.h>
 #include <cluless/core/client.h>
-#include <cluless/core/monitor.h>
 #include <cluless/layout.h>
 
 void magnify(Window, const LayoutManager *, const Geometry *, const Geometry *);
-void magnify_toggle(Monitor *, const Arg *);
+void magnify_toggle(const Arg *);
 
 #endif

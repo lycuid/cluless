@@ -5,16 +5,16 @@
 #include <stdio.h>
 
 #define __log__(fptr, ...)                                                     \
-  {                                                                            \
-    fprintf(fptr, __VA_ARGS__);                                                \
-    fflush(fptr);                                                              \
-  }
+    {                                                                          \
+        fprintf(fptr, __VA_ARGS__);                                            \
+        fflush(fptr);                                                          \
+    }
 #define DBG(...) __log__(stderr, __VA_ARGS__)
 #define ERR(...) __log__(stderr, __VA_ARGS__)
 #define EVENT_DBG(e)                                                           \
-  if (EventRepr[e.type]) {                                                     \
-    DBG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window);     \
-  }
+    if (EventRepr[e.type]) {                                                   \
+        DBG("[EVENT] %s on window: %lu.\n", EventRepr[e.type], e.xany.window); \
+    }
 
 #define REPR(x) [x] = #x
 static const char *const EventRepr[LASTEvent] = {

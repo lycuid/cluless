@@ -1,14 +1,18 @@
 include config.mk
 
+define COMPILE =
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -c -o $@ $<
+endef
+
 $(BIN): $(OBJS)
-	mkdir -p $(@D) && $(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 $(OBJS): $(IDIR)/config.h
 
-$(ODIR)/%.o: $(IDIR)/%.c $(IDIR)/%.h
-	mkdir -p $(@D) && $(CC) $(CFLAGS) -c -o $@ $<
-$(ODIR)/%.o: $(IDIR)/%.c
-	mkdir -p $(@D) && $(CC) $(CFLAGS) -c -o $@ $<
+$(ODIR)/%.o: $(IDIR)/%.c $(IDIR)/%.h ; $(COMPILE)
+$(ODIR)/%.o: $(IDIR)/%.c             ; $(COMPILE)
 
 .PHONY: options
 options:

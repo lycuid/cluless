@@ -5,40 +5,40 @@
 #include <stdint.h>
 
 typedef union {
-  int i;
-  const char **cmd;
+    int i;
+    const char **cmd;
 } Arg;
 
-typedef void (*Action)(Monitor *, const Arg *);
+typedef void (*Action)(const Arg *);
 
 typedef struct {
-  uint64_t mask, sym;
-  Action action;
-  Arg arg;
+    uint64_t mask, sym;
+    Action action;
+    Arg arg;
 } Binding;
 
 // key bindings.
-void quit(Monitor *, const Arg *);
-void spawn(Monitor *, const Arg *);
-void swap_master(Monitor *, const Arg *);
-void kill_client(Monitor *, const Arg *);
-void shift_client(Monitor *, const Arg *);
-void shift_focus(Monitor *, const Arg *);
-void move_client_to_ws(Monitor *, const Arg *);
-void select_ws(Monitor *, const Arg *);
-void tile_client(Monitor *, const Arg *);
-void float_client(Monitor *, const Arg *);
-void cycle_layout(Monitor *, const Arg *);
-void reset_layout(Monitor *, const Arg *);
-void toggle_gap(Monitor *, const Arg *);
-void toggle_border(Monitor *, const Arg *);
-void move_client_x(Monitor *, const Arg *);
-void move_client_y(Monitor *, const Arg *);
-void resize_client_x(Monitor *, const Arg *);
-void resize_client_y(Monitor *, const Arg *);
+void quit(const Arg *);
+void spawn(const Arg *);
+void swap_master(const Arg *);
+void kill_client(const Arg *);
+void shift_client(const Arg *);
+void shift_focus(const Arg *);
+void transfer_client_to(const Arg *);
+void select_ws(const Arg *);
+void tile_client(const Arg *);
+void float_client(const Arg *);
+void cycle_layout(const Arg *);
+void reset_layout(const Arg *);
+void toggle_gap(const Arg *);
+void toggle_border(const Arg *);
+void move_client_x(const Arg *);
+void move_client_y(const Arg *);
+void resize_client_x(const Arg *);
+void resize_client_y(const Arg *);
 
 // button bindings.
-void mouse_move(Monitor *, const Arg *);
-void mouse_resize(Monitor *, const Arg *);
+void mouse_move(const Arg *);
+void mouse_resize(const Arg *);
 
 #endif

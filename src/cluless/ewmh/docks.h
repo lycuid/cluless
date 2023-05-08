@@ -2,13 +2,13 @@
 #define __EWMH__DOCKS_H__
 
 #include <cluless/bindings.h>
-#include <cluless/core/monitor.h>
+#include <cluless/core.h>
 
-void dock_toggle(Monitor *, const Arg *);
-void dock_mapnotify(Monitor *, const XEvent *);
-void dock_propertynotify(Monitor *, const XEvent *);
-void dock_unmapnotify(Monitor *, const XEvent *);
-void dock_destroynotify(Monitor *, const XEvent *);
+void dock_toggle(const Arg *);
+void dock_mapnotify(const XEvent *);
+void dock_propertynotify(const XEvent *);
+void dock_unmapnotify(const XEvent *);
+void dock_destroynotify(const XEvent *);
 
 static const EventHandler dock_event_handlers[LASTEvent] = {
     [MapNotify]      = dock_mapnotify,

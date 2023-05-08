@@ -14,10 +14,9 @@
 #define __MISC__COMPANION_H__
 
 #include <cluless/bindings.h>
-#include <cluless/core/monitor.h>
 
 Client *companion_remove(Workspace *);
 void companion_insert(Client *, Workspace *);
-void companion_toggle(Monitor *, const Arg *);
+void companion_toggle(const Arg *);
 
 #endif

@@ -2,17 +2,17 @@
 #define __MISC__SCRATCHPAD_H__
 
 #include <cluless/bindings.h>
-#include <cluless/core/monitor.h>
+#include <cluless/core.h>
 
 // used to create a togglable scratchpad from a 'Client' object.
 // uses a unique char id (provided in 'Arg') as a reference for toggling.
-void sch_fromclient(Monitor *, const Arg *);
+void sch_fromclient(const Arg *);
 // toggles scratchpad (with unique char id) on/off the screen, independent of
 // the workspace.
-void sch_toggle(Monitor *, const Arg *);
+void sch_toggle(const Arg *);
 // unmanage and nullify saved client pointer in 'sch_clients'.
-void sch_destroynotify(Monitor *, const XEvent *);
-void sch_clientremove(Monitor *, Client *);
+void sch_destroynotify(const XEvent *);
+void sch_clientremove(Client *);
 
 static const EventHandler sch_event_handlers[LASTEvent] = {
     [DestroyNotify] = sch_destroynotify,

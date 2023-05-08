@@ -5,9 +5,9 @@
 #include <cluless/layout.h>
 
 typedef struct {
-  const char *id;
-  Client *cl_head;
-  LayoutManager layout_manager;
+    const char *id;
+    Client *cl_head;
+    LayoutManager layout_manager;
 } Workspace;
 
 void ws_init(Workspace *, const char *);

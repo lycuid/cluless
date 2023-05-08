@@ -1,15 +1,15 @@
 #ifndef __EWMH_H__
 #define __EWMH_H__
 
-#include <cluless/core/monitor.h>
+#include <cluless/core.h>
 
-void ewmh_maprequest(Monitor *, const XEvent *);
-void ewmh_propertynotify(Monitor *, const XEvent *);
-void ewmh_destroynotify(Monitor *, const XEvent *);
-void ewmh_focusin(Monitor *, const XEvent *);
-void ewmh_focusout(Monitor *, const XEvent *);
-void ewmh_clientadd(Monitor *, Client *);
-void ewmh_clientremove(Monitor *, Client *);
+void ewmh_maprequest(const XEvent *);
+void ewmh_propertynotify(const XEvent *);
+void ewmh_destroynotify(const XEvent *);
+void ewmh_focusin(const XEvent *);
+void ewmh_focusout(const XEvent *);
+void ewmh_clientadd(Client *);
+void ewmh_clientremove(Client *);
 
 static const EventHandler ewmh_event_handlers[LASTEvent] = {
     [MapRequest]     = ewmh_maprequest,
