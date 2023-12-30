@@ -55,7 +55,7 @@ static const char *const LogFormat[FmtOptionsCount] = {
     [FmtWsHiddenEmpty] = "<Fg=#353535>%s</Fg>",
     [FmtWsSeperator]   = " ",
     [FmtLayout]        = UNDERLINED(CLICKABLE(" %s ", "super+space")),
-    [FmtSeperator]     = " <Box:Left=#303030:2> </Box>",
+    [FmtSeperator]     = "  <Fn=1><Fg=#373737></Fg></Fn>  ",
     [FmtWindowTitle]   = "%s",
 };
 
