@@ -56,6 +56,15 @@ static inline void Broadcast(HookType type, Client *c)
     mon_applylayout(mon);
 }
 
+/*
+ * https://tronche.com/gui/x/xlib/window/XMapWindow.html
+ *
+ * "If the override-redirect of the window is False and if some other client has
+ * selected SubstructureRedirectMask on the parent window, then the X server
+ * generates a MapRequest event, and the XMapWindow() function does not map the
+ * window. Otherwise, the window is mapped, and the X server generates a
+ * MapNotify event."
+ */
 void onMapRequest(const XEvent *xevent)
 {
     const XMapRequestEvent *e = &xevent->xmaprequest;

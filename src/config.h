@@ -1,6 +1,7 @@
 // {{{ Includes.
 #include <X11/Xutil.h>
 #include <cluless/bindings.h>
+#include <cluless/core.h>
 #include <cluless/core/logging.h>
 #include <cluless/ewmh/docks.h>
 #include <cluless/layout.h>
@@ -14,19 +15,11 @@
 // }}}
 
 // {{{ Macros used only in this file (gets 'undef'-ed later).
-#define Mod             Mod4Mask
-#define Term            "alacritty"
-#define ScratchTerm     "scratchpad-term"
-#define ScratchFM       "scratchpad-fm"
-#define ScratchNM       "scratchpad-nmtui"
-#define UNDERLINED(s)   "<Box:Bottom=#089CAC:1>" s "</Box>"
-#define CLICKABLE(s, k) "<BtnL=xdotool key " k ">" s "</BtnL>"
-#define CMD(...)        ((const char *[]){__VA_ARGS__, NULL})
-#define SchGeometry                                                            \
-  "-o", "window.dimensions.columns=125",                                       \
-  "-o", "window.dimensions.lines=30",                                          \
-  "-o", "window.position.x=100",                                               \
-  "-o", "window.position.y=50"
+#define Mod               Mod4Mask
+#define UNDERLINED(s)     "<Box:Bottom=#089CAC:1>" s "</Box>"
+#define CLICKABLE(s, k)   "<BtnL=xdotool key " k ">" s "</BtnL>"
+#define CMD(...)          ((const char *[]){__VA_ARGS__, NULL})
+#define NO_ARG            {0}
 // }}}
 
 #define WindowGapPX         5
@@ -60,27 +53,27 @@ static const char *const LogFormat[FmtOptionsCount] = {
 };
 
 static const WindowRule window_rules[] = {
-    {ResWindowRole, "browser",      transfer_client_to, {.i = 2}},
-    {ResClass,      "mpv",          float_client,       {0}},
+    {ResWindowRole, "browser",          transfer_client_to,   {.i = 2}},
+    {ResClass,      "mpv",              float_client,         NO_ARG},
     // every scratchpad must have a unique 'ascii' char id, which is used as
     // reference for toggling.
-    {ResTitle,      ScratchTerm,    sch_fromclient,     {.i = 't'}},
-    {ResTitle,      ScratchFM,      sch_fromclient,     {.i = 'f'}},
-    {ResTitle,      ScratchNM,      sch_fromclient,     {.i = 'n'}},
+    {ResTitle,      "scratchpad-term",  sch_fromclient,     {.i = 't'}},
+    {ResTitle,      "scratchpad-fm",    sch_fromclient,     {.i = 'f'}},
+    {ResTitle,      "scratchpad-nmtui", sch_fromclient,     {.i = 'n'}},
 };
 
 static const Binding keys[] = {
-    {Mod,                   XK_Return,  spawn,              {.cmd = CMD(Term)}},
-    {Mod,                   XK_space,   cycle_layout,       {0}},
-    {Mod,                   XK_d,       dock_toggle,        {0}},
-    {Mod,                   XK_g,       toggle_gap,         {0}},
-    {Mod,                   XK_b,       toggle_border,      {0}},
-    {Mod,                   XK_m,       magnify_toggle,     {0}},
-    {Mod,                   XK_c,       companion_toggle,   {0}},
-    {Mod | ShiftMask,       XK_space,   reset_layout,       {0}},
-    {Mod | ShiftMask,       XK_q,       quit,               {0}},
-    {Mod | ShiftMask,       XK_Return,  swap_master,        {0}},
-    {Mod | ShiftMask,       XK_c,       kill_client,        {0}},
+    {Mod,                   XK_Return,  spawn,              {.cmd = CMD("alacritty")}},
+    {Mod,                   XK_space,   cycle_layout,       NO_ARG},
+    {Mod,                   XK_d,       dock_toggle,        NO_ARG},
+    {Mod,                   XK_g,       toggle_gap,         NO_ARG},
+    {Mod,                   XK_b,       toggle_border,      NO_ARG},
+    {Mod,                   XK_m,       magnify_toggle,     NO_ARG},
+    {Mod,                   XK_c,       companion_toggle,   NO_ARG},
+    {Mod | ShiftMask,       XK_space,   reset_layout,       NO_ARG},
+    {Mod | ShiftMask,       XK_q,       quit,               NO_ARG},
+    {Mod | ShiftMask,       XK_Return,  swap_master,        NO_ARG},
+    {Mod | ShiftMask,       XK_c,       kill_client,        NO_ARG},
     {Mod | ShiftMask,       XK_j,       shift_client,       {.i = +1}},
     {Mod | ShiftMask,       XK_k,       shift_client,       {.i = -1}},
     {Mod,                   XK_Down,    move_client_y,      {.i = +15}},
@@ -93,13 +86,13 @@ static const Binding keys[] = {
     {Mod | ShiftMask,       XK_Left,    resize_client_x,    {.i = -15}},
     {Mod,                   XK_j,       shift_focus,        {.i = +1}},
     {Mod,                   XK_k,       shift_focus,        {.i = -1}},
-    {Mod,                   XK_t,       tile_client,        {0}},
+    {Mod,                   XK_t,       tile_client,        NO_ARG},
+
     // scratchpad ('.cmd' value should be {sch_id, cmd, arg1, arg2, ...}).
-#define WIN(...) Term, SchGeometry, "-t", __VA_ARGS__
-    {Mod | ControlMask,     XK_Return,  sch_toggle,         {.cmd = CMD("t", WIN(ScratchTerm))}},
-    {Mod | ControlMask,     XK_f,       sch_toggle,         {.cmd = CMD("f", WIN(ScratchFM, "-e", "vifm"))}},
-    {Mod | ControlMask,     XK_n,       sch_toggle,         {.cmd = CMD("n", WIN(ScratchNM, "-e", "nmtui"))}},
-#undef WIN
+    {Mod | ControlMask,     XK_Return,  sch_toggle,         {.cmd = CMD("t", "scratchpad-term")}},
+    {Mod | ControlMask,     XK_f,       sch_toggle,         {.cmd = CMD("f", "scratchpad-fm")}},
+    {Mod | ControlMask,     XK_n,       sch_toggle,         {.cmd = CMD("n", "scratchpad-nmtui")}},
+
     // workspace.
 #define WS_KEYS(key, arg)                                                      \
     {Mod,                   key,        select_ws,          arg},              \
@@ -110,22 +103,20 @@ static const Binding keys[] = {
     WS_KEYS(                XK_4,                           {.i = 3}),
     WS_KEYS(                XK_5,                           {.i = 4}),
 #undef WS_KEYS
+
 };
 
 static const Binding buttons[] = {
-    {Mod,                   Button1,    mouse_move,         {0}},
-    {Mod,                   Button3,    mouse_resize,       {0}},
+    {Mod,                   Button1,    mouse_move,         NO_ARG},
+    {Mod,                   Button3,    mouse_resize,       NO_ARG},
 };
 
 // {{{ 'undef'-ing.
-#undef Mod
-#undef Term
-#undef ScratchTerm
-#undef ScratchFM
-#undef ScratchNM
-#undef UNDERLINED
-#undef CLICKABLE
+#undef NO_ARG
 #undef CMD
+#undef CLICKABLE
+#undef UNDERLINED
+#undef Mod
 // }}}
 
 // vim:fdm=marker

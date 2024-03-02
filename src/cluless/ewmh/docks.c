@@ -19,6 +19,16 @@ static struct Dock {
     DockCache *cache;
 } dock = {true, NULL};
 
+static inline void update_screen_geometry(void);
+
+static void dcache_update(DockCache *, int64_t *, int);
+static void dcache_put(Window, int64_t *, int);
+static DockCache *dcache_get(Window);
+static DockCache *dcache_remove(Window);
+
+static inline void manage_dock(Window);
+static inline void unmanage_dock(Window);
+
 static inline void update_screen_geometry(void)
 {
     Monitor *mon = core->mon;
@@ -39,14 +49,25 @@ static inline void update_screen_geometry(void)
     mon->screen.h -= (top + bottom);
 }
 
+static void dcache_update(DockCache *cache, int64_t *strut, int nstrut)
+{
+    memset(cache->strut, 0, sizeof(int64_t) * NullStrut);
+    memcpy(cache->strut, strut, sizeof(int64_t) * nstrut);
+}
+
 static void dcache_put(Window window, int64_t *strut, int nstrut)
 {
     DockCache *cache = malloc(sizeof(DockCache));
     cache->window    = window;
-    memset(cache->strut, 0, sizeof(int64_t) * NullStrut);
-    memcpy(cache->strut, strut, sizeof(int64_t) * nstrut);
+    dcache_update(cache, strut, nstrut);
     cache->next = dock.cache;
     dock.cache  = cache;
+
+    // add 'PropertyChangeMask' to the dock windows as these window are gonna be
+    // more likely to have 'override_redirect' set to true.
+    XWindowAttributes attrs;
+    XGetWindowAttributes(core->dpy, window, &attrs);
+    XSelectInput(core->dpy, window, attrs.your_event_mask | PropertyChangeMask);
 }
 
 static DockCache *dcache_get(Window window)
@@ -74,17 +95,16 @@ static DockCache *dcache_remove(Window window)
 
 static void manage_dock(Window window)
 {
-    if (dcache_get(window))
-        return;
-
     Monitor *mon = core->mon;
-    // checking if window is of type dock.
-    Atom *dock_window = NULL;
-    core->get_window_property(window, core->netatoms[NET_WM_WINDOW_TYPE], 1,
-                              (uint8_t **)&dock_window);
-    if (!dock_window || *dock_window != core->netatoms[NET_WM_WINDOW_TYPE_DOCK])
-        return;
-    XFree(dock_window);
+    /* checking if window is of type dock. */ {
+        Atom *dock_window = NULL;
+        core->get_window_property(window, core->netatoms[NET_WM_WINDOW_TYPE], 1,
+                                  (uint8_t **)&dock_window);
+        if (!dock_window ||
+            *dock_window != core->netatoms[NET_WM_WINDOW_TYPE_DOCK])
+            return;
+        XFree(dock_window);
+    }
 
     // getting strut values for the dock type window.
     int nstrut     = NullStrut;
@@ -97,7 +117,10 @@ static void manage_dock(Window window)
                                   (uint8_t **)&strut);
     if (!strut)
         return;
-    dcache_put(window, strut, nstrut);
+    // add or update cache, depending on if the DockCache already exists.
+    DockCache *cache;
+    (cache = dcache_get(window)) ? dcache_update(cache, strut, nstrut)
+                                 : dcache_put(window, strut, nstrut);
     XFree(strut);
 
     update_screen_geometry();
