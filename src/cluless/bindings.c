@@ -13,7 +13,7 @@ static inline void transform_grabbed_cl(int dx, int dy, int dw, int dh)
 {
     Monitor *mon = core->mon;
     Client *c;
-    if ((dx + dy + dw + dh) == 0 || !(c = ws_find(mon->selws, ClActive)))
+    if ((dx + dy + dw + dh) == 0 || !(c = ws_find(curr_ws(mon), ClActive)))
         return;
     if (!IS_SET(c->state, ClFloating)) {
         SET(c->state, ClFloating);
@@ -36,7 +36,7 @@ static inline void mouse_transform_grabbed_cl(State state)
     XChangeWindowAttributes(core->dpy, c->window, CWCursor,
                             &(XSetWindowAttributes){.cursor = cur});
     // set client as floating if the layout is not NULL (floating layout).
-    if (lm_getlayout(&mon->selws->layout_manager)->apply)
+    if (lm_getlayout(&curr_ws(mon)->layout_manager)->apply)
         SET(state, ClFloating);
     // update client state.
     SET(c->state, state);
@@ -69,11 +69,11 @@ void swap_master(const Arg *arg)
 {
     (void)arg;
     Monitor *mon = core->mon;
-    Client *c    = ws_find(mon->selws, ClActive);
+    Client *c    = ws_find(curr_ws(mon), ClActive);
     if (!c)
         return;
-    ws_detachclient(mon->selws, c);
-    ws_attachclient(mon->selws, c);
+    ws_detachclient(curr_ws(mon), c);
+    ws_attachclient(curr_ws(mon), c);
     mon_applylayout(mon);
 }
 
@@ -81,7 +81,7 @@ void kill_client(const Arg *arg)
 {
     (void)arg;
     Monitor *mon = core->mon;
-    Client *c    = ws_find(mon->selws, ClActive);
+    Client *c    = ws_find(curr_ws(mon), ClActive);
     if (!c)
         return;
     if (!core->send_event(c->window, core->wmatoms[WM_DELETE_WINDOW]))
@@ -93,15 +93,15 @@ void shift_client(const Arg *arg)
 {
     Monitor *mon = core->mon;
     int offset   = arg->i;
-    Client *c    = ws_find(mon->selws, ClActive);
+    Client *c    = ws_find(curr_ws(mon), ClActive);
     if (!c)
         return;
     if (offset > 0)
         while (offset--)
-            ws_clmovedown(mon->selws, c);
+            ws_clmovedown(curr_ws(mon), c);
     else
         while (-offset++)
-            ws_clmoveup(mon->selws, c);
+            ws_clmoveup(curr_ws(mon), c);
     mon_applylayout(mon);
 }
 
@@ -109,14 +109,14 @@ void shift_focus(const Arg *arg)
 {
     Monitor *mon = core->mon;
     int offset   = arg->i;
-    Client *c    = ws_find(mon->selws, ClActive);
+    Client *c    = ws_find(curr_ws(mon), ClActive);
     if (!c) {
-        c = mon->selws->cl_head;
+        c = curr_ws(mon)->cl_head;
         goto LAYOUT_AND_EXIT;
     }
     if (offset > 0)
         while (offset--)
-            c = c->next ? c->next : mon->selws->cl_head;
+            c = c->next ? c->next : curr_ws(mon)->cl_head;
     else
         while (-offset++)
             c = c->prev ? c->prev : cl_last(c);
@@ -124,22 +124,31 @@ LAYOUT_AND_EXIT:
     mon_focusclient(mon, c);
 }
 
+void change_workspace(const Arg *arg)
+{
+    Monitor *mon = core->mon;
+    int new_ws =
+        (mon->curr_ws + arg->i + mon->workspaces.size) % mon->workspaces.size;
+    if (new_ws != (int)mon->curr_ws)
+        select_ws(&(Arg){.i = new_ws});
+}
+
 void transfer_client_to(const Arg *arg)
 {
     Monitor *mon    = core->mon;
-    Workspace *from = mon->selws, *to = &mon->wss[arg->i];
+    Workspace *from = curr_ws(mon), *to = mon_get_workspace_at(mon, arg->i);
     Client *c = ws_find(from, ClActive);
     if (!from || !to || from == to || !c)
         return;
     // if this function is called by a Rule, then the active client might
     // not be focused.
     Client *neighbour = cl_neighbour(c),
-           *focused   = ws_getclient(mon->selws, core->input_focused_window());
+           *focused = ws_getclient(curr_ws(mon), core->input_focused_window());
     // to avoid attaching same client multiple times.
     ws_detachclient(from, c);
     if (!ws_getclient(to, c->window))
         ws_attachclient(to, c);
-    // as the client is detached from the 'selws', it wont be destroyed on
+    // as the client is detached from the 'curr_ws', it wont be destroyed on
     // unmap.
     XUnmapWindow(core->dpy, c->window);
     mon_focusclient(mon, focused && focused != c ? focused
@@ -150,12 +159,12 @@ void transfer_client_to(const Arg *arg)
 void select_ws(const Arg *arg)
 {
     Monitor *mon    = core->mon;
-    Workspace *from = mon->selws, *to = &mon->wss[arg->i];
+    Workspace *from = curr_ws(mon), *to = mon_get_workspace_at(mon, arg->i);
     if (!from || !to || from == to)
         return;
-    // we can unmap safely as 'selws' has already been changed (unmapped
+    // we can unmap safely as 'curr_ws' has already been changed (unmapped
     // client wont be destroyed).
-    mon->selws = to;
+    mon->curr_ws = arg->i;
     companion_insert(companion_remove(from), to);
     Client *c;
     for (c = from->cl_head; c; c = c->next)
@@ -173,7 +182,7 @@ void tile_client(const Arg *arg)
 {
     (void)arg;
     Monitor *mon = core->mon;
-    Client *c    = ws_find(mon->selws, ClActive);
+    Client *c    = ws_find(curr_ws(mon), ClActive);
     if (!c)
         return;
     UNSET(c->state, CL_UNTILED_STATE);
@@ -184,7 +193,7 @@ void float_client(const Arg *arg)
 {
     (void)arg;
     Monitor *mon = core->mon;
-    Client *c    = ws_find(mon->selws, ClActive);
+    Client *c    = ws_find(curr_ws(mon), ClActive);
     if (!c)
         return;
     SET(c->state, ClFloating);
@@ -195,7 +204,7 @@ void cycle_layout(const Arg *arg)
 {
     (void)arg;
     Monitor *mon = core->mon;
-    lm_nextlayout(&mon->selws->layout_manager);
+    lm_nextlayout(&curr_ws(mon)->layout_manager);
     mon_applylayout(mon);
 }
 
@@ -203,9 +212,9 @@ void reset_layout(const Arg *arg)
 {
     (void)arg;
     Monitor *mon      = core->mon;
-    LayoutManager *lm = &mon->selws->layout_manager;
+    LayoutManager *lm = &curr_ws(mon)->layout_manager;
     lm_reset(lm);
-    for (Client *c = mon->selws->cl_head; c; c = c->next)
+    for (Client *c = curr_ws(mon)->cl_head; c; c = c->next)
         lm_decorate_client(lm, c);
     mon_applylayout(mon);
 }
@@ -226,7 +235,7 @@ void toggle_gap(const Arg *arg)
 {
     (void)arg;
     Monitor *mon      = core->mon;
-    LayoutManager *lm = &mon->selws->layout_manager;
+    LayoutManager *lm = &curr_ws(mon)->layout_manager;
     lm->window_gappx  = lm->window_gappx == 0 ? WindowGapPX : 0;
     lm->screen_gappx  = lm->screen_gappx == 0 ? ScreenGapPX : 0;
     mon_applylayout(mon);
@@ -236,9 +245,9 @@ void toggle_border(const Arg *arg)
 {
     (void)arg;
     Monitor *mon      = core->mon;
-    LayoutManager *lm = &mon->selws->layout_manager;
+    LayoutManager *lm = &curr_ws(mon)->layout_manager;
     lm->borderpx      = BorderPX - lm->borderpx;
-    for (Client *c = mon->selws->cl_head; c; c = c->next)
+    for (Client *c = curr_ws(mon)->cl_head; c; c = c->next)
         XSetWindowBorderWidth(core->dpy, c->window, lm->borderpx);
     mon_applylayout(mon);
 }

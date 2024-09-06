@@ -11,34 +11,34 @@
 #include <cluless/misc/magnify.h>
 #include <cluless/misc/scratchpad.h>
 #include <cluless/misc/window_rule.h>
-// clang-format off
 // }}}
 
 // {{{ Macros used only in this file (gets 'undef'-ed later).
-#define Mod               Mod4Mask
-#define UNDERLINED(s)     "<Box:Bottom=#089CAC:1>" s "</Box>"
-#define CLICKABLE(s, k)   "<BtnL=xdotool key " k ">" s "</BtnL>"
-#define CMD(...)          ((const char *[]){__VA_ARGS__, NULL})
-#define NO_ARG            {0}
+#define Mod             Mod4Mask
+#define UNDERLINED(s)   "<Box:Bottom=#089CAC:1>" s "</Box>"
+#define CLICKABLE(s, k) "<BtnL=xdotool key " k ">" s "</BtnL>"
+#define CMD(...)        ((const char *[]){__VA_ARGS__, NULL})
+#define NO_ARG          {0}
 // }}}
 
-#define WindowGapPX         5
-#define ScreenGapPX         5
-#define BorderPX            3
-#define BorderActive        0x089cac
-#define BorderInactive      0x252525
-#define CompanionActive     0xff793f
-#define CompanionInactive   0xaaa69d
-#define TrimTitle           30
-#define ButtonForFocus      Button1
-#define MagnifyW            1.2
-#define MagnifyH            1.2
+#define WindowGapPX       5
+#define ScreenGapPX       5
+#define BorderPX          3
+#define BorderActive      0x089cac
+#define BorderInactive    0x252525
+#define CompanionActive   0xff793f
+#define CompanionInactive 0xaaa69d
+#define TrimTitle         30
+#define ButtonForFocus    Button1
+#define MagnifyW          1.2
+#define MagnifyH          1.2
 
 static const char *const workspaces[] = {
     CLICKABLE(" ○ ", "super+1"), CLICKABLE(" ○ ", "super+2"),
     CLICKABLE(" ○ ", "super+3"), CLICKABLE(" ○ ", "super+4"),
-    CLICKABLE(" ○ ", "super+5"),
-};
+    CLICKABLE(" ○ ", "super+5"), CLICKABLE(" ○ ", "super+6"),
+    CLICKABLE(" ○ ", "super+7"), CLICKABLE(" ○ ", "super+8"),
+    CLICKABLE(" ○ ", "super+9"), CLICKABLE(" ○ ", "super+0")};
 
 static const Layout layouts[] = {{"[]=", tall}, {"[M]", full}, {"<><", NULL}};
 
@@ -52,6 +52,7 @@ static const char *const LogFormat[FmtOptionsCount] = {
     [FmtWindowTitle]   = "%s",
 };
 
+// clang-format off
 static const WindowRule window_rules[] = {
     {ResWindowRole, "browser",          transfer_client_to,   {.i = 2}},
     {ResClass,      "mpv",              float_client,         NO_ARG},
@@ -86,6 +87,8 @@ static const Binding keys[] = {
     {Mod | ShiftMask,       XK_Left,    resize_client_x,    {.i = -15}},
     {Mod,                   XK_j,       shift_focus,        {.i = +1}},
     {Mod,                   XK_k,       shift_focus,        {.i = -1}},
+    {Mod,                   XK_l,       change_workspace,   {.i = +1}},
+    {Mod,                   XK_h,       change_workspace,   {.i = -1}},
     {Mod,                   XK_t,       tile_client,        NO_ARG},
 
     // scratchpad ('.cmd' value should be {sch_id, cmd, arg1, arg2, ...}).
@@ -102,6 +105,11 @@ static const Binding keys[] = {
     WS_KEYS(                XK_3,                           {.i = 2}),
     WS_KEYS(                XK_4,                           {.i = 3}),
     WS_KEYS(                XK_5,                           {.i = 4}),
+    WS_KEYS(                XK_6,                           {.i = 5}),
+    WS_KEYS(                XK_7,                           {.i = 6}),
+    WS_KEYS(                XK_8,                           {.i = 7}),
+    WS_KEYS(                XK_9,                           {.i = 8}),
+    WS_KEYS(                XK_0,                           {.i = 9}),
 #undef WS_KEYS
 
 };

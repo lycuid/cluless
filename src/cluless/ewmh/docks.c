@@ -142,7 +142,7 @@ void dock_mapnotify(const XEvent *xevent)
 {
     const XMapEvent *e = &xevent->xmap;
     Monitor *mon       = core->mon;
-    if (!e->override_redirect || ws_getclient(mon->selws, e->window))
+    if (!e->override_redirect || ws_getclient(curr_ws(mon), e->window))
         return;
     manage_dock(e->window);
 }

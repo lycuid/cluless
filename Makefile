@@ -1,25 +1,27 @@
 include config.mk
 
-define COMPILE =
-	@mkdir -p $(@D)
+override CFLAGS+= $(FLAGS) $(DEFINE) $(shell pkg-config --cflags $(PKGS))
+LDFLAGS:=$(shell pkg-config --libs $(PKGS))
+
+all: $(BIN)
+
+$(BIN): $(O_FILES) ; @mkdir -p $(@D)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+$(O_FILES): $(I_DIR)/config.h
+
+$(O_DIR)/%.o: $(I_DIR)/%.c $(I_DIR)/%.h ; @mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
-endef
 
-$(BIN): $(OBJS)
-	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
-$(OBJS): $(IDIR)/config.h
-
-$(ODIR)/%.o: $(IDIR)/%.c $(IDIR)/%.h ; $(COMPILE)
-$(ODIR)/%.o: $(IDIR)/%.c             ; $(COMPILE)
+$(O_DIR)/%.o: $(I_DIR)/%.c ; @mkdir -p $(@D)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 .PHONY: options
 options:
 	@echo "$(NAME) build options:"
 	@echo "CC       = $(CC)"
 	@echo "PKGS     = $(PKGS)"
-	@echo "SRCS     = $(SRCS)"
+	@echo "O_FILES  = $(O_FILES)"
 	@echo "LDFLAGS  = $(LDFLAGS)"
 	@echo "CFLAGS   = $(CFLAGS)"
 	@echo "----------------------------------"

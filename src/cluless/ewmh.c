@@ -63,7 +63,7 @@ void ewmh_propertynotify(const XEvent *xevent)
     Client *c = NULL;
     ITER(workspaces)
     {
-        if ((c = ws_getclient(&mon->wss[it], e->window)))
+        if ((c = ws_getclient(mon_get_workspace_at(mon, it), e->window)))
             break;
     }
     handle_bypassed(c);
@@ -81,7 +81,7 @@ void ewmh_focusin(const XEvent *xevent)
     const XFocusInEvent *e = &xevent->xfocus;
     Monitor *mon           = core->mon;
     Client *c;
-    if (!(c = ws_getclient(mon->selws, e->window)))
+    if (!(c = ws_getclient(curr_ws(mon), e->window)))
         return;
     XChangeProperty(core->dpy, DefaultRootWindow(core->dpy),
                     core->netatoms[NET_ACTIVE_WINDOW], XA_WINDOW, 32,

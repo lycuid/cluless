@@ -10,7 +10,7 @@ Client *cl_alloc(Window w)
     XSizeHints size;
     long flags;
     XGetWMNormalHints(core->dpy, w, &size, &flags);
-    Client *c = malloc(sizeof(Client));
+    Client *c = (Client *)malloc(sizeof(Client));
     vec_append(&cl_vector, c);
     c->state  = 0x0;
     c->window = w;

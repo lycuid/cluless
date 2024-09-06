@@ -16,7 +16,7 @@ Window revert_focus_hint = 0;
 void sch_fromclient(const Arg *arg)
 {
     Monitor *mon = core->mon;
-    Client *c    = ws_find(mon->selws, ClActive);
+    Client *c    = ws_find(curr_ws(mon), ClActive);
     // @NOTE: user can create multiple scratchpad windows with similar id,
     // but we need to make sure that we only track one of them (first one
     // created), for avoiding dangling pointers.
@@ -36,20 +36,20 @@ static inline void sch_show_hide(Client *sch_client)
     Client *rf_client;
     // if the sch_client was detached from 'selws', that means it was
     // mapped.
-    if (from == mon->selws) {
+    if (from == curr_ws(mon)) {
         XUnmapWindow(core->dpy, sch_client->window);
         // 'mon_focusclient' should not be called, if sch_client wasn't
         // focused itself before unmapping.
         if (IS_SET(sch_client->state, ClActive))
             mon_focusclient(
-                mon, (rf_client = ws_getclient(mon->selws, revert_focus_hint))
+                mon, (rf_client = ws_getclient(curr_ws(mon), revert_focus_hint))
                          ? rf_client
-                         : mon->selws->cl_head);
+                         : curr_ws(mon)->cl_head);
         revert_focus_hint = 0;
     } else {
-        if ((rf_client = ws_find(mon->selws, ClActive)))
+        if ((rf_client = ws_find(curr_ws(mon), ClActive)))
             revert_focus_hint = rf_client->window;
-        ws_attachclient(mon->selws, sch_client);
+        ws_attachclient(curr_ws(mon), sch_client);
         XMapWindow(core->dpy, sch_client->window);
         mon_focusclient(mon, sch_client);
     }
@@ -62,7 +62,7 @@ void sch_toggle(const Arg *arg)
     if (sch_client)
         sch_show_hide(sch_client);
     else {
-        if ((c = ws_find(mon->selws, ClActive)))
+        if ((c = ws_find(curr_ws(mon), ClActive)))
             revert_focus_hint = c->window;
         spawn(&(Arg){.cmd = &arg->cmd[1]});
     }

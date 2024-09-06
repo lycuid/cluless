@@ -24,6 +24,7 @@ void swap_master(const Arg *);
 void kill_client(const Arg *);
 void shift_client(const Arg *);
 void shift_focus(const Arg *);
+void change_workspace(const Arg *);
 void transfer_client_to(const Arg *);
 void select_ws(const Arg *);
 void tile_client(const Arg *);

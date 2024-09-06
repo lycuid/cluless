@@ -78,8 +78,8 @@ void onMapRequest(const XEvent *xevent)
     }
     Broadcast(ClientAdd, (c = cl_alloc(e->window)));
     // client might be moved to another workspace by a WindowRule, so we
-    // only map the window if the client is found in selws.
-    if (ws_getclient(mon->selws, c->window))
+    // only map the window if the client is found in 'curr_ws'.
+    if (ws_getclient(curr_ws(mon), c->window))
         XMapWindow(core->dpy, c->window);
 }
 
@@ -88,7 +88,8 @@ void onMapNotify(const XEvent *xevent)
     const XMapEvent *e = &xevent->xmap;
     Monitor *mon       = core->mon;
     Client *c;
-    if ((c = ws_getclient(mon->selws, e->window)) && IS_SET(c->state, ClActive))
+    if ((c = ws_getclient(curr_ws(mon), e->window)) &&
+        IS_SET(c->state, ClActive))
         mon_focusclient(mon, c);
 }
 
@@ -96,7 +97,7 @@ void onUnmapNotify(const XEvent *xevent)
 {
     const XUnmapEvent *e = &xevent->xunmap;
     Monitor *mon         = core->mon;
-    for (Client *c = ws_getclient(mon->selws, e->window); c; c = NULL)
+    for (Client *c = ws_getclient(curr_ws(mon), e->window); c; c = NULL)
         Broadcast(ClientRemove, c);
 }
 
@@ -115,10 +116,10 @@ void onConfigureRequest(const XEvent *xevent)
     };
     // This might restack windows and change focus.
     if (XConfigureWindow(core->dpy, e->window, e->value_mask, &changes)) {
-        if (ws_getclient(mon->selws, e->window))
+        if (ws_getclient(curr_ws(mon), e->window))
             // 'mon_focusclient' calls 'mon_applylayout', which
             // restacks windows.
-            mon_focusclient(mon, ws_find(mon->selws, ClActive));
+            mon_focusclient(mon, ws_find(curr_ws(mon), ClActive));
         XSync(core->dpy, False);
     }
 }
@@ -139,9 +140,9 @@ void onFocusIn(const XEvent *xevent)
     Monitor *mon           = core->mon;
     // Enforce focus on currently active client, as some applications might
     // change input focus on their own.
-    for (Client *c = ws_getclient(mon->selws, e->window); c; c = NULL)
+    for (Client *c = ws_getclient(curr_ws(mon), e->window); c; c = NULL)
         if (!IS_SET(c->state, ClActive))
-            mon_focusclient(mon, ws_find(mon->selws, ClActive));
+            mon_focusclient(mon, ws_find(curr_ws(mon), ClActive));
 }
 
 void onKeyPress(const XEvent *xevent)
@@ -166,10 +167,10 @@ void onButtonPress(const XEvent *xevent)
     // not focused, then just focus it and return. Otherwise if the button
     // press happens on root window, then just call button press action
     // function on the subwindow.
-    if ((c = ws_getclient(mon->selws, e->window))) {
+    if ((c = ws_getclient(curr_ws(mon), e->window))) {
         if (!IS_SET(c->state, ClActive))
             mon_focusclient(mon, c);
-    } else if ((c = ws_getclient(mon->selws, e->subwindow))) {
+    } else if ((c = ws_getclient(curr_ws(mon), e->subwindow))) {
         XGrabPointer(core->dpy, DefaultRootWindow(core->dpy), False,
                      ButtonMasks | PointerMotionMask, GrabModeAsync,
                      GrabModeAsync, None, None, CurrentTime);
@@ -282,8 +283,8 @@ int main(int argc, char const **argv)
         }
         if (windows)
             XFree(windows);
-        if (mon->selws->cl_head)
-            mon_focusclient(mon, mon->selws->cl_head);
+        if (curr_ws(mon)->cl_head)
+            mon_focusclient(mon, curr_ws(mon)->cl_head);
     }
 
     for (XEvent e; core->running && !XNextEvent(core->dpy, &e);) {

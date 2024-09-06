@@ -1,33 +1,32 @@
 NAME=cluless
 VERSION=0.4.12
+
 BUILD=.build
-IDIR=src
-ODIR=$(BUILD)/cache
+I_DIR=src
+O_DIR=$(BUILD)/cache
 BIN=$(BUILD)/bin/$(NAME)
+
 PREFIX=/usr/local
 BINPREFIX=$(PREFIX)/bin
 MANPREFIX=$(PREFIX)/man/man1
 
-SRCS=$(IDIR)/$(NAME).c                      \
-     $(IDIR)/$(NAME)/bindings.c             \
-     $(IDIR)/$(NAME)/core.c                 \
-     $(IDIR)/$(NAME)/core/client.c          \
-     $(IDIR)/$(NAME)/core/logging.c         \
-     $(IDIR)/$(NAME)/core/monitor.c         \
-     $(IDIR)/$(NAME)/core/workspace.c       \
-     $(IDIR)/$(NAME)/ewmh.c                 \
-     $(IDIR)/$(NAME)/ewmh/docks.c           \
-     $(IDIR)/$(NAME)/layout.c               \
-     $(IDIR)/$(NAME)/layout/full.c          \
-     $(IDIR)/$(NAME)/layout/tall.c          \
-     $(IDIR)/$(NAME)/misc/companion.c       \
-     $(IDIR)/$(NAME)/misc/magnify.c         \
-     $(IDIR)/$(NAME)/misc/scratchpad.c      \
-     $(IDIR)/$(NAME)/misc/window_rule.c
+O_FILES=$(O_DIR)/$(NAME).o                      \
+        $(O_DIR)/$(NAME)/bindings.o             \
+        $(O_DIR)/$(NAME)/core.o                 \
+        $(O_DIR)/$(NAME)/core/client.o          \
+        $(O_DIR)/$(NAME)/core/logging.o         \
+        $(O_DIR)/$(NAME)/core/monitor.o         \
+        $(O_DIR)/$(NAME)/core/workspace.o       \
+        $(O_DIR)/$(NAME)/ewmh.o                 \
+        $(O_DIR)/$(NAME)/ewmh/docks.o           \
+        $(O_DIR)/$(NAME)/layout.o               \
+        $(O_DIR)/$(NAME)/layout/full.o          \
+        $(O_DIR)/$(NAME)/layout/tall.o          \
+        $(O_DIR)/$(NAME)/misc/companion.o       \
+        $(O_DIR)/$(NAME)/misc/magnify.o         \
+        $(O_DIR)/$(NAME)/misc/scratchpad.o      \
+        $(O_DIR)/$(NAME)/misc/window_rule.o
 
-OBJS=$(SRCS:$(IDIR)/%.c=$(ODIR)/%.o)
 PKGS=x11
 DEFINE=-D_GNU_SOURCE -DNAME='"$(NAME)"' -DVERSION='"$(VERSION)"'
-FLAGS=-Wall -Wextra -Wvla -pedantic -I$(IDIR) -ggdb -O3
-override CFLAGS+=$(FLAGS) $(DEFINE) $(shell pkg-config --cflags $(PKGS))
-override LDFLAGS+=$(shell pkg-config --libs $(PKGS))
+FLAGS=-Wall -Wextra -Wvla -pedantic -I$(I_DIR) -ggdb -O3

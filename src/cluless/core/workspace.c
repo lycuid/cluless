@@ -2,6 +2,13 @@
 #include <config.h>
 #include <string.h>
 
+Workspace *ws_new(const char *id)
+{
+    Workspace *ws = (Workspace *)malloc(sizeof(Workspace));
+    ws_init(ws, id);
+    return ws;
+}
+
 void ws_init(Workspace *ws, const char *id)
 {
     ws->id      = id;

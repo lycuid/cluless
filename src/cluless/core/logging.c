@@ -8,6 +8,8 @@
 #define SECTION_MAX_LEN (1 << 10) // individual section strings.
 #define OUTPUT_MAX_LEN  (1 << 14) // final output string.
 
+#define SAFE(fmt) fmt ? fmt : "%s"
+
 static char workspace_section[SECTION_MAX_LEN];
 static char layout_section[SECTION_MAX_LEN];
 static char title_section[SECTION_MAX_LEN];
@@ -30,16 +32,14 @@ static inline void create_workspace_section(void)
     memset(workspace_section, 0, SECTION_MAX_LEN);
     ITER(workspaces)
     {
-        ws = &mon->wss[it];
-#define SAFE(fmt) fmt ? fmt : "%s"
+        ws = mon_get_workspace_at(mon, it);
         buflen =
             sprintf(buffer,
-                    ws == mon->selws
+                    ws == curr_ws(mon)
                         ? SAFE(LogFormat[FmtWsCurrent])
                         : (ws->cl_head ? SAFE(LogFormat[FmtWsHidden])
                                        : SAFE(LogFormat[FmtWsHiddenEmpty])),
                     ws->id);
-#undef SAFE
         if (it && LogFormat[FmtWsSeperator])
             for (int i = 0; i < ws_seperator_len; ++i)
                 workspace_section[j++] = LogFormat[FmtWsSeperator][i];
@@ -52,16 +52,15 @@ static inline void create_workspace_section(void)
 static inline void create_layout_section(void)
 {
     Monitor *mon         = core->mon;
-    const Layout *layout = lm_getlayout(&mon->selws->layout_manager);
+    const Layout *layout = lm_getlayout(&curr_ws(mon)->layout_manager);
     memset(layout_section, 0, SECTION_MAX_LEN);
-    sprintf(layout_section, LogFormat[FmtLayout] ? LogFormat[FmtLayout] : "%s",
-            layout->symbol);
+    sprintf(layout_section, SAFE(LogFormat[FmtLayout]), layout->symbol);
 }
 
 static inline void create_title_section(void)
 {
     Monitor *mon   = core->mon;
-    Client *active = ws_find(mon->selws, ClActive);
+    Client *active = ws_find(curr_ws(mon), ClActive);
     memset(title_section, 0, SECTION_MAX_LEN);
     if (active) {
         XTextProperty wm_name;
@@ -73,10 +72,7 @@ static inline void create_title_section(void)
                    wm_name.nitems >= TrimTitle ? TrimTitle - 3
                                                : wm_name.nitems);
             title[MIN(wm_name.nitems, TrimTitle)] = 0;
-            sprintf(title_section,
-                    LogFormat[FmtWindowTitle] ? LogFormat[FmtWindowTitle]
-                                              : "%s",
-                    title);
+            sprintf(title_section, SAFE(LogFormat[FmtWindowTitle]), title);
         }
     }
 }

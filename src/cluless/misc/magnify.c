@@ -30,7 +30,8 @@ void magnify(Window window, const LayoutManager *lm, const Geometry *wg,
 void magnify_toggle(const Arg *arg)
 {
     (void)arg;
-    Monitor *mon                       = core->mon;
-    mon->selws->layout_manager.magnify = !mon->selws->layout_manager.magnify;
+    Monitor *mon                    = core->mon;
+    Workspace *curr_ws              = curr_ws(mon);
+    curr_ws->layout_manager.magnify = !curr_ws->layout_manager.magnify;
     mon_applylayout(mon);
 }

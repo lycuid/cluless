@@ -1,6 +1,7 @@
 #include "monitor.h"
 #include <cluless/core.h>
 #include <cluless/core/logging.h>
+#include <cluless/core/utils/vector.h>
 #include <cluless/core/workspace.h>
 #include <cluless/misc/window_rule.h>
 #include <config.h>
@@ -9,10 +10,9 @@
 
 void mon_init(Monitor *mon)
 {
-    mon->wss = malloc(LENGTH(workspaces) * sizeof(Workspace));
-    ITER(workspaces) ws_init(&mon->wss[it], workspaces[it]);
-    mon->selws  = &mon->wss[0];
-    mon->screen = core->get_screen_rect();
+    ITER(workspaces) { vec_append(&mon->workspaces, ws_new(workspaces[it])); }
+    mon->curr_ws = 0;
+    mon->screen  = core->get_screen_rect();
     memset(&mon->grabbed, 0, sizeof(PointerGrab));
 }
 
@@ -21,7 +21,7 @@ void mon_manage_client(Client *c)
     if (!c)
         return;
     Monitor *mon = core->mon;
-    ws_attachclient(mon->selws, c);
+    ws_attachclient(curr_ws(mon), c);
     // just set the client active, without focusing it, as the client isn't
     // mapped yet, and we never know, it might get moved to another
     // workspace via some startup hook. Focusing the client on 'MapNotify'
@@ -47,7 +47,7 @@ void mon_unmanage_client(Client *c)
     // detaching the client before doing anything else, as the corresponding
     // window has already been destroyed (don't want any excitement).
     ws_detachclient(ws, c);
-    if (ws == mon->selws && IS_SET(c->state, ClActive))
+    if (ws == curr_ws(mon) && IS_SET(c->state, ClActive))
         mon_focusclient(mon, neighbour);
 }
 
@@ -84,7 +84,10 @@ LAYOUT_AND_EXIT:
 
 void mon_restack(Monitor *mon)
 {
-    Client *c = mon->selws->cl_head, *active = NULL;
+    Workspace *ws = curr_ws(mon);
+    if (!ws)
+        return;
+    Client *c = ws->cl_head, *active = NULL;
     if (!c)
         return;
 
@@ -97,7 +100,7 @@ void mon_restack(Monitor *mon)
         if (IS_SET(c->state, ClActive))
             active = c;
     }
-    Window *stack = malloc(i * sizeof(Window));
+    Window *stack = (Window *)malloc(i * sizeof(Window));
     fullscreen += floating, i = 0;
 #define AddToStack(c)                                                          \
     stack[IS_SET(c->state, ClFloating)     ? i++                               \
@@ -105,7 +108,7 @@ void mon_restack(Monitor *mon)
                                            : fullscreen++] = c->window;
     if (active)
         AddToStack(active);
-    for (c = mon->selws->cl_head; c; c = c->next)
+    for (c = ws->cl_head; c; c = c->next)
         if (c != active)
             AddToStack(c);
 #undef AddToStack
@@ -115,11 +118,19 @@ void mon_restack(Monitor *mon)
 
 void mon_applylayout(Monitor *mon)
 {
-    const Layout *layout = lm_getlayout(&mon->selws->layout_manager);
+    Workspace *ws = curr_ws(mon);
+    if (!ws)
+        return;
+    const Layout *layout = lm_getlayout(&ws->layout_manager);
     if (layout->apply)
         layout->apply();
     mon_restack(mon);
     log_statuslog();
+}
+
+Workspace *mon_get_workspace_at(Monitor *mon, size_t at)
+{
+    return vec_get(&mon->workspaces, at);
 }
 
 Workspace *mon_get_client_ws(Monitor *mon, Client *c)
@@ -127,7 +138,7 @@ Workspace *mon_get_client_ws(Monitor *mon, Client *c)
     if (c) {
         ITER(workspaces)
         {
-            Workspace *ws = &mon->wss[it];
+            Workspace *ws = mon_get_workspace_at(mon, it);
             if (ws_getclient(ws, c->window))
                 return ws;
         }

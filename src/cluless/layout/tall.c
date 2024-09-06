@@ -8,17 +8,17 @@ void tall(void)
 {
     Monitor *mon = core->mon;
     int nstack   = -1;
-    for (Client *c = mon->selws->cl_head; c; c = c->next)
+    for (Client *c = curr_ws(mon)->cl_head; c; c = c->next)
         nstack += !IS_SET(c->state, CL_UNTILED_STATE);
     if (nstack == -1)
         return;
-    const LayoutManager *lm    = &mon->selws->layout_manager;
+    const LayoutManager *lm    = &curr_ws(mon)->layout_manager;
     const Geometry draw_region = lm_drawregion(lm, &mon->screen);
     const int top = lm_top(lm, &draw_region), left = lm_left(lm, &draw_region),
               offset = lm_offset(lm);
 
 #define mid (draw_region.w / 2)
-    Client *master = mon->selws->cl_head, *stack;
+    Client *master = curr_ws(mon)->cl_head, *stack;
     if (IS_SET(master->state, CL_UNTILED_STATE))
         master = cl_nexttiled(master);
     int x = left, y = top, w = (nstack ? mid : draw_region.w) - offset,

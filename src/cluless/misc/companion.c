@@ -22,7 +22,7 @@ void companion_toggle(const Arg *arg)
 {
     (void)arg;
     Monitor *mon = core->mon;
-    Client *c    = ws_find(mon->selws, ClActive);
+    Client *c    = ws_find(curr_ws(mon), ClActive);
     if (!c)
         return;
     TOGGLE(c->state, ClCompanion);
