@@ -2,15 +2,15 @@
 
 **cluwm** is a fantasy motivated, _(mildly opinionated)_ and customizable dynamic tiling [window manager](https://wiki.archlinux.org/title/window_manager). The design and structure was motivated by the author's previously, daily driven, window managers: [xmonad](https://xmonad.org) and [dwm](https://dwm.suckless.org).
 
-![fancy](https://raw.githubusercontent.com/lycuid/assets/master/cluwm/floating.png)
+![fancy](https://lycuid.github.io/assets/cluwm/floating.png)
 - Statusbar: clubar &lt;[https://github.com/lycuid/clubar](https://github.com/lycuid/clubar)&gt;
-- Terminal: Simple Terminal &lt;[https://st.suckless.org/](https://st.suckless.org/)&gt;
+- Terminal: cluterm &lt;[https://github.com/lycuid/cluterm](https://github.com/lycuid/cluterm)&gt;
 
 Layouts
 -------
 |Tall (master/stack) | Full (fullscreen) |
 |--------------------|-------------------|
-|![tall](https://raw.githubusercontent.com/lycuid/assets/master/cluwm/tall.png) | ![full](https://raw.githubusercontent.com/lycuid/assets/master/cluwm/full.png) |
+|![tall](https://lycuid.github.io/assets/cluwm/tall.png) | ![full](https://lycuid.github.io/assets/cluwm/full.png) |
 
 Requirements
 ------------
